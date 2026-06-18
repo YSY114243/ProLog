@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/daily_log.dart';
 import '../services/pdf_service.dart';
-import '../theme/app_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// The Reports tab providing a summary, date range filtering, and PDF generation.
@@ -42,10 +41,10 @@ class _ReportsTabState extends State<ReportsTab> {
       initialDateRange: _dateRange,
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.light(
-            primary: AppTheme.primaryCyan,
-            onPrimary: Colors.white,
-            surface: Colors.white,
+          colorScheme: ColorScheme.light(
+            primary: Theme.of(context).colorScheme.primary,
+            onPrimary: Theme.of(context).colorScheme.surface,
+            surface: Theme.of(context).colorScheme.surface,
           ),
         ),
         child: child!,
@@ -91,7 +90,7 @@ class _ReportsTabState extends State<ReportsTab> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('OK', style: TextStyle(color: AppTheme.primaryCyan, fontWeight: FontWeight.bold)),
+              child: Text('OK', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -146,30 +145,30 @@ class _ReportsTabState extends State<ReportsTab> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ── Header ───────────────────────────────────────────
-              const Text(
+              Text(
                 'Generate Final Report',
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w800,
-                  color: AppTheme.textPrimary,
+                  color: Theme.of(context).colorScheme.onSurface,
                   letterSpacing: -0.5,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Configure the date range to include in your final internship PDF report. '
                 'The report will include a formatted cover page and a structured table of your activities.',
-                style: TextStyle(fontSize: 15, color: AppTheme.textSecondary, height: 1.5),
+                style: TextStyle(fontSize: 15, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey, height: 1.5),
               ),
               const SizedBox(height: 40),
 
               // ── Date Range Filter ────────────────────────────────
-              const Text(
+              Text(
                 'DATE FILTER',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
-                  color: AppTheme.textSecondary,
+                  color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                   letterSpacing: 1.2,
                 ),
               ),
@@ -182,16 +181,16 @@ class _ReportsTabState extends State<ReportsTab> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                         decoration: BoxDecoration(
-                          color: _dateRange != null ? AppTheme.cyanLight : Colors.white,
+                          color: _dateRange != null ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1) : Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
-                            color: _dateRange != null ? AppTheme.primaryCyan.withValues(alpha: 0.4) : AppTheme.divider,
+                            color: _dateRange != null ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.4) : Theme.of(context).dividerColor,
                           ),
                         ),
                         child: Row(
                           children: [
                             Icon(Icons.date_range_rounded, 
-                              color: _dateRange != null ? AppTheme.primaryCyan : AppTheme.textMuted,
+                              color: _dateRange != null ? Theme.of(context).colorScheme.primary : Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey,
                             ),
                             const SizedBox(width: 14),
                             Expanded(
@@ -202,7 +201,7 @@ class _ReportsTabState extends State<ReportsTab> {
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: _dateRange != null ? FontWeight.w600 : FontWeight.w400,
-                                  color: _dateRange != null ? AppTheme.textPrimary : AppTheme.textSecondary,
+                                  color: _dateRange != null ? Theme.of(context).colorScheme.onSurface : Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                                 ),
                               ),
                             ),
@@ -217,7 +216,7 @@ class _ReportsTabState extends State<ReportsTab> {
                       onPressed: _clearDateRange,
                       icon: const Icon(Icons.clear_rounded),
                       tooltip: 'Clear filter',
-                      color: AppTheme.textMuted,
+                      color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey,
                     ),
                   ]
                 ],
@@ -228,9 +227,9 @@ class _ReportsTabState extends State<ReportsTab> {
               Container(
                 padding: const EdgeInsets.all(28),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppTheme.divider),
+                  border: Border.all(color: Theme.of(context).dividerColor),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.03),
@@ -247,18 +246,18 @@ class _ReportsTabState extends State<ReportsTab> {
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: AppTheme.cyanLight,
+                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: const Icon(Icons.analytics_rounded, color: AppTheme.primaryCyan),
+                          child: Icon(Icons.analytics_rounded, color: Theme.of(context).colorScheme.primary),
                         ),
                         const SizedBox(width: 16),
-                        const Text(
+                        Text(
                           'Report Summary',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
-                            color: AppTheme.textPrimary,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                       ],
@@ -266,7 +265,7 @@ class _ReportsTabState extends State<ReportsTab> {
                     const SizedBox(height: 28),
                     Row(
                       children: [
-                        _StatBadge('$total', 'Total Logs', AppTheme.textPrimary, AppTheme.divider.withValues(alpha: 0.3)),
+                        _StatBadge('$total', 'Total Logs', Theme.of(context).colorScheme.onSurface, Theme.of(context).dividerColor.withValues(alpha: 0.3)),
                         const SizedBox(width: 16),
                         _StatBadge('$field', 'Field', TaskType.fieldWork.color, TaskType.fieldWork.bgColor),
                         const SizedBox(width: 16),
@@ -282,16 +281,16 @@ class _ReportsTabState extends State<ReportsTab> {
                       child: ElevatedButton.icon(
                         onPressed: _isGenerating || total == 0 ? null : _download,
                         icon: _isGenerating 
-                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                            ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Theme.of(context).colorScheme.surface, strokeWidth: 2))
                             : const Icon(Icons.download_rounded, size: 22),
                         label: Text(
                           _isGenerating ? 'Generating PDF...' : 'Download PDF Report',
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryCyan,
-                          foregroundColor: Colors.white,
-                          disabledBackgroundColor: AppTheme.primaryCyan.withValues(alpha: 0.5),
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          foregroundColor: Theme.of(context).colorScheme.surface,
+                          disabledBackgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
                           elevation: 0,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                         ),

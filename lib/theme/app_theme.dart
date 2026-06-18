@@ -1,37 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Central theme configuration for InternLog.
-/// Light theme using white background + cyan accent.
+/// Central strict theme configuration for InternLog using a Global ColorScheme.
 class AppTheme {
-  // ── Brand colours ──────────────────────────────────────────────────────────
-  static const Color primaryCyan = Color(0xFF00BCD4);
-  static const Color cyanLight = Color(0xFFE0F7FA);       // cyan[50]
-  static const Color cyanCardBg = Color(0xFFEBFAFC);      // very pale cyan card
-  static const Color accentTeal = Color(0xFF009688);
-  static const Color textPrimary = Color(0xFF1A1A2E);
-  static const Color textSecondary = Color(0xFF5C6B7A);
-  static const Color textMuted = Color(0xFF9EAAB5);
-  static const Color divider = Color(0xFFE8EEF2);
-  static const Color scaffoldBg = Colors.white;
-  static const Color chipBg = Color(0xFFE0F2F4);
-
-  // ── Status colours ─────────────────────────────────────────────────────────
+  // ── Status colours (Semantic) ──────────────────────────────────────────────
   static const Color statusSite = Color(0xFF4CAF50);
   static const Color statusOffice = Color(0xFF2196F3);
   static const Color statusReview = Color(0xFFFF9800);
 
   static ThemeData lightTheme() {
     final base = ThemeData.light(useMaterial3: true);
+
+    // Strict Global Target Colors
+    const primary = Color(0xFF1E3A8A); // Deep Navy Blue
+    const secondary = Color(0xFF2563EB); // Vibrant Royal Blue
+    const background = Color(0xFFF8FAFC); // Very Light Slate Gray
+    const surface = Color(0xFFFFFFFF); // Pure White
+    const textPrimary = Color(0xFF0F172A); // Dark Slate
+    const textSecondary = Color(0xFF475569); // Slate 600
+    const textMuted = Color(0xFF94A3B8); // Slate 400
+    const dividerColor = Color(0xFFE2E8F0); // Slate 200
+
     return base.copyWith(
-      scaffoldBackgroundColor: scaffoldBg,
-      colorScheme: ColorScheme.light(
-        primary: primaryCyan,
-        secondary: accentTeal,
-        surface: Colors.white,
+      scaffoldBackgroundColor: background,
+      colorScheme: const ColorScheme.light(
+        primary: primary,
+        secondary: secondary,
+        surface: surface,
         onPrimary: Colors.white,
+        onSecondary: Colors.white,
         onSurface: textPrimary,
       ),
+      dividerColor: dividerColor,
       textTheme: GoogleFonts.interTextTheme(base.textTheme).copyWith(
         displayLarge: GoogleFonts.inter(
           fontSize: 32, fontWeight: FontWeight.w700, color: textPrimary,
@@ -57,39 +57,42 @@ class AppTheme {
         ),
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.white,
+        backgroundColor: surface,
         foregroundColor: textPrimary,
         elevation: 0,
         scrolledUnderElevation: 1,
-        shadowColor: divider,
+        shadowColor: dividerColor,
         titleTextStyle: GoogleFonts.inter(
           fontSize: 18, fontWeight: FontWeight.w700, color: textPrimary,
         ),
       ),
       cardTheme: CardThemeData(
-        color: cyanCardBg,
-        elevation: 0,
+        color: surface,
+        elevation: 2, // Subtle shadow for SaaS look
+        shadowColor: Colors.black.withValues(alpha: 0.05),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Color(0xFFD0ECF0), width: 1),
+          side: BorderSide(color: dividerColor, width: 1),
         ),
         margin: EdgeInsets.zero,
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: primaryCyan,
+        backgroundColor: primary,
         foregroundColor: Colors.white,
         elevation: 4,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(16)),
         ),
       ),
-      dividerTheme: const DividerThemeData(color: divider, thickness: 1),
+      dividerTheme: const DividerThemeData(color: dividerColor, thickness: 1),
       chipTheme: ChipThemeData(
-        backgroundColor: chipBg,
-        labelStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w500),
+        backgroundColor: background,
+        labelStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w500, color: textSecondary),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        side: BorderSide.none,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(6),
+          side: BorderSide(color: dividerColor),
+        ),
       ),
     );
   }

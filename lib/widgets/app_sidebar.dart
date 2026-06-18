@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../theme/app_theme.dart';
 
 /// Responsive sidebar navigation for desktop / rail for tablet / bottom bar for mobile.
 class AppSidebar extends StatelessWidget {
@@ -46,16 +45,16 @@ class AppSidebar extends StatelessWidget {
 
     return Container(
       width: 220,
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       child: Column(
         children: [
           // ── Logo header ─────────────────────────────────────────────────
           Container(
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(
-                bottom: BorderSide(color: AppTheme.divider, width: 1),
+                bottom: BorderSide(color: Theme.of(context).dividerColor, width: 1),
               ),
             ),
             child: Row(
@@ -64,29 +63,29 @@ class AppSidebar extends StatelessWidget {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppTheme.primaryCyan, AppTheme.accentTeal],
+                    gradient: LinearGradient(
+                      colors: [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.secondary],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.construction_rounded,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     size: 18,
                   ),
                 ),
                 const SizedBox(width: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
                       'InternLog',
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
-                        color: AppTheme.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                         letterSpacing: -0.3,
                       ),
                     ),
@@ -95,7 +94,7 @@ class AppSidebar extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w500,
-                        color: AppTheme.textMuted,
+                        color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey,
                         letterSpacing: 0.2,
                       ),
                     ),
@@ -131,18 +130,18 @@ class AppSidebar extends StatelessWidget {
             margin: const EdgeInsets.all(12),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppTheme.cyanLight,
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               children: [
                 CircleAvatar(
                   radius: 18,
-                  backgroundColor: AppTheme.primaryCyan,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   child: Text(
                     initial,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.surface,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                     ),
@@ -155,18 +154,18 @@ class AppSidebar extends StatelessWidget {
                     children: [
                       Text(
                         displayName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: AppTheme.textPrimary,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const Text(
+                      Text(
                         'Civil Engineering',
                         style: TextStyle(
                           fontSize: 10,
-                          color: AppTheme.textMuted,
+                          color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -205,12 +204,12 @@ class _SidebarItemState extends State<_SidebarItem> {
   @override
   Widget build(BuildContext context) {
     final bg = widget.selected
-        ? AppTheme.primaryCyan.withValues(alpha: 0.1)
+        ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
         : _hovered
             ? const Color(0xFFF0FAFB)
             : Colors.transparent;
     final fgColor =
-        widget.selected ? AppTheme.primaryCyan : AppTheme.textSecondary;
+        widget.selected ? Theme.of(context).colorScheme.primary : Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
@@ -227,7 +226,7 @@ class _SidebarItemState extends State<_SidebarItem> {
             borderRadius: BorderRadius.circular(10),
             border: widget.selected
                 ? Border.all(
-                    color: AppTheme.primaryCyan.withValues(alpha: 0.2), width: 1)
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2), width: 1)
                 : Border.all(color: Colors.transparent, width: 1),
           ),
           child: Row(
@@ -251,8 +250,8 @@ class _SidebarItemState extends State<_SidebarItem> {
                 Container(
                   width: 4,
                   height: 4,
-                  decoration: const BoxDecoration(
-                    color: AppTheme.primaryCyan,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
                     shape: BoxShape.circle,
                   ),
                 ),

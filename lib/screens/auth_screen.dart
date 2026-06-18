@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../theme/app_theme.dart';
 import 'dashboard_screen.dart';
 import 'paywall_screen.dart';
 
@@ -116,7 +115,7 @@ class _AuthScreenState extends State<AuthScreen> {
     final isDesktop = MediaQuery.of(context).size.width >= 900;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: isDesktop
           ? Row(
               children: [
@@ -177,15 +176,15 @@ class _BrandPanel extends StatelessWidget {
           // Decorative blobs
           Positioned(
             top: -90, right: -90,
-            child: _Blob(300, Colors.white.withValues(alpha: 0.07)),
+            child: _Blob(300, Theme.of(context).colorScheme.surface.withValues(alpha: 0.07)),
           ),
           Positioned(
             bottom: -120, left: -60,
-            child: _Blob(380, Colors.white.withValues(alpha: 0.05)),
+            child: _Blob(380, Theme.of(context).colorScheme.surface.withValues(alpha: 0.05)),
           ),
           Positioned(
             top: 200, left: -60,
-            child: _Blob(200, Colors.white.withValues(alpha: 0.04)),
+            child: _Blob(200, Theme.of(context).colorScheme.surface.withValues(alpha: 0.04)),
           ),
 
           // Content
@@ -200,12 +199,12 @@ class _BrandPanel extends StatelessWidget {
                 const Spacer(),
 
                 // Headline
-                const Text(
+                Text(
                   'Internship\nDocumentation\nMade Simple.',
                   style: TextStyle(
                     fontSize: 46,
                     fontWeight: FontWeight.w900,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     height: 1.12,
                     letterSpacing: -1.5,
                   ),
@@ -215,7 +214,7 @@ class _BrandPanel extends StatelessWidget {
                   'Log daily tasks, track field issues, and auto-generate\nyour final PDF report — all in one place.',
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.white.withValues(alpha: 0.82),
+                    color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.82),
                     height: 1.65,
                   ),
                 ),
@@ -236,17 +235,17 @@ class _BrandPanel extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(7),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.18),
+                            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.18),
                             borderRadius: BorderRadius.circular(9),
                           ),
-                          child: Icon(item.$1, color: Colors.white, size: 15),
+                          child: Icon(item.$1, color: Theme.of(context).colorScheme.surface, size: 15),
                         ),
                         const SizedBox(width: 13),
                         Text(
                           item.$2,
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.white.withValues(alpha: 0.88),
+                            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.88),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -261,7 +260,7 @@ class _BrandPanel extends StatelessWidget {
                   '© ${DateTime.now().year} InternLog  ·  Civil Engineering Internship Platform',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.white.withValues(alpha: 0.45),
+                    color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.45),
                   ),
                 ),
               ],
@@ -282,18 +281,18 @@ class _WhiteLogo extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(9),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
+            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(11),
           ),
-          child: const Icon(Icons.construction_rounded,
-              color: Colors.white, size: 22),
+          child: Icon(Icons.construction_rounded,
+              color: Theme.of(context).colorScheme.surface, size: 22),
         ),
         const SizedBox(width: 11),
-        const Text('InternLog',
+        Text('InternLog',
             style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 letterSpacing: -0.3)),
       ],
     );
@@ -355,7 +354,7 @@ class _FormPanel extends StatelessWidget {
             // Back
             IconButton(
               icon: const Icon(Icons.arrow_back_rounded),
-              color: AppTheme.textSecondary,
+              color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
               onPressed: onBack,
               padding: EdgeInsets.zero,
               tooltip: 'Back',
@@ -365,10 +364,10 @@ class _FormPanel extends StatelessWidget {
             // Title
             Text(
               isSignUp ? 'Create your account' : 'Welcome back',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.w800,
-                color: AppTheme.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
                 letterSpacing: -0.8,
                 height: 1.15,
               ),
@@ -378,9 +377,9 @@ class _FormPanel extends StatelessWidget {
               isSignUp
                   ? 'Start documenting your internship in under a minute.'
                   : 'Sign in to continue to your dashboard.',
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 15,
-                  color: AppTheme.textSecondary,
+                  color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                   height: 1.5),
             ),
             const SizedBox(height: 36),
@@ -438,7 +437,7 @@ class _FormPanel extends StatelessWidget {
                         obscure
                             ? Icons.visibility_outlined
                             : Icons.visibility_off_outlined,
-                        color: AppTheme.textMuted,
+                        color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey,
                         size: 20,
                       ),
                       onPressed: onToggleObscure,
@@ -462,20 +461,20 @@ class _FormPanel extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: loading ? null : onSubmit,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryCyan,
-                        foregroundColor: Colors.white,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Theme.of(context).colorScheme.surface,
                         disabledBackgroundColor:
-                            AppTheme.primaryCyan.withValues(alpha: 0.5),
+                            Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14)),
                       ),
                       child: loading
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 22,
                               height: 22,
                               child: CircularProgressIndicator(
-                                  color: Colors.white, strokeWidth: 2.5),
+                                  color: Theme.of(context).colorScheme.surface, strokeWidth: 2.5),
                             )
                           : Text(
                               isSignUp ? 'Create Account' : 'Sign In',
@@ -499,15 +498,15 @@ class _FormPanel extends StatelessWidget {
                     isSignUp
                         ? 'Already have an account? '
                         : "Don't have an account? ",
-                    style: const TextStyle(
-                        color: AppTheme.textSecondary, fontSize: 14),
+                    style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey, fontSize: 14),
                   ),
                   GestureDetector(
                     onTap: onToggleMode,
                     child: Text(
                       isSignUp ? 'Sign In' : 'Sign Up',
-                      style: const TextStyle(
-                        color: AppTheme.primaryCyan,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
                       ),
@@ -586,10 +585,10 @@ class _Field extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: AppTheme.textSecondary,
+              color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
               letterSpacing: 0.2),
         ),
         const SizedBox(height: 7),
@@ -599,16 +598,16 @@ class _Field extends StatelessWidget {
           keyboardType: type,
           validator: validator,
           style:
-              const TextStyle(fontSize: 14, color: AppTheme.textPrimary),
+              TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle:
-                const TextStyle(color: AppTheme.textMuted, fontSize: 14),
+                TextStyle(color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey, fontSize: 14),
             prefixIcon:
-                Icon(icon, size: 19, color: AppTheme.textMuted),
+                Icon(icon, size: 19, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
             suffixIcon: suffix,
             filled: true,
-            fillColor: AppTheme.cyanLight,
+            fillColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
             contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16, vertical: 14),
             border: OutlineInputBorder(
@@ -622,8 +621,8 @@ class _Field extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                  color: AppTheme.primaryCyan, width: 1.5),
+              borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.primary, width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),

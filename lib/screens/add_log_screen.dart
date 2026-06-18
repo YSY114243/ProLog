@@ -6,7 +6,6 @@ import 'package:image/image.dart' as img;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/daily_log.dart';
 import '../services/supabase_service.dart';
-import '../theme/app_theme.dart';
 import 'paywall_screen.dart';
 
 Future<Uint8List?> _compressImage(Uint8List bytes) async {
@@ -122,10 +121,10 @@ class _AddLogScreenState extends State<AddLogScreen> {
       lastDate: DateTime.now(),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.light(
-            primary: AppTheme.primaryCyan,
-            onPrimary: Colors.white,
-            surface: Colors.white,
+          colorScheme: ColorScheme.light(
+            primary: Theme.of(context).colorScheme.primary,
+            onPrimary: Theme.of(context).colorScheme.surface,
+            surface: Theme.of(context).colorScheme.surface,
           ),
         ),
         child: child!,
@@ -155,12 +154,12 @@ class _AddLogScreenState extends State<AddLogScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Cancel', style: TextStyle(color: AppTheme.textMuted)),
+                  child: Text('Cancel', style: TextStyle(color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey)),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryCyan,
-                    foregroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.surface,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   onPressed: () {
@@ -180,7 +179,7 @@ class _AddLogScreenState extends State<AddLogScreen> {
     if (!mounted) return;
     final ImageSource? source = await showModalBottomSheet<ImageSource>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -191,12 +190,12 @@ class _AddLogScreenState extends State<AddLogScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.camera_alt_outlined, color: AppTheme.primaryCyan),
+                leading: Icon(Icons.camera_alt_outlined, color: Theme.of(context).colorScheme.primary),
                 title: const Text('Take Photo', style: TextStyle(fontWeight: FontWeight.w600)),
                 onTap: () => Navigator.pop(ctx, ImageSource.camera),
               ),
               ListTile(
-                leading: const Icon(Icons.photo_library_outlined, color: AppTheme.primaryCyan),
+                leading: Icon(Icons.photo_library_outlined, color: Theme.of(context).colorScheme.primary),
                 title: const Text('Choose from Gallery', style: TextStyle(fontWeight: FontWeight.w600)),
                 onTap: () => Navigator.pop(ctx, ImageSource.gallery),
               ),
@@ -286,7 +285,7 @@ class _AddLogScreenState extends State<AddLogScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(msg),
-        backgroundColor: isError ? Colors.redAccent : AppTheme.accentTeal,
+        backgroundColor: isError ? Colors.redAccent : Theme.of(context).colorScheme.secondary,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         margin: const EdgeInsets.all(16),
@@ -310,30 +309,30 @@ class _AddLogScreenState extends State<AddLogScreen> {
     final formWidth = isDesktop ? 720.0 : double.infinity;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         scrolledUnderElevation: 1,
-        shadowColor: AppTheme.divider,
+        shadowColor: Theme.of(context).dividerColor,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          color: AppTheme.textPrimary,
+          color: Theme.of(context).colorScheme.onSurface,
           onPressed: () => Navigator.pop(context),
           tooltip: 'Back',
         ),
         title: Text(
           _isEditing ? 'Edit Log' : 'New Daily Log',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w700,
-            color: AppTheme.textPrimary,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         centerTitle: false,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: AppTheme.divider),
+          child: Container(height: 1, color: Theme.of(context).dividerColor),
         ),
       ),
       body: Center(
@@ -403,9 +402,9 @@ class _AddLogScreenState extends State<AddLogScreen> {
                             return Padding(
                               padding: const EdgeInsets.only(right: 8.0),
                               child: ActionChip(
-                                label: Text(e.key, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.primaryCyan)),
-                                backgroundColor: AppTheme.cyanLight,
-                                side: BorderSide(color: AppTheme.primaryCyan.withValues(alpha: 0.3)),
+                                label: Text(e.key, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.primary)),
+                                backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                                side: BorderSide(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                 onPressed: () => _insertSuggestion(e.value),
                               ),
@@ -441,11 +440,11 @@ class _AddLogScreenState extends State<AddLogScreen> {
                         onToggle: _pickAndUploadImage,
                       ),
                       const SizedBox(height: 8),
-                      const Text(
+                      Text(
                         'JPEG / PNG · max 10 MB · Automatically uploaded to Supabase Storage.',
                         style: TextStyle(
                           fontSize: 11,
-                          color: AppTheme.textMuted,
+                          color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey,
                         ),
                       ),
                     ]),
@@ -490,23 +489,23 @@ class _HeaderBanner extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.7),
+              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.edit_note_rounded,
-                color: AppTheme.primaryCyan, size: 24),
+            child: Icon(Icons.edit_note_rounded,
+                color: Theme.of(context).colorScheme.primary, size: 24),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
                   'Daily Training Log',
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 SizedBox(height: 2),
@@ -514,7 +513,7 @@ class _HeaderBanner extends StatelessWidget {
                   'Document your internship activities for today.',
                   style: TextStyle(
                     fontSize: 12,
-                    color: AppTheme.textSecondary,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                   ),
                 ),
               ],
@@ -534,10 +533,10 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label.toUpperCase(),
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 11,
         fontWeight: FontWeight.w700,
-        color: AppTheme.textSecondary,
+        color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
         letterSpacing: 1.1,
       ),
     );
@@ -557,7 +556,7 @@ class _DatePickerRow extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: AppTheme.cyanLight,
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
           border: const Border.fromBorderSide(
             BorderSide(color: Color(0xFFD0ECF0), width: 1),
@@ -568,11 +567,11 @@ class _DatePickerRow extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
-                color: AppTheme.primaryCyan.withValues(alpha: 0.1),
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.calendar_today_rounded,
-                  size: 18, color: AppTheme.primaryCyan),
+              child: Icon(Icons.calendar_today_rounded,
+                  size: 18, color: Theme.of(context).colorScheme.primary),
             ),
             const SizedBox(width: 12),
             Column(
@@ -580,21 +579,21 @@ class _DatePickerRow extends StatelessWidget {
               children: [
                 Text(
                   DateFormat('EEEE, MMMM d yyyy').format(date),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
-                const Text(
+                Text(
                   'Tap to change date',
-                  style: TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                  style: TextStyle(fontSize: 11, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
                 ),
               ],
             ),
             const Spacer(),
-            const Icon(Icons.chevron_right_rounded,
-                color: AppTheme.textMuted, size: 20),
+            Icon(Icons.chevron_right_rounded,
+                color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey, size: 20),
           ],
         ),
       ),
@@ -630,11 +629,11 @@ class _TaskTypeCardState extends State<_TaskTypeCard> {
         ? t.bgColor
         : _hovered
             ? const Color(0xFFF5FBFC)
-            : Colors.white;
+            : Theme.of(context).colorScheme.surface;
     final borderColor = selected
         ? t.color.withValues(alpha: 0.5)
         : _hovered
-            ? AppTheme.primaryCyan.withValues(alpha: 0.2)
+            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.2)
             : const Color(0xFFE0ECF0);
 
     return MouseRegion(
@@ -674,7 +673,7 @@ class _TaskTypeCardState extends State<_TaskTypeCard> {
                   borderRadius: BorderRadius.circular(11),
                 ),
                 child: Icon(t.icon,
-                    color: selected ? t.color : AppTheme.textMuted, size: 20),
+                    color: selected ? t.color : Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey, size: 20),
               ),
               const SizedBox(width: 14),
               // Labels
@@ -687,15 +686,15 @@ class _TaskTypeCardState extends State<_TaskTypeCard> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: selected ? t.color : AppTheme.textPrimary,
+                        color: selected ? t.color : Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       t.example,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: AppTheme.textMuted,
+                        color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey,
                       ),
                     ),
                   ],
@@ -715,8 +714,8 @@ class _TaskTypeCardState extends State<_TaskTypeCard> {
                   ),
                 ),
                 child: selected
-                    ? const Icon(Icons.check_rounded,
-                        size: 12, color: Colors.white)
+                    ? Icon(Icons.check_rounded,
+                        size: 12, color: Theme.of(context).colorScheme.surface)
                     : null,
               ),
             ],
@@ -756,25 +755,25 @@ class _StyledTextArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fill   = fillColor  ?? AppTheme.cyanLight;
+    final fill   = fillColor  ?? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1);
     final border = borderColor ?? const Color(0xFFD0ECF0);
-    final focus  = focusBorderColor ?? AppTheme.primaryCyan;
-    final icon   = accentColor ?? AppTheme.textMuted;
+    final focus  = focusBorderColor ?? Theme.of(context).colorScheme.primary;
+    final icon   = accentColor ?? Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey;
 
     return TextFormField(
       controller: controller,
       validator: validator,
       minLines: minLines,
       maxLines: minLines + 4,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 13.5,
-        color: AppTheme.textPrimary,
+        color: Theme.of(context).colorScheme.onSurface,
         height: 1.55,
       ),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(
-          color: AppTheme.textMuted,
+        hintStyle: TextStyle(
+          color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey,
           fontSize: 13,
           height: 1.55,
         ),
@@ -842,16 +841,16 @@ class _ImageAttachmentZoneState extends State<_ImageAttachmentZone> {
           height: 160,
           decoration: BoxDecoration(
             color: widget.attached
-                ? AppTheme.cyanLight
+                ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
                 : _hovered
                     ? const Color(0xFFF0FAFB)
-                    : Colors.white,
+                    : Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: widget.attached
-                  ? AppTheme.primaryCyan
+                  ? Theme.of(context).colorScheme.primary
                   : _hovered
-                      ? AppTheme.primaryCyan.withValues(alpha: 0.4)
+                      ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.4)
                       : const Color(0xFFCCE5EA),
               width: widget.attached ? 1.5 : 1,
               // Dashed border is approximated via a custom painter — using solid
@@ -859,15 +858,15 @@ class _ImageAttachmentZoneState extends State<_ImageAttachmentZone> {
             ),
           ),
           child: widget.isUploading
-              ? const Padding(
+              ? Padding(
                   padding: EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      LinearProgressIndicator(color: AppTheme.primaryCyan, backgroundColor: AppTheme.cyanLight),
+                      LinearProgressIndicator(color: Theme.of(context).colorScheme.primary, backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)),
                       SizedBox(height: 16),
                       Text('Compressing and uploading...',
-                          style: TextStyle(color: AppTheme.primaryCyan, fontWeight: FontWeight.w600)),
+                          style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w600)),
                     ],
                   ),
                 )
@@ -894,7 +893,7 @@ class _UploadPrompt extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: hovered
-                ? AppTheme.primaryCyan.withValues(alpha: 0.1)
+                ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
                 : const Color(0xFFF0F4F8),
             shape: BoxShape.circle,
           ),
@@ -902,7 +901,7 @@ class _UploadPrompt extends StatelessWidget {
             Icons.cloud_upload_outlined,
             size: 28,
             color:
-                hovered ? AppTheme.primaryCyan : AppTheme.textMuted,
+                hovered ? Theme.of(context).colorScheme.primary : Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey,
           ),
         ),
         const SizedBox(height: 10),
@@ -911,13 +910,13 @@ class _UploadPrompt extends StatelessWidget {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: hovered ? AppTheme.primaryCyan : AppTheme.textPrimary,
+            color: hovered ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 3),
-        const Text(
+        Text(
           'JPEG · PNG · max 10 MB',
-          style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+          style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
         ),
       ],
     );
@@ -934,25 +933,25 @@ class _AttachedPreview extends StatelessWidget {
           width: 56,
           height: 56,
           decoration: BoxDecoration(
-            color: AppTheme.primaryCyan.withValues(alpha: 0.15),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Icon(Icons.image_rounded,
-              size: 28, color: AppTheme.primaryCyan),
+          child: Icon(Icons.image_rounded,
+              size: 28, color: Theme.of(context).colorScheme.primary),
         ),
         const SizedBox(height: 10),
-        const Text(
+        Text(
           'Photo attached',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: AppTheme.primaryCyan,
+            color: Theme.of(context).colorScheme.primary,
           ),
         ),
         const SizedBox(height: 2),
-        const Text(
+        Text(
           'Tap to remove',
-          style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+          style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
         ),
       ],
     );
@@ -975,9 +974,9 @@ class _SaveBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: AppTheme.divider, width: 1)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(top: BorderSide(color: Theme.of(context).dividerColor, width: 1)),
       ),
       padding: EdgeInsets.fromLTRB(
         20,
@@ -991,20 +990,20 @@ class _SaveBar extends StatelessWidget {
         child: ElevatedButton(
           onPressed: isSaving ? null : onSave,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.primaryCyan,
-            foregroundColor: Colors.white,
-            disabledBackgroundColor: AppTheme.primaryCyan.withValues(alpha: 0.5),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            foregroundColor: Theme.of(context).colorScheme.surface,
+            disabledBackgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),
             ),
           ),
           child: isSaving
-              ? const SizedBox(
+              ? SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     strokeWidth: 2.5,
                   ),
                 )

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/daily_log.dart';
-import '../theme/app_theme.dart';
 
 /// A richly-styled card that displays a single [DailyLog] entry.
 class LogCard extends StatefulWidget {
@@ -41,18 +40,18 @@ class _LogCardState extends State<LogCard> {
           curve: Curves.easeOut,
           transform: Matrix4.translationValues(0, _hovered ? -3 : 0, 0),
           decoration: BoxDecoration(
-            color: _hovered ? const Color(0xFFDFF6F9) : AppTheme.cyanCardBg,
+            color: _hovered ? const Color(0xFFDFF6F9) : Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: _hovered
-                  ? AppTheme.primaryCyan.withValues(alpha: 0.4)
+                  ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.4)
                   : const Color(0xFFD0ECF0),
               width: 1,
             ),
             boxShadow: _hovered
                 ? [
                     BoxShadow(
-                      color: AppTheme.primaryCyan.withValues(alpha: 0.12),
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
                       blurRadius: 16,
                       offset: const Offset(0, 6),
                     ),
@@ -90,7 +89,7 @@ class _LogCardState extends State<LogCard> {
                   log.description,
                   style: textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.w500,
-                    color: AppTheme.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                     height: 1.45,
                   ),
                   maxLines: 3,
@@ -143,26 +142,26 @@ class _LogCardState extends State<LogCard> {
                     Icon(
                       log.taskType.icon,
                       size: 14,
-                      color: AppTheme.textMuted,
+                      color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey,
                     ),
                     const SizedBox(width: 5),
                     Text(
                       log.taskType.label,
                       style: textTheme.bodyMedium?.copyWith(
                         fontSize: 12,
-                        color: AppTheme.textMuted,
+                        color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey,
                       ),
                     ),
                     const Spacer(),
                     if (log.imageUrl != null) ...[
-                      const Icon(Icons.image_outlined,
-                          size: 14, color: AppTheme.primaryCyan),
+                      Icon(Icons.image_outlined,
+                          size: 14, color: Theme.of(context).colorScheme.primary),
                       const SizedBox(width: 4),
                       Text(
                         'Photo attached',
                         style: textTheme.bodyMedium?.copyWith(
                           fontSize: 11,
-                          color: AppTheme.primaryCyan,
+                          color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -171,7 +170,7 @@ class _LogCardState extends State<LogCard> {
                     Text(
                       DateFormat('EEE, MMM d').format(log.date),
                       style: textTheme.labelSmall?.copyWith(
-                        color: AppTheme.textMuted,
+                        color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey,
                       ),
                     ),
                   ],
@@ -196,21 +195,21 @@ class _DateChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: AppTheme.primaryCyan.withValues(alpha: 0.1),
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.calendar_today_rounded,
-              size: 12, color: AppTheme.primaryCyan),
+          Icon(Icons.calendar_today_rounded,
+              size: 12, color: Theme.of(context).colorScheme.primary),
           const SizedBox(width: 5),
           Text(
             DateFormat('MMM dd, yyyy').format(date),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: AppTheme.primaryCyan,
+              color: Theme.of(context).colorScheme.primary,
             ),
           ),
         ],
@@ -261,8 +260,8 @@ class _CardMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<_MenuAction>(
-      icon: const Icon(Icons.more_vert_rounded,
-          size: 18, color: AppTheme.textMuted),
+      icon: Icon(Icons.more_vert_rounded,
+          size: 18, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
       padding: EdgeInsets.zero,
       tooltip: 'Options',
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -279,14 +278,14 @@ class _CardMenu extends StatelessWidget {
         PopupMenuItem(
           value: _MenuAction.edit,
           child: Row(
-            children: const [
-              Icon(Icons.edit_outlined, size: 16, color: AppTheme.primaryCyan),
+            children: [
+              Icon(Icons.edit_outlined, size: 16, color: Theme.of(context).colorScheme.primary),
               SizedBox(width: 10),
               Text('Edit',
                   style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: AppTheme.textPrimary)),
+                      color: Theme.of(context).colorScheme.onSurface)),
             ],
           ),
         ),

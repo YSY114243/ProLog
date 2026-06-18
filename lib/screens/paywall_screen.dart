@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_paypal/flutter_paypal.dart';
-import '../theme/app_theme.dart';
 import '../utils/paypal_facade.dart';
 import 'dashboard_screen.dart';
 import 'landing_screen.dart';
@@ -33,9 +32,9 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
       if (!mounted) return;
       scaffoldMessenger.showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Welcome to InternLog Premium!'),
-          backgroundColor: AppTheme.primaryCyan,
+          backgroundColor: Theme.of(context).colorScheme.primary,
         ),
       );
 
@@ -121,12 +120,12 @@ class _PaywallScreenState extends State<PaywallScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: widget.isVoluntary
           ? AppBar(
-              backgroundColor: AppTheme.scaffoldBg,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               elevation: 0,
-              leading: const BackButton(color: AppTheme.textPrimary),
+              leading: BackButton(color: Theme.of(context).colorScheme.onSurface),
             )
           : null,
       body: SafeArea(
@@ -139,8 +138,8 @@ class _PaywallScreenState extends State<PaywallScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Icon/Illustration
-                  const Center(
-                    child: Icon(Icons.workspace_premium_rounded, size: 80, color: AppTheme.primaryCyan),
+                  Center(
+                    child: Icon(Icons.workspace_premium_rounded, size: 80, color: Theme.of(context).colorScheme.primary),
                   ),
                   const SizedBox(height: 24),
                   
@@ -150,20 +149,20 @@ class _PaywallScreenState extends State<PaywallScreen> {
                         ? 'Upgrade to InternLog Premium' 
                         : 'Your 3-Day Free Trial\nHas Expired',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w800,
-                      color: AppTheme.textPrimary,
+                      color: Theme.of(context).colorScheme.onSurface,
                       height: 1.2,
                     ),
                   ),
                   const SizedBox(height: 16),
                   
                   // Subtitle
-                  const Text(
+                  Text(
                     'Upgrade to InternLog Premium to continue using the app and unlock exclusive features.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, color: AppTheme.textSecondary),
+                    style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
                   ),
                   const SizedBox(height: 40),
 
@@ -171,12 +170,12 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppTheme.divider),
+                      border: Border.all(color: Theme.of(context).dividerColor),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.textPrimary.withValues(alpha: 0.05),
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -185,13 +184,13 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'PREMIUM BENEFITS',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w800,
                             letterSpacing: 1.5,
-                            color: AppTheme.textMuted,
+                            color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey,
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -208,27 +207,27 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   const SizedBox(height: 40),
 
                   // Price & CTA
-                  const Center(
+                  Center(
                     child: Text(
                       '\$5.00',
                       style: TextStyle(
                         fontSize: 48,
                         fontWeight: FontWeight.w900,
-                        color: AppTheme.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                         letterSpacing: -1,
                       ),
                     ),
                   ),
-                  const Center(
+                  Center(
                     child: Text(
                       'One-time payment (~20 SAR)',
-                      style: TextStyle(fontSize: 14, color: AppTheme.textMuted),
+                      style: TextStyle(fontSize: 14, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
                     ),
                   ),
                   const SizedBox(height: 24),
 
                   if (_isProcessing)
-                    const Center(child: CircularProgressIndicator(color: AppTheme.primaryCyan))
+                    Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary))
                   else if (kIsWeb)
                     SizedBox(
                       height: 48,
@@ -242,14 +241,14 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   else
                     ElevatedButton.icon(
                       onPressed: _upgradeToPremium,
-                      icon: const Icon(Icons.payment_rounded, color: Colors.white),
+                      icon: Icon(Icons.payment_rounded, color: Theme.of(context).colorScheme.surface),
                       label: const Text(
                         'Unlock Premium via PayPal',
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryCyan,
-                        foregroundColor: Colors.white,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Theme.of(context).colorScheme.surface,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         elevation: 0,
@@ -260,7 +259,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   if (!widget.isVoluntary)
                     TextButton(
                       onPressed: _logout,
-                      child: const Text('Log out', style: TextStyle(color: AppTheme.textMuted)),
+                      child: Text('Log out', style: TextStyle(color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey)),
                     ),
                 ],
               ),
@@ -277,19 +276,19 @@ class _PaywallScreenState extends State<PaywallScreen> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppTheme.primaryCyan.withValues(alpha: 0.1),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, size: 20, color: AppTheme.primaryCyan),
+          child: Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
         ),
         const SizedBox(width: 16),
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
-              color: AppTheme.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ),

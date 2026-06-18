@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/daily_log.dart';
-import '../theme/app_theme.dart';
 import '../widgets/log_card.dart';
 import '../widgets/stat_card.dart';
 import 'paywall_screen.dart';
@@ -48,19 +47,19 @@ class DashboardOverviewTab extends StatelessWidget {
           // ── Welcome Message ──────────────────────────────────────────────
           Text(
             'Welcome back, $firstName 👋',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w800,
-              color: AppTheme.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
               letterSpacing: -0.5,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Here is a quick overview of your internship progress.',
             style: TextStyle(
               fontSize: 15,
-              color: AppTheme.textSecondary,
+              color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
             ),
           ),
           const SizedBox(height: 32),
@@ -97,29 +96,29 @@ class DashboardOverviewTab extends StatelessWidget {
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.primaryCyan.withValues(alpha: 0.2)),
+                border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2)),
               ),
               child: Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.workspace_premium_rounded, size: 32, color: AppTheme.primaryCyan),
+                    child: Icon(Icons.workspace_premium_rounded, size: 32, color: Theme.of(context).colorScheme.primary),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Upgrade to Pro',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w800,
-                            color: AppTheme.textPrimary,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -127,7 +126,7 @@ class DashboardOverviewTab extends StatelessWidget {
                           'Unlock custom university logos on PDF reports and AI-powered polishing.',
                           style: TextStyle(
                             fontSize: 13,
-                            color: AppTheme.textPrimary.withValues(alpha: 0.8),
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
                           ),
                         ),
                       ],
@@ -143,8 +142,8 @@ class DashboardOverviewTab extends StatelessWidget {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: AppTheme.primaryCyan,
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        foregroundColor: Theme.of(context).colorScheme.primary,
                         elevation: 0,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
@@ -160,28 +159,28 @@ class DashboardOverviewTab extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Recent Activity',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
-                  color: AppTheme.textPrimary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               Text(
                 'Showing last 3',
                 style: TextStyle(
                   fontSize: 13,
-                  color: AppTheme.textMuted,
+                  color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
           if (allLogs.isEmpty)
-            const Text(
+            Text(
               'No logs added yet. Tap the button above to get started!',
-              style: TextStyle(color: AppTheme.textMuted),
+              style: TextStyle(color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
             )
           else
             ListView.builder(
@@ -225,7 +224,7 @@ class _StatsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final stats = [
-      (Icons.book_rounded, 'Total Logs', '$totalLogs', AppTheme.primaryCyan),
+      (Icons.book_rounded, 'Total Logs', '$totalLogs', Theme.of(context).colorScheme.primary),
       (Icons.construction_rounded, 'Field Work', '$fieldWorkCount', TaskType.fieldWork.color),
       (Icons.business_center_rounded, 'Office Work', '$officeWorkCount', TaskType.officeWork.color),
       (Icons.computer_rounded, 'Software', '$softwareCount', TaskType.software.color),
@@ -298,12 +297,12 @@ class _TaskDistributionChartState extends State<_TaskDistributionChart> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.divider),
+        border: Border.all(color: Theme.of(context).dividerColor),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.textPrimary.withValues(alpha: 0.03),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -312,12 +311,12 @@ class _TaskDistributionChartState extends State<_TaskDistributionChart> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Task Distribution',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
-              color: AppTheme.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 24),
@@ -457,10 +456,10 @@ class _Indicator extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           text,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: AppTheme.textSecondary,
+            color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
           ),
         )
       ],

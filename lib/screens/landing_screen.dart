@@ -1,13 +1,7 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
 import 'auth_screen.dart';
 
 // Brand Colors aligned with Core Theme
-const Color _kPrimaryIndigo = AppTheme.primaryCyan;
-const Color _kSecondaryIndigo = AppTheme.accentTeal;
-const Color _kLightBackground = Color(0xFFF9FAFB); // Very light grey to keep sections distinct
-const Color _kDarkText = AppTheme.textPrimary;
-const Color _kMutedText = AppTheme.textSecondary;
 
 /// The newly redesigned Modern SaaS landing page for InternLog.
 class LandingScreen extends StatefulWidget {
@@ -53,7 +47,7 @@ class _LandingScreenState extends State<LandingScreen> {
     final isMobile = screenWidth < 800;
 
     return Scaffold(
-      backgroundColor: _kLightBackground,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
         controller: _scrollController,
         slivers: [
@@ -61,20 +55,20 @@ class _LandingScreenState extends State<LandingScreen> {
           SliverAppBar(
             pinned: true,
             elevation: 0,
-            backgroundColor: Colors.white.withValues(alpha: 0.95),
+            backgroundColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.95),
             centerTitle: false,
             title: Padding(
               padding: EdgeInsets.only(left: isMobile ? 8.0 : 40.0),
               child: Row(
                 children: [
-                  const Icon(Icons.business_center_rounded, color: _kPrimaryIndigo, size: 28),
-                  const SizedBox(width: 12),
+                  Icon(Icons.business_center_rounded, color: Theme.of(context).colorScheme.primary, size: 28),
+                  SizedBox(width: 12),
                   Text(
                     'InternLog',
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w900,
-                      color: _kDarkText,
+                      color: Theme.of(context).colorScheme.onSurface,
                       letterSpacing: -0.5,
                     ),
                   ),
@@ -89,17 +83,17 @@ class _LandingScreenState extends State<LandingScreen> {
                     TextButton(
                       onPressed: () => _navigateToAuth(context, isSignUp: false),
                       style: TextButton.styleFrom(
-                        foregroundColor: _kMutedText,
-                        textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                        foregroundColor: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
+                        textStyle: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
                       ),
-                      child: const Text('Login'),
+                      child: Text('Login'),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     ElevatedButton(
                       onPressed: () => _navigateToAuth(context, isSignUp: true),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _kPrimaryIndigo,
-                        foregroundColor: Colors.white,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Theme.of(context).colorScheme.surface,
                         elevation: 0,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -149,8 +143,8 @@ class _HeroSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
         border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB))),
       ),
       padding: EdgeInsets.symmetric(
@@ -161,38 +155,38 @@ class _HeroSection extends StatelessWidget {
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                _buildCopy(textAlign: TextAlign.center),
-                const SizedBox(height: 48),
-                _buildMockup(),
+                _buildCopy(context, textAlign: TextAlign.center),
+                SizedBox(height: 48),
+                _buildMockup(context),
               ],
             )
           : Row(
               children: [
-                Expanded(flex: 5, child: _buildCopy(textAlign: TextAlign.left)),
-                const SizedBox(width: 60),
-                Expanded(flex: 5, child: _buildMockup()),
+                Expanded(flex: 5, child: _buildCopy(context, textAlign: TextAlign.left)),
+                SizedBox(width: 60),
+                Expanded(flex: 5, child: _buildMockup(context)),
               ],
             ),
     );
   }
 
-  Widget _buildCopy({required TextAlign textAlign}) {
+  Widget _buildCopy(BuildContext context, {required TextAlign textAlign}) {
     final alignment = textAlign == TextAlign.center ? CrossAxisAlignment.center : CrossAxisAlignment.start;
     return Column(
       crossAxisAlignment: alignment,
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: _kPrimaryIndigo.withValues(alpha: 0.1),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
           ),
-          child: const Text(
+          child: Text(
             '🚀 Built for Engineering Students',
-            style: TextStyle(color: _kPrimaryIndigo, fontWeight: FontWeight.bold, fontSize: 13),
+            style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold, fontSize: 13),
           ),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: 24),
         Text(
           'Master Your Summer Training Logs with InternLog.',
           textAlign: textAlign,
@@ -200,21 +194,21 @@ class _HeroSection extends StatelessWidget {
             fontSize: isMobile ? 40 : 56,
             fontWeight: FontWeight.w900,
             height: 1.1,
-            color: _kDarkText,
+            color: Theme.of(context).colorScheme.onSurface,
             letterSpacing: -1.0,
           ),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: 24),
         Text(
           'The ultimate digital daily log tool built for engineering students. Document site work, attach photos, and generate university-ready PDF reports instantly.',
           textAlign: textAlign,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 18,
             height: 1.5,
-            color: _kMutedText,
+            color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
           ),
         ),
-        const SizedBox(height: 40),
+        SizedBox(height: 40),
         Wrap(
           spacing: 16,
           runSpacing: 16,
@@ -223,14 +217,14 @@ class _HeroSection extends StatelessWidget {
             ElevatedButton(
               onPressed: onStartTrial,
               style: ElevatedButton.styleFrom(
-                backgroundColor: _kPrimaryIndigo,
-                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.surface,
                 elevation: 4,
-                shadowColor: _kPrimaryIndigo.withValues(alpha: 0.4),
+                shadowColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text(
+              child: Text(
                 'Start 3-Day Free Trial',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
@@ -238,7 +232,7 @@ class _HeroSection extends StatelessWidget {
             OutlinedButton(
               onPressed: onLearnMore,
               style: OutlinedButton.styleFrom(
-                foregroundColor: _kDarkText,
+                foregroundColor: Theme.of(context).colorScheme.onSurface,
                 side: const BorderSide(color: Color(0xFFD1D5DB), width: 1.5),
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -254,7 +248,7 @@ class _HeroSection extends StatelessWidget {
     );
   }
 
-  Widget _buildMockup() {
+  Widget _buildMockup(BuildContext context) {
     return Container(
       height: 400,
       width: double.infinity,
@@ -278,20 +272,20 @@ class _HeroSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
                 ],
               ),
-              child: const Icon(Icons.dashboard_customize_rounded, size: 64, color: _kPrimaryIndigo),
+              child: Icon(Icons.dashboard_customize_rounded, size: 64, color: Theme.of(context).colorScheme.primary),
             ),
-            const SizedBox(height: 24),
-            const Text(
+            SizedBox(height: 24),
+            Text(
               'Modern Dashboard',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _kSecondaryIndigo),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary),
             )
           ],
         ),
@@ -331,33 +325,33 @@ class _FeaturesSection extends StatelessWidget {
     ];
 
     return Container(
-      color: _kLightBackground,
+      color: Theme.of(context).scaffoldBackgroundColor,
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 24.0 : 80.0,
         vertical: 80.0,
       ),
       child: Column(
         children: [
-          const Text(
+          Text(
             'Everything You Need',
             style: TextStyle(
               fontSize: 36,
               fontWeight: FontWeight.w900,
-              color: _kDarkText,
+              color: Theme.of(context).colorScheme.onSurface,
               letterSpacing: -0.5,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
-          const Text(
+          SizedBox(height: 16),
+          Text(
             'Powerful features designed specifically for civil engineering students.',
-            style: TextStyle(fontSize: 18, color: _kMutedText),
+            style: TextStyle(fontSize: 18, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 60),
+          SizedBox(height: 60),
           if (isMobile)
             Column(
-              children: features.map((f) => Padding(padding: const EdgeInsets.only(bottom: 24), child: _buildFeatureCard(f))).toList(),
+              children: features.map((f) => Padding(padding: EdgeInsets.only(bottom: 24), child: _buildFeatureCard(context, f))).toList(),
             )
           else
             Row(
@@ -365,19 +359,19 @@ class _FeaturesSection extends StatelessWidget {
                 Expanded(
                   child: Column(
                     children: [
-                      _buildFeatureCard(features[0]),
-                      const SizedBox(height: 24),
-                      _buildFeatureCard(features[1]),
+                      _buildFeatureCard(context, features[0]),
+                      SizedBox(height: 24),
+                      _buildFeatureCard(context, features[1]),
                     ],
                   ),
                 ),
-                const SizedBox(width: 24),
+                SizedBox(width: 24),
                 Expanded(
                   child: Column(
                     children: [
-                      _buildFeatureCard(features[2]),
-                      const SizedBox(height: 24),
-                      _buildFeatureCard(features[3]),
+                      _buildFeatureCard(context, features[2]),
+                      SizedBox(height: 24),
+                      _buildFeatureCard(context, features[3]),
                     ],
                   ),
                 ),
@@ -388,11 +382,11 @@ class _FeaturesSection extends StatelessWidget {
     );
   }
 
-  Widget _buildFeatureCard(_FeatureData feature) {
+  Widget _buildFeatureCard(BuildContext context, _FeatureData feature) {
     return Container(
-      padding: const EdgeInsets.all(32),
+      padding: EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFF3F4F6)),
         boxShadow: [
@@ -407,26 +401,26 @@ class _FeaturesSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: _kPrimaryIndigo.withValues(alpha: 0.1),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(feature.icon, color: _kPrimaryIndigo, size: 28),
+            child: Icon(feature.icon, color: Theme.of(context).colorScheme.primary, size: 28),
           ),
-          const SizedBox(width: 24),
+          SizedBox(width: 24),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   feature.title,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _kDarkText),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Text(
                   feature.description,
-                  style: const TextStyle(fontSize: 15, height: 1.5, color: _kMutedText),
+                  style: TextStyle(fontSize: 15, height: 1.5, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
                 ),
               ],
             ),
@@ -445,42 +439,42 @@ class _HowItWorksSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 24.0 : 80.0,
         vertical: 80.0,
       ),
       child: Column(
         children: [
-          const Text(
+          Text(
             'How It Works',
             style: TextStyle(
               fontSize: 36,
               fontWeight: FontWeight.w900,
-              color: _kDarkText,
+              color: Theme.of(context).colorScheme.onSurface,
               letterSpacing: -0.5,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 60),
+          SizedBox(height: 60),
           isMobile
               ? Column(
                   children: [
-                    _buildStep(1, Icons.camera_alt_rounded, 'Snap & Upload', 'Take a photo of the site or materials.'),
-                    const SizedBox(height: 32),
-                    _buildStep(2, Icons.edit_document, 'Add Details', 'Write your engineering observations.'),
-                    const SizedBox(height: 32),
-                    _buildStep(3, Icons.send_rounded, 'Export & Submit', 'Download the ready PDF and submit it to your supervisor.'),
+                    _buildStep(context, 1, Icons.camera_alt_rounded, 'Snap & Upload', 'Take a photo of the site or materials.'),
+                    SizedBox(height: 32),
+                    _buildStep(context, 2, Icons.edit_document, 'Add Details', 'Write your engineering observations.'),
+                    SizedBox(height: 32),
+                    _buildStep(context, 3, Icons.send_rounded, 'Export & Submit', 'Download the ready PDF and submit it to your supervisor.'),
                   ],
                 )
               : Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(child: _buildStep(1, Icons.camera_alt_rounded, 'Snap & Upload', 'Take a photo of the site or materials.')),
-                    const SizedBox(width: 40),
-                    Expanded(child: _buildStep(2, Icons.edit_document, 'Add Details', 'Write your engineering observations.')),
-                    const SizedBox(width: 40),
-                    Expanded(child: _buildStep(3, Icons.send_rounded, 'Export & Submit', 'Download the ready PDF and submit it to your supervisor.')),
+                    Expanded(child: _buildStep(context, 1, Icons.camera_alt_rounded, 'Snap & Upload', 'Take a photo of the site or materials.')),
+                    SizedBox(width: 40),
+                    Expanded(child: _buildStep(context, 2, Icons.edit_document, 'Add Details', 'Write your engineering observations.')),
+                    SizedBox(width: 40),
+                    Expanded(child: _buildStep(context, 3, Icons.send_rounded, 'Export & Submit', 'Download the ready PDF and submit it to your supervisor.')),
                   ],
                 )
         ],
@@ -488,7 +482,7 @@ class _HowItWorksSection extends StatelessWidget {
     );
   }
 
-  Widget _buildStep(int number, IconData icon, String title, String description) {
+  Widget _buildStep(BuildContext context, int number, IconData icon, String title, String description) {
     return Column(
       children: [
         Container(
@@ -496,34 +490,34 @@ class _HowItWorksSection extends StatelessWidget {
           height: 80,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: _kPrimaryIndigo.withValues(alpha: 0.1),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
           ),
           child: Center(
-            child: Icon(icon, size: 36, color: _kPrimaryIndigo),
+            child: Icon(icon, size: 36, color: Theme.of(context).colorScheme.primary),
           ),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: 24),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
-            color: _kDarkText,
+            color: Theme.of(context).colorScheme.onSurface,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
             'Step $number',
-            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+            style: TextStyle(color: Theme.of(context).colorScheme.surface, fontSize: 12, fontWeight: FontWeight.bold),
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         Text(
           title,
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: _kDarkText),
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Text(
           description,
-          style: const TextStyle(fontSize: 16, height: 1.5, color: _kMutedText),
+          style: TextStyle(fontSize: 16, height: 1.5, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
           textAlign: TextAlign.center,
         ),
       ],
@@ -540,25 +534,25 @@ class _PricingSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: _kLightBackground,
+      color: Theme.of(context).scaffoldBackgroundColor,
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 24.0 : 80.0,
         vertical: 80.0,
       ),
       child: Center(
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 800),
+          constraints: BoxConstraints(maxWidth: 800),
           padding: EdgeInsets.all(isMobile ? 32 : 48),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [_kPrimaryIndigo, _kSecondaryIndigo],
+            gradient: LinearGradient(
+              colors: [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.secondary],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: _kPrimaryIndigo.withValues(alpha: 0.3),
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -566,28 +560,28 @@ class _PricingSection extends StatelessWidget {
           ),
           child: Column(
             children: [
-              const Text(
+              Text(
                 'Transparent & Simple Pricing',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w900,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   letterSpacing: -0.5,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 24),
-              const Text(
+              SizedBox(height: 24),
+              Text(
                 r'Start for free, unlock unlimited professional features for just $5.' '\n(One-time fee for the entire summer)',
-                style: TextStyle(fontSize: 18, height: 1.5, color: Colors.white70),
+                style: TextStyle(fontSize: 18, height: 1.5, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: 40),
               ElevatedButton(
                 onPressed: onGetPremium,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: _kPrimaryIndigo,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  foregroundColor: Theme.of(context).colorScheme.primary,
                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
@@ -615,7 +609,7 @@ class _FooterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 24.0 : 80.0,
         vertical: 40.0,
@@ -624,11 +618,11 @@ class _FooterBar extends StatelessWidget {
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                _buildLogo(),
-                const SizedBox(height: 24),
-                _buildLinks(),
-                const SizedBox(height: 24),
-                _buildCopyright(),
+                _buildLogo(context),
+                SizedBox(height: 16),
+                _buildCopyright(context),
+                SizedBox(height: 16),
+                _buildLinks(context),
               ],
             )
           : Row(
@@ -637,55 +631,55 @@ class _FooterBar extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildLogo(),
-                    const SizedBox(height: 8),
-                    _buildCopyright(),
+                    _buildLogo(context),
+                    SizedBox(height: 8),
+                    _buildCopyright(context),
                   ],
                 ),
-                _buildLinks(),
+                _buildLinks(context),
               ],
             ),
     );
   }
 
-  Widget _buildLogo() {
+  Widget _buildLogo(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children: const [
-        Icon(Icons.business_center_rounded, color: _kPrimaryIndigo, size: 24),
+      children: [
+        Icon(Icons.business_center_rounded, color: Theme.of(context).colorScheme.primary, size: 24),
         SizedBox(width: 8),
         Text(
           'InternLog',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w900,
-            color: _kDarkText,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildCopyright() {
-    return const Text(
+  Widget _buildCopyright(BuildContext context) {
+    return Text(
       '© 2026 InternLog. All rights reserved.',
-      style: TextStyle(color: _kMutedText, fontSize: 14),
+      style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey, fontSize: 14),
     );
   }
 
-  Widget _buildLinks() {
+  Widget _buildLinks(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         TextButton(
           onPressed: onLogin,
-          style: TextButton.styleFrom(foregroundColor: _kMutedText),
-          child: const Text('Login', style: TextStyle(fontWeight: FontWeight.w600)),
+          style: TextButton.styleFrom(foregroundColor: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
+          child: Text('Login', style: TextStyle(fontWeight: FontWeight.w600)),
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: 16),
         TextButton(
           onPressed: onSignUp,
-          style: TextButton.styleFrom(foregroundColor: _kMutedText),
+          style: TextButton.styleFrom(foregroundColor: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
           child: const Text('Sign Up', style: TextStyle(fontWeight: FontWeight.w600)),
         ),
       ],

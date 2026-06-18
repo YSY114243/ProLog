@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
 
 /// Stat card for the summary row at the top of the dashboard.
 class StatCard extends StatefulWidget {
@@ -25,7 +24,7 @@ class _StatCardState extends State<StatCard> {
 
   @override
   Widget build(BuildContext context) {
-    final accent = widget.accentColor ?? AppTheme.primaryCyan;
+    final accent = widget.accentColor ?? Theme.of(context).colorScheme.primary;
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
@@ -34,7 +33,7 @@ class _StatCardState extends State<StatCard> {
         curve: Curves.easeOut,
         transform: Matrix4.translationValues(0, _hovered ? -2 : 0, 0),
         decoration: BoxDecoration(
-          color: _hovered ? accent.withValues(alpha: 0.08) : AppTheme.cyanCardBg,
+          color: _hovered ? accent.withValues(alpha: 0.08) : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: _hovered ? accent.withValues(alpha: 0.3) : const Color(0xFFD0ECF0),
@@ -79,20 +78,20 @@ class _StatCardState extends State<StatCard> {
                   children: [
                     Text(
                       widget.value,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w800,
-                        color: AppTheme.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                         height: 1.1,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       widget.label,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: AppTheme.textSecondary,
+                        color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                       ),
                     ),
                   ],

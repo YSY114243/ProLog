@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
-import '../theme/app_theme.dart';
 import 'landing_screen.dart';
 import 'paywall_screen.dart';
 
@@ -67,7 +66,7 @@ class _SettingsTabState extends State<SettingsTab> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Profile saved successfully.'),
-            backgroundColor: AppTheme.primaryCyan,
+            backgroundColor: Theme.of(context).colorScheme.primary,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             behavior: SnackBarBehavior.floating,
             margin: const EdgeInsets.all(16),
@@ -118,7 +117,7 @@ class _SettingsTabState extends State<SettingsTab> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Logo uploaded successfully.'),
-            backgroundColor: AppTheme.primaryCyan,
+            backgroundColor: Theme.of(context).colorScheme.primary,
           ),
         );
       }
@@ -168,29 +167,29 @@ class _SettingsTabState extends State<SettingsTab> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ── Academic Profile Section ─────────────────────────────────────
-              const Text(
+              Text(
                 'Academic Profile',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
-                  color: AppTheme.textPrimary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'These details are used to automatically generate your final university PDF report.',
-                style: TextStyle(fontSize: 14, color: AppTheme.textMuted),
+                style: TextStyle(fontSize: 14, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
               ),
               const SizedBox(height: 24),
 
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.divider),
+                  border: Border.all(color: Theme.of(context).dividerColor),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.textPrimary.withValues(alpha: 0.03),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.03),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -217,19 +216,19 @@ class _SettingsTabState extends State<SettingsTab> {
                         child: ElevatedButton(
                           onPressed: _isSaving ? null : _saveProfile,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryCyan,
-                            foregroundColor: Colors.white,
+                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            foregroundColor: Theme.of(context).colorScheme.surface,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                             elevation: 0,
                           ),
                           child: _isSaving
-                              ? const SizedBox(
+                              ? SizedBox(
                                   width: 20,
                                   height: 20,
                                   child: CircularProgressIndicator(
-                                    color: Colors.white,
+                                    color: Theme.of(context).colorScheme.surface,
                                     strokeWidth: 2,
                                   ),
                                 )
@@ -250,50 +249,50 @@ class _SettingsTabState extends State<SettingsTab> {
               const SizedBox(height: 40),
 
               // ── Report Customization ───────────────────────────────────────
-              const Text(
+              Text(
                 'Report Customization',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
-                  color: AppTheme.textPrimary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Add a custom logo to your PDF report header and watermark.',
-                style: TextStyle(fontSize: 14, color: AppTheme.textMuted),
+                style: TextStyle(fontSize: 14, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
               ),
               const SizedBox(height: 16),
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.divider),
+                  border: Border.all(color: Theme.of(context).dividerColor),
                 ),
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryCyan.withValues(alpha: 0.1),
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: _isUploadingLogo 
-                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primaryCyan))
-                      : const Icon(Icons.image_rounded, color: AppTheme.primaryCyan),
+                      ? SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Theme.of(context).colorScheme.primary))
+                      : Icon(Icons.image_rounded, color: Theme.of(context).colorScheme.primary),
                   ),
                   title: Text(
                     _customLogoUrl != null ? 'Update Custom Logo' : 'Upload Custom Logo',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: AppTheme.textPrimary,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   subtitle: Text(
                     _customLogoUrl != null ? 'A logo is currently active.' : 'No logo uploaded.',
-                    style: const TextStyle(fontSize: 13, color: AppTheme.textMuted),
+                    style: TextStyle(fontSize: 13, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
                   ),
-                  trailing: const Icon(Icons.chevron_right_rounded, color: AppTheme.textMuted),
+                  trailing: Icon(Icons.chevron_right_rounded, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
                   onTap: _isUploadingLogo ? null : _uploadLogo,
                 ),
               ),
@@ -302,43 +301,43 @@ class _SettingsTabState extends State<SettingsTab> {
 
               // ── Subscription Section ─────────────────────────────────────────
               if (!isPremium) ...[
-                const Text(
+                Text(
                   'Subscription',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
-                    color: AppTheme.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 16),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppTheme.divider),
+                    border: Border.all(color: Theme.of(context).dividerColor),
                   ),
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryCyan.withValues(alpha: 0.1),
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(Icons.workspace_premium_rounded, color: AppTheme.primaryCyan),
+                      child: Icon(Icons.workspace_premium_rounded, color: Theme.of(context).colorScheme.primary),
                     ),
-                    title: const Text(
+                    title: Text(
                       'Upgrade to Premium',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
-                        color: AppTheme.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
-                    subtitle: const Text(
+                    subtitle: Text(
                       'Unlock custom PDF logos and remove all trial limits.',
-                      style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
+                      style: TextStyle(fontSize: 13, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
                     ),
-                    trailing: const Icon(Icons.chevron_right_rounded, color: AppTheme.textMuted),
+                    trailing: Icon(Icons.chevron_right_rounded, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
                     onTap: () {
                       Navigator.push(
                         context,
@@ -351,20 +350,20 @@ class _SettingsTabState extends State<SettingsTab> {
               ],
 
               // ── Account Section ──────────────────────────────────────────────
-              const Text(
+              Text(
                 'Account',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
-                  color: AppTheme.textPrimary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 16),
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.divider),
+                  border: Border.all(color: Theme.of(context).dividerColor),
                 ),
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -376,18 +375,18 @@ class _SettingsTabState extends State<SettingsTab> {
                     ),
                     child: const Icon(Icons.logout_rounded, color: Colors.redAccent),
                   ),
-                  title: const Text(
+                  title: Text(
                     'Logout',
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: AppTheme.textPrimary,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
-                  subtitle: const Text(
+                  subtitle: Text(
                     'Sign out of your account on this device.',
-                    style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
+                    style: TextStyle(fontSize: 13, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
                   ),
-                  trailing: const Icon(Icons.chevron_right_rounded, color: AppTheme.textMuted),
+                  trailing: Icon(Icons.chevron_right_rounded, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
                   onTap: _logout,
                 ),
               ),
@@ -402,13 +401,13 @@ class _SettingsTabState extends State<SettingsTab> {
   Widget _buildTextField(String label, TextEditingController controller, IconData icon) {
     return TextFormField(
       controller: controller,
-      style: const TextStyle(fontSize: 14, color: AppTheme.textPrimary),
+      style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
-        prefixIcon: Icon(icon, size: 20, color: AppTheme.textMuted),
+        labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey, fontSize: 14),
+        prefixIcon: Icon(icon, size: 20, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
         filled: true,
-        fillColor: AppTheme.cyanLight,
+        fillColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -420,7 +419,7 @@ class _SettingsTabState extends State<SettingsTab> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppTheme.primaryCyan, width: 1.5),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
         ),
       ),
     );

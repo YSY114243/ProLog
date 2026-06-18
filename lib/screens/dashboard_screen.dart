@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/daily_log.dart';
 import '../services/supabase_service.dart';
-import '../theme/app_theme.dart';
 
 import '../widgets/app_sidebar.dart';
 
@@ -125,7 +124,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.redAccent,
-              foregroundColor: Colors.white,
+              foregroundColor: Theme.of(context).colorScheme.surface,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
             ),
@@ -194,7 +193,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('OK', style: TextStyle(color: AppTheme.primaryCyan, fontWeight: FontWeight.bold)),
+              child: Text('OK', style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -248,38 +247,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final isMobile  = width < _Bp.mobile;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
 
       // ── Bottom nav (mobile only) ──────────────────────────────────────────
       bottomNavigationBar: isMobile
           ? NavigationBar(
               selectedIndex: _navIndex,
               onDestinationSelected: (i) => setState(() => _navIndex = i),
-              backgroundColor: Colors.white,
-              indicatorColor: AppTheme.primaryCyan.withValues(alpha: 0.12),
-              destinations: const [
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              indicatorColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+              destinations: [
                 NavigationDestination(
                   icon: Icon(Icons.dashboard_outlined),
                   selectedIcon: Icon(Icons.dashboard_rounded,
-                      color: AppTheme.primaryCyan),
+                      color: Theme.of(context).colorScheme.primary),
                   label: 'Dashboard',
                 ),
                 NavigationDestination(
                   icon: Icon(Icons.book_outlined),
                   selectedIcon:
-                      Icon(Icons.book_rounded, color: AppTheme.primaryCyan),
+                      Icon(Icons.book_rounded, color: Theme.of(context).colorScheme.primary),
                   label: 'My Logs',
                 ),
                 NavigationDestination(
                   icon: Icon(Icons.analytics_outlined),
                   selectedIcon: Icon(Icons.analytics_rounded,
-                      color: AppTheme.primaryCyan),
+                      color: Theme.of(context).colorScheme.primary),
                   label: 'Reports',
                 ),
                 NavigationDestination(
                   icon: Icon(Icons.settings_outlined),
                   selectedIcon: Icon(Icons.settings_rounded,
-                      color: AppTheme.primaryCyan),
+                      color: Theme.of(context).colorScheme.primary),
                   label: 'Settings',
                 ),
               ],
@@ -294,8 +293,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           'New Daily Log',
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
-        backgroundColor: AppTheme.primaryCyan,
-        foregroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.surface,
         elevation: 4,
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -306,9 +305,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           // ── Sidebar (desktop) ───────────────────────────────────────────
           if (isDesktop)
             Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 border: Border(
-                    right: BorderSide(color: AppTheme.divider, width: 1)),
+                    right: BorderSide(color: Theme.of(context).dividerColor, width: 1)),
               ),
               child: AppSidebar(
                 selectedIndex: _navIndex,
@@ -386,10 +385,10 @@ class _AppHeader extends StatelessWidget {
   Widget build(BuildContext context) {
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
         border:
-            Border(bottom: BorderSide(color: AppTheme.divider, width: 1)),
+            Border(bottom: BorderSide(color: Theme.of(context).dividerColor, width: 1)),
       ),
       padding: EdgeInsets.symmetric(
           horizontal: isDesktop ? 32 : 16, vertical: 16),
@@ -400,23 +399,23 @@ class _AppHeader extends StatelessWidget {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppTheme.primaryCyan, AppTheme.accentTeal],
+                gradient: LinearGradient(
+                  colors: [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.secondary],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.construction_rounded,
-                  color: Colors.white, size: 16),
+              child: Icon(Icons.construction_rounded,
+                  color: Theme.of(context).colorScheme.surface, size: 16),
             ),
             const SizedBox(width: 10),
-            const Text(
+            Text(
               'InternLog',
               style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
-                  color: AppTheme.textPrimary),
+                  color: Theme.of(context).colorScheme.onSurface),
             ),
             const Spacer(),
           ] else ...[
@@ -440,7 +439,7 @@ class _AppHeader extends StatelessWidget {
             icon: const Icon(Icons.picture_as_pdf_rounded, size: 18),
             label: const Text('Download Report', style: TextStyle(fontWeight: FontWeight.w600)),
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppTheme.primaryCyan,
+              foregroundColor: Theme.of(context).colorScheme.primary,
               side: const BorderSide(color: Color(0xFFD0ECF0)),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -451,4 +450,3 @@ class _AppHeader extends StatelessWidget {
     );
   }
 }
-

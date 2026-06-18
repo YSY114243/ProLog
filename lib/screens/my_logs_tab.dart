@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/daily_log.dart';
-import '../theme/app_theme.dart';
 import '../widgets/log_card.dart';
 
 class MyLogsTab extends StatelessWidget {
@@ -140,11 +139,11 @@ class _SearchFilterBar extends StatelessWidget {
           onChanged: onSearch,
           decoration: InputDecoration(
             hintText: 'Search by description, issues, or task type…',
-            hintStyle: const TextStyle(color: AppTheme.textMuted, fontSize: 13),
-            prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.textMuted, size: 20),
+            hintStyle: TextStyle(color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey, fontSize: 13),
+            prefixIcon: Icon(Icons.search_rounded, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey, size: 20),
             suffixIcon: controller.text.isNotEmpty
                 ? IconButton(
-                    icon: const Icon(Icons.clear_rounded, color: AppTheme.textMuted, size: 18),
+                    icon: Icon(Icons.clear_rounded, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey, size: 18),
                     onPressed: () {
                       controller.clear();
                       onSearch('');
@@ -152,7 +151,7 @@ class _SearchFilterBar extends StatelessWidget {
                   )
                 : null,
             filled: true,
-            fillColor: AppTheme.cyanLight,
+            fillColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -164,7 +163,7 @@ class _SearchFilterBar extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppTheme.primaryCyan, width: 1.5),
+              borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
             ),
           ),
         ),
@@ -208,10 +207,10 @@ class _FilterChip extends StatelessWidget {
         duration: const Duration(milliseconds: 160),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          color: selected ? AppTheme.primaryCyan : AppTheme.cyanLight,
+          color: selected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected ? AppTheme.primaryCyan : const Color(0xFFD0ECF0),
+            color: selected ? Theme.of(context).colorScheme.primary : const Color(0xFFD0ECF0),
             width: 1,
           ),
         ),
@@ -220,7 +219,7 @@ class _FilterChip extends StatelessWidget {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: selected ? Colors.white : AppTheme.textSecondary,
+            color: selected ? Theme.of(context).colorScheme.surface : Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
           ),
         ),
       ),
@@ -241,21 +240,21 @@ class _EmptyState extends StatelessWidget {
           width: 80,
           height: 80,
           decoration: BoxDecoration(
-            color: AppTheme.cyanCardBg,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(20),
             border: const Border.fromBorderSide(BorderSide(color: Color(0xFFD0ECF0))),
           ),
-          child: const Icon(Icons.search_off_rounded, size: 36, color: AppTheme.textMuted),
+          child: Icon(Icons.search_off_rounded, size: 36, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
         ),
         const SizedBox(height: 16),
-        const Text(
+        Text(
           'No logs found',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.onSurface),
         ),
         const SizedBox(height: 6),
-        const Text(
+        Text(
           'Try adjusting your search or task type filter.',
-          style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
+          style: TextStyle(fontSize: 13, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
         ),
       ],
     );
