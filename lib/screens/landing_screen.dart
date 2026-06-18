@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 import 'auth_screen.dart';
 
-// Modern SaaS Colors
-const Color _kPrimaryIndigo = Color(0xFF4F46E5);
-const Color _kSecondaryIndigo = Color(0xFF4338CA);
-const Color _kLightBackground = Color(0xFFF9FAFB);
-const Color _kDarkText = Color(0xFF111827);
-const Color _kMutedText = Color(0xFF6B7280);
+// Brand Colors aligned with Core Theme
+const Color _kPrimaryIndigo = AppTheme.primaryCyan;
+const Color _kSecondaryIndigo = AppTheme.accentTeal;
+const Color _kLightBackground = Color(0xFFF9FAFB); // Very light grey to keep sections distinct
+const Color _kDarkText = AppTheme.textPrimary;
+const Color _kMutedText = AppTheme.textSecondary;
 
 /// The newly redesigned Modern SaaS landing page for InternLog.
 class LandingScreen extends StatefulWidget {
