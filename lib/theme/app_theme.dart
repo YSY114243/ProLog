@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Central theme configuration for ProLog.
+/// Central theme configuration for InternLog.
 /// Light theme using white background + cyan accent.
 class AppTheme {
   // ── Brand colours ──────────────────────────────────────────────────────────

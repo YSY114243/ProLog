@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/daily_log.dart';
 
-/// Singleton service that owns all Supabase interactions for ProLog.
+/// Singleton service that owns all Supabase interactions for InternLog.
 ///
 /// Usage:
 /// ```dart

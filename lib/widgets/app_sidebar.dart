@@ -82,7 +82,7 @@ class AppSidebar extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
                     Text(
-                      'ProLog',
+                      'InternLog',
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
@@ -91,7 +91,7 @@ class AppSidebar extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Professional Log',
+                      'InternLog',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w500,

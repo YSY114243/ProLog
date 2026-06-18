@@ -192,7 +192,7 @@ class _NavDelegate extends SliverPersistentHeaderDelegate {
             horizontal: isMobile ? 20 : 64, vertical: 0),
         child: Row(
           children: [
-            _ProLogLogo(),
+            _InternLogLogo(),
 
             if (!isMobile) ...[
               const SizedBox(width: 48),
@@ -244,9 +244,9 @@ class _NavDelegate extends SliverPersistentHeaderDelegate {
       old.isMobile != isMobile;
 }
 
-// ── ProLog logo widget ────────────────────────────────────────────────────────
+// ── InternLog logo widget ────────────────────────────────────────────────────────
 
-class _ProLogLogo extends StatelessWidget {
+class _InternLogLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
         mainAxisSize: MainAxisSize.min,
@@ -267,7 +267,7 @@ class _ProLogLogo extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           const Text(
-            'ProLog',
+            'InternLog',
             style: TextStyle(
               fontSize: 19,
               fontWeight: FontWeight.w800,
@@ -409,7 +409,7 @@ class _HeroText extends StatelessWidget {
 
         // Subtitle
         Text(
-          'Stop spending hours on your final report. ProLog lets civil engineering students log daily tasks in minutes, then generates a professional PDF report automatically.',
+          'Stop spending hours on your final report. InternLog lets civil engineering students log daily tasks in minutes, then generates a professional PDF report automatically.',
           style: TextStyle(
             fontSize: isMobile ? 15 : 17,
             color: AppTheme.textSecondary,
@@ -546,7 +546,7 @@ class _AppMockup extends StatelessWidget {
                     ),
                     borderRadius: BorderRadius.circular(7),
                   ),
-                  child: const Text('ProLog',
+                  child: const Text('InternLog',
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 11,
@@ -1093,10 +1093,10 @@ class _FooterBar extends StatelessWidget {
       child: isMobile
           ? Column(
               children: [
-                _ProLogLogo(),
-                const SizedBox(height: 12),
+                _InternLogLogo(),
+                const SizedBox(height: 8),
                 Text(
-                  '© ${DateTime.now().year} ProLog. Built for Civil Engineering Students.',
+                  '© ${DateTime.now().year} InternLog  ·  Built for Civil Engineering Students.',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                       fontSize: 12, color: AppTheme.textMuted),
@@ -1105,10 +1105,10 @@ class _FooterBar extends StatelessWidget {
             )
           : Row(
               children: [
-                _ProLogLogo(),
+                _InternLogLogo(),
                 const Spacer(),
                 Text(
-                  '© ${DateTime.now().year} ProLog  ·  Built for Civil Engineering Students.',
+                  '© ${DateTime.now().year} InternLog  ·  Built for Civil Engineering Students.',
                   style: const TextStyle(
                       fontSize: 12, color: AppTheme.textMuted),
                 ),

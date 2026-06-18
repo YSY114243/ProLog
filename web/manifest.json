@@ -1,6 +1,6 @@
 {
-    "name": "prolog",
-    "short_name": "prolog",
+    "name": "InternLog",
+    "short_name": "InternLog",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

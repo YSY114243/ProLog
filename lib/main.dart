@@ -26,18 +26,18 @@ Future<void> main() async {
     }
   }
 
-  runApp(ProLogApp(isSignedIn: isSignedIn, showPaywall: showPaywall));
+  runApp(InternLogApp(isSignedIn: isSignedIn, showPaywall: showPaywall));
 }
 
-class ProLogApp extends StatelessWidget {
+class InternLogApp extends StatelessWidget {
   final bool isSignedIn;
   final bool showPaywall;
-  const ProLogApp({super.key, required this.isSignedIn, required this.showPaywall});
+  const InternLogApp({super.key, required this.isSignedIn, required this.showPaywall});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'ProLog – Professional Log',
+      title: 'InternLog',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme(),
       // If user is already signed-in route straight to the dashboard or paywall,

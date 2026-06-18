@@ -34,7 +34,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
       if (!mounted) return;
       scaffoldMessenger.showSnackBar(
         const SnackBar(
-          content: Text('Welcome to ProLog Premium!'),
+          content: Text('Welcome to InternLog Premium!'),
           backgroundColor: AppTheme.primaryCyan,
         ),
       );
@@ -86,11 +86,11 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   "shipping_discount": 0
                 }
               },
-              "description": "ProLog Premium Lifetime Subscription",
+              "description": "InternLog Premium Lifetime Subscription",
               "item_list": {
                 "items": [
                   {
-                    "name": "ProLog Premium",
+                    "name": "InternLog Premium",
                     "quantity": 1,
                     "price": '5.00',
                     "currency": "USD"
@@ -147,7 +147,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   // Headline
                   Text(
                     widget.isVoluntary 
-                        ? 'Upgrade to ProLog Premium' 
+                        ? 'Upgrade to InternLog Premium' 
                         : 'Your 3-Day Free Trial\nHas Expired',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
@@ -161,7 +161,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   
                   // Subtitle
                   const Text(
-                    'Upgrade to ProLog Premium to continue using the app and unlock exclusive features.',
+                    'Upgrade to InternLog Premium to continue using the app and unlock exclusive features.',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 16, color: AppTheme.textSecondary),
                   ),

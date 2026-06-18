@@ -258,7 +258,7 @@ class _BrandPanel extends StatelessWidget {
                 const Spacer(),
 
                 Text(
-                  '© ${DateTime.now().year} ProLog  ·  Civil Engineering Internship Platform',
+                  '© ${DateTime.now().year} InternLog  ·  Civil Engineering Internship Platform',
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.white.withValues(alpha: 0.45),
@@ -289,7 +289,7 @@ class _WhiteLogo extends StatelessWidget {
               color: Colors.white, size: 22),
         ),
         const SizedBox(width: 11),
-        const Text('ProLog',
+        const Text('InternLog',
             style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,

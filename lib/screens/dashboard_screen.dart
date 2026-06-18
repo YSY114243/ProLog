@@ -412,7 +412,7 @@ class _AppHeader extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             const Text(
-              'ProLog',
+              'InternLog',
               style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,

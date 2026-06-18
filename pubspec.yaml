@@ -1,5 +1,5 @@
-name: prolog
-description: "ProLog – Professional Log for Civil Engineering Internship Students."
+name: internlog
+description: "InternLog – Professional Log for Civil Engineering Internship Students."
 publish_to: 'none'
 
 version: 1.0.0+1
