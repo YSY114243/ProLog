@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'intern_log_logo.dart';
 
 /// Responsive sidebar navigation for desktop / rail for tablet / bottom bar for mobile.
 class AppSidebar extends StatelessWidget {
@@ -13,24 +15,20 @@ class AppSidebar extends StatelessWidget {
   });
 
   static const _destinations = [
-    NavigationDestination(
-      icon: Icon(Icons.dashboard_outlined),
-      selectedIcon: Icon(Icons.dashboard_rounded),
+    _FaDestination(
+      icon: FontAwesomeIcons.gaugeHigh,
       label: 'Dashboard',
     ),
-    NavigationDestination(
-      icon: Icon(Icons.book_outlined),
-      selectedIcon: Icon(Icons.book_rounded),
+    _FaDestination(
+      icon: FontAwesomeIcons.bookOpen,
       label: 'My Logs',
     ),
-    NavigationDestination(
-      icon: Icon(Icons.analytics_outlined),
-      selectedIcon: Icon(Icons.analytics_rounded),
+    _FaDestination(
+      icon: FontAwesomeIcons.chartLine,
       label: 'Reports',
     ),
-    NavigationDestination(
-      icon: Icon(Icons.settings_outlined),
-      selectedIcon: Icon(Icons.settings_rounded),
+    _FaDestination(
+      icon: FontAwesomeIcons.gear,
       label: 'Settings',
     ),
   ];
@@ -57,51 +55,7 @@ class AppSidebar extends StatelessWidget {
                 bottom: BorderSide(color: Theme.of(context).dividerColor, width: 1),
               ),
             ),
-            child: Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.secondary],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    Icons.construction_rounded,
-                    color: Theme.of(context).colorScheme.surface,
-                    size: 18,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'InternLog',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w800,
-                        color: Theme.of(context).colorScheme.onSurface,
-                        letterSpacing: -0.3,
-                      ),
-                    ),
-                    Text(
-                      'InternLog',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                        color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+            child: const InternLogLogo.small(),
           ),
 
           // ── Nav items ───────────────────────────────────────────────────
@@ -114,9 +68,7 @@ class AppSidebar extends StatelessWidget {
                 final dest = _destinations[i];
                 final selected = i == selectedIndex;
                 return _SidebarItem(
-                  icon: selected
-                      ? (dest.selectedIcon ?? dest.icon)
-                      : dest.icon,
+                  icon: FaIcon(dest.icon, size: 16),
                   label: dest.label,
                   selected: selected,
                   onTap: () => onDestinationSelected(i),
@@ -179,6 +131,13 @@ class AppSidebar extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Simple data holder for a sidebar destination using FA icons.
+class _FaDestination {
+  final IconData icon;
+  final String label;
+  const _FaDestination({required this.icon, required this.label});
 }
 
 class _SidebarItem extends StatefulWidget {

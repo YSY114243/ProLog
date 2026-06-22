@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../widgets/intern_log_logo.dart';
 import 'auth_screen.dart';
 
 // Brand Colors aligned with Core Theme
@@ -59,21 +61,7 @@ class _LandingScreenState extends State<LandingScreen> {
             centerTitle: false,
             title: Padding(
               padding: EdgeInsets.only(left: isMobile ? 8.0 : 40.0),
-              child: Row(
-                children: [
-                  Icon(Icons.business_center_rounded, color: Theme.of(context).colorScheme.primary, size: 28),
-                  SizedBox(width: 12),
-                  Text(
-                    'InternLog',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w900,
-                      color: Theme.of(context).colorScheme.onSurface,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                ],
-              ),
+              child: const InternLogLogo.medium(),
             ),
             actions: [
               Padding(
@@ -111,14 +99,30 @@ class _LandingScreenState extends State<LandingScreen> {
               // 2. Hero Section
               _HeroSection(isMobile: isMobile, onLearnMore: _scrollToFeatures, onStartTrial: () => _navigateToAuth(context, isSignUp: true)),
 
+              // 2.5 Trust Banner
+              const _TrustBanner(),
+
+              const SizedBox(height: 80),
+
               // 3. Features Section
               Container(key: _featuresKey, child: _FeaturesSection(isMobile: isMobile)),
+
+              const SizedBox(height: 80),
+
+              // 3.5 Inside InternLog Section
+              _InsideInternLogSection(isMobile: isMobile),
+
+              const SizedBox(height: 80),
 
               // 4. How It Works Section
               _HowItWorksSection(isMobile: isMobile),
 
+              const SizedBox(height: 80),
+
               // 5. Pricing Section
               _PricingSection(isMobile: isMobile, onGetPremium: () => _navigateToAuth(context, isSignUp: true)),
+
+              const SizedBox(height: 60),
 
               // 6. Footer
               _FooterBar(isMobile: isMobile, onLogin: () => _navigateToAuth(context, isSignUp: false), onSignUp: () => _navigateToAuth(context, isSignUp: true)),
@@ -250,44 +254,23 @@ class _HeroSection extends StatelessWidget {
 
   Widget _buildMockup(BuildContext context) {
     return Container(
-      height: 400,
-      width: double.infinity,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFE0E7FF), Color(0xFFC7D2FE)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Theme.of(context).dividerColor, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black.withValues(alpha: 0.15),
             blurRadius: 30,
             offset: const Offset(0, 15),
           ),
         ],
       ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
-                ],
-              ),
-              child: Icon(Icons.dashboard_customize_rounded, size: 64, color: Theme.of(context).colorScheme.primary),
-            ),
-            SizedBox(height: 24),
-            Text(
-              'Modern Dashboard',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary),
-            )
-          ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Image.asset(
+          'assets/images/hero_image.png',
+          fit: BoxFit.cover,
+          width: double.infinity,
         ),
       ),
     );
@@ -303,22 +286,22 @@ class _FeaturesSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final features = [
       _FeatureData(
-        icon: Icons.compress_rounded,
+        icon: FontAwesomeIcons.compress,
         title: 'Smart Image Compression',
         description: 'Save site photos directly without hitting storage limits. Automatically optimized for clarity and size.',
       ),
       _FeatureData(
-        icon: Icons.picture_as_pdf_rounded,
+        icon: FontAwesomeIcons.filePdf,
         title: 'Instant PDF Export',
         description: 'Generate professional daily and weekly reports with automatic layout and custom watermarks.',
       ),
       _FeatureData(
-        icon: Icons.cloud_sync_rounded,
+        icon: FontAwesomeIcons.cloudArrowUp,
         title: 'Cloud Sync',
         description: 'Never lose a log. Access your data securely from any device, anywhere, anytime.',
       ),
       _FeatureData(
-        icon: Icons.auto_awesome_rounded,
+        icon: FontAwesomeIcons.wandMagicSparkles,
         title: 'Auto-Formatting',
         description: 'Stop wrestling with Word docs. Focus on the engineering site, we handle the paperwork.',
       ),
@@ -460,21 +443,21 @@ class _HowItWorksSection extends StatelessWidget {
           isMobile
               ? Column(
                   children: [
-                    _buildStep(context, 1, Icons.camera_alt_rounded, 'Snap & Upload', 'Take a photo of the site or materials.'),
+                    _buildStep(context, 1, FontAwesomeIcons.cameraRetro, 'Snap & Upload', 'Take a photo of the site or materials.'),
                     SizedBox(height: 32),
-                    _buildStep(context, 2, Icons.edit_document, 'Add Details', 'Write your engineering observations.'),
+                    _buildStep(context, 2, FontAwesomeIcons.penToSquare, 'Add Details', 'Write your engineering observations.'),
                     SizedBox(height: 32),
-                    _buildStep(context, 3, Icons.send_rounded, 'Export & Submit', 'Download the ready PDF and submit it to your supervisor.'),
+                    _buildStep(context, 3, FontAwesomeIcons.paperPlane, 'Export & Submit', 'Download the ready PDF and submit it to your supervisor.'),
                   ],
                 )
               : Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(child: _buildStep(context, 1, Icons.camera_alt_rounded, 'Snap & Upload', 'Take a photo of the site or materials.')),
+                    Expanded(child: _buildStep(context, 1, FontAwesomeIcons.cameraRetro, 'Snap & Upload', 'Take a photo of the site or materials.')),
                     SizedBox(width: 40),
-                    Expanded(child: _buildStep(context, 2, Icons.edit_document, 'Add Details', 'Write your engineering observations.')),
+                    Expanded(child: _buildStep(context, 2, FontAwesomeIcons.penToSquare, 'Add Details', 'Write your engineering observations.')),
                     SizedBox(width: 40),
-                    Expanded(child: _buildStep(context, 3, Icons.send_rounded, 'Export & Submit', 'Download the ready PDF and submit it to your supervisor.')),
+                    Expanded(child: _buildStep(context, 3, FontAwesomeIcons.paperPlane, 'Export & Submit', 'Download the ready PDF and submit it to your supervisor.')),
                   ],
                 )
         ],
@@ -643,21 +626,7 @@ class _FooterBar extends StatelessWidget {
   }
 
   Widget _buildLogo(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(Icons.business_center_rounded, color: Theme.of(context).colorScheme.primary, size: 24),
-        SizedBox(width: 8),
-        Text(
-          'InternLog',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w900,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-      ],
-    );
+    return const InternLogLogo.medium();
   }
 
   Widget _buildCopyright(BuildContext context) {
@@ -693,4 +662,120 @@ class _FeatureData {
   final String description;
 
   _FeatureData({required this.icon, required this.title, required this.description});
+}
+
+class _TrustBanner extends StatelessWidget {
+  const _TrustBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      color: const Color(0xFFF9FAFB),
+      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+      child: Text(
+        'Trusted by engineering students for daily site logs and professional PDF reporting.',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.6) ?? Colors.grey.shade600,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+}
+
+class _InsideInternLogSection extends StatelessWidget {
+  final bool isMobile;
+
+  const _InsideInternLogSection({required this.isMobile});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Theme.of(context).colorScheme.surface,
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 24.0 : 80.0,
+        vertical: 40.0,
+      ),
+      child: Column(
+        children: [
+          // Row 1
+          isMobile
+              ? Column(
+                  children: [
+                    _buildText(context, 'Effortless Site Logging: Snap photos and write observations directly from the construction site.'),
+                    const SizedBox(height: 32),
+                    _buildImage(context, 'assets/images/add_log.png'),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(child: _buildText(context, 'Effortless Site Logging: Snap photos and write observations directly from the construction site.')),
+                    const SizedBox(width: 80),
+                    Expanded(child: _buildImage(context, 'assets/images/add_log.png')),
+                  ],
+                ),
+
+          SizedBox(height: isMobile ? 60 : 100),
+
+          // Row 2
+          isMobile
+              ? Column(
+                  children: [
+                    _buildText(context, 'Instant University-Ready PDFs: Generate formatted reports with one click, perfectly aligned with engineering standards.'),
+                    const SizedBox(height: 32),
+                    _buildImage(context, 'assets/images/report.png'),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(child: _buildImage(context, 'assets/images/report.png')),
+                    const SizedBox(width: 80),
+                    Expanded(child: _buildText(context, 'Instant University-Ready PDFs: Generate formatted reports with one click, perfectly aligned with engineering standards.')),
+                  ],
+                ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildText(BuildContext context, String text) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: isMobile ? 24 : 32,
+        fontWeight: FontWeight.w800,
+        height: 1.3,
+        color: Theme.of(context).colorScheme.onSurface,
+        letterSpacing: -0.5,
+      ),
+    );
+  }
+
+  Widget _buildImage(BuildContext context, String assetPath) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Theme.of(context).dividerColor, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Image.asset(
+          assetPath,
+          fit: BoxFit.cover,
+          width: double.infinity,
+        ),
+      ),
+    );
+  }
 }

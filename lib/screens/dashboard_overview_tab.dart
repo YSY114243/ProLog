@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/daily_log.dart';
 import '../widgets/log_card.dart';
@@ -106,7 +107,7 @@ class DashboardOverviewTab extends StatelessWidget {
                       color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(Icons.workspace_premium_rounded, size: 32, color: Theme.of(context).colorScheme.primary),
+                    child: FaIcon(FontAwesomeIcons.crown, size: 28, color: Theme.of(context).colorScheme.primary),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -224,10 +225,10 @@ class _StatsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final stats = [
-      (Icons.book_rounded, 'Total Logs', '$totalLogs', Theme.of(context).colorScheme.primary),
-      (Icons.construction_rounded, 'Field Work', '$fieldWorkCount', TaskType.fieldWork.color),
-      (Icons.business_center_rounded, 'Office Work', '$officeWorkCount', TaskType.officeWork.color),
-      (Icons.computer_rounded, 'Software', '$softwareCount', TaskType.software.color),
+      (FontAwesomeIcons.clipboardList, 'Total Logs',   '$totalLogs',      Theme.of(context).colorScheme.primary),
+      (FontAwesomeIcons.helmetSafety, 'Field Work',   '$fieldWorkCount',  TaskType.fieldWork.color),
+      (FontAwesomeIcons.buildingColumns,'Office Work', '$officeWorkCount', TaskType.officeWork.color),
+      (FontAwesomeIcons.laptopCode,   'Software',     '$softwareCount',   TaskType.software.color),
     ];
 
     if (isMobile) {

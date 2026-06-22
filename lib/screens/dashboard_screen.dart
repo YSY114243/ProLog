@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/daily_log.dart';
 import '../services/supabase_service.dart';
-
 import '../widgets/app_sidebar.dart';
-
+import '../widgets/intern_log_logo.dart';
 import '../services/pdf_service.dart';
 import 'add_log_screen.dart';
 import 'reports_tab.dart';
@@ -258,27 +258,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
               indicatorColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
               destinations: [
                 NavigationDestination(
-                  icon: Icon(Icons.dashboard_outlined),
-                  selectedIcon: Icon(Icons.dashboard_rounded,
-                      color: Theme.of(context).colorScheme.primary),
+                  icon: FaIcon(FontAwesomeIcons.gaugeHigh, size: 18),
+                  selectedIcon: FaIcon(FontAwesomeIcons.gaugeHigh,
+                      size: 18, color: Theme.of(context).colorScheme.primary),
                   label: 'Dashboard',
                 ),
                 NavigationDestination(
-                  icon: Icon(Icons.book_outlined),
-                  selectedIcon:
-                      Icon(Icons.book_rounded, color: Theme.of(context).colorScheme.primary),
+                  icon: FaIcon(FontAwesomeIcons.bookOpen, size: 18),
+                  selectedIcon: FaIcon(FontAwesomeIcons.bookOpen,
+                      size: 18, color: Theme.of(context).colorScheme.primary),
                   label: 'My Logs',
                 ),
                 NavigationDestination(
-                  icon: Icon(Icons.analytics_outlined),
-                  selectedIcon: Icon(Icons.analytics_rounded,
-                      color: Theme.of(context).colorScheme.primary),
+                  icon: FaIcon(FontAwesomeIcons.chartLine, size: 18),
+                  selectedIcon: FaIcon(FontAwesomeIcons.chartLine,
+                      size: 18, color: Theme.of(context).colorScheme.primary),
                   label: 'Reports',
                 ),
                 NavigationDestination(
-                  icon: Icon(Icons.settings_outlined),
-                  selectedIcon: Icon(Icons.settings_rounded,
-                      color: Theme.of(context).colorScheme.primary),
+                  icon: FaIcon(FontAwesomeIcons.gear, size: 18),
+                  selectedIcon: FaIcon(FontAwesomeIcons.gear,
+                      size: 18, color: Theme.of(context).colorScheme.primary),
                   label: 'Settings',
                 ),
               ],
@@ -288,7 +288,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       // ── FAB ──────────────────────────────────────────────────────────────
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openAddLog,
-        icon: const Icon(Icons.add_rounded),
+        icon: const FaIcon(FontAwesomeIcons.plus, size: 16),
         label: const Text(
           'New Daily Log',
           style: TextStyle(fontWeight: FontWeight.w600),
@@ -296,8 +296,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.surface,
         elevation: 4,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
 
       body: Row(
@@ -395,28 +394,7 @@ class _AppHeader extends StatelessWidget {
       child: Row(
         children: [
           if (!isDesktop) ...[
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.secondary],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(Icons.construction_rounded,
-                  color: Theme.of(context).colorScheme.surface, size: 16),
-            ),
-            const SizedBox(width: 10),
-            Text(
-              'InternLog',
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: Theme.of(context).colorScheme.onSurface),
-            ),
+            const InternLogLogo.small(),
             const Spacer(),
           ] else ...[
             Column(
@@ -436,7 +414,7 @@ class _AppHeader extends StatelessWidget {
           // Download Report Button
           OutlinedButton.icon(
             onPressed: onDownload,
-            icon: const Icon(Icons.picture_as_pdf_rounded, size: 18),
+            icon: const FaIcon(FontAwesomeIcons.filePdf, size: 15),
             label: const Text('Download Report', style: TextStyle(fontWeight: FontWeight.w600)),
             style: OutlinedButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.primary,

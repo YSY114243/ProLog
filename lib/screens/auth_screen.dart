@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../widgets/intern_log_logo.dart';
 import 'dashboard_screen.dart';
 import 'paywall_screen.dart';
 
@@ -275,27 +276,7 @@ class _BrandPanel extends StatelessWidget {
 class _WhiteLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(9),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(11),
-          ),
-          child: Icon(Icons.construction_rounded,
-              color: Theme.of(context).colorScheme.surface, size: 22),
-        ),
-        const SizedBox(width: 11),
-        Text('InternLog',
-            style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: Theme.of(context).colorScheme.surface,
-                letterSpacing: -0.3)),
-      ],
-    );
+    return const InternLogLogo.large(light: true);
   }
 }
 

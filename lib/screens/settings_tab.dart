@@ -100,12 +100,7 @@ class _SettingsTabState extends State<SettingsTab> {
     try {
       final bytes = await pickedFile.readAsBytes();
       final user = Supabase.instance.client.auth.currentUser!;
-      final ext = pickedFile.name.split('.').last;
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final path = '${user.id}/logo_$timestamp.$ext';
-
-      // Upload using SupabaseService
-      final url = await SupabaseService.instance.uploadImage(path, bytes);
+      final url = await SupabaseService.instance.uploadImageToImgBB(bytes);
 
       // Save to metadata
       await Supabase.instance.client.auth.updateUser(

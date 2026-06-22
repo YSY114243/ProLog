@@ -222,9 +222,8 @@ class _AddLogScreenState extends State<AddLogScreen> {
         return;
       }
 
-      // Secure Naming & Upload
-      final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final url = await SupabaseService.instance.uploadImage(fileName, compressedBytes);
+      // Upload to ImgBB (serverless-safe: no local FS access)
+      final url = await SupabaseService.instance.uploadImageToImgBB(compressedBytes);
       
       if (url != null) {
         setState(() => _imageUrl = url);
@@ -435,13 +434,13 @@ class _AddLogScreenState extends State<AddLogScreen> {
                       _SectionLabel(label: 'Photo Attachment'),
                       const SizedBox(height: 8),
                       _ImageAttachmentZone(
-                        attached: _imageUrl != null,
+                        imageUrl: _imageUrl,
                         isUploading: _isUploadingImage,
                         onToggle: _pickAndUploadImage,
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'JPEG / PNG · max 10 MB · Automatically uploaded to Supabase Storage.',
+                        'JPEG / PNG · max 10 MB · Uploaded securely via ImgBB.',
                         style: TextStyle(
                           fontSize: 11,
                           color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey,
@@ -814,12 +813,12 @@ class _StyledTextArea extends StatelessWidget {
 // ── Image attachment zone ─────────────────────────────────────────────────────
 
 class _ImageAttachmentZone extends StatefulWidget {
-  final bool attached;
+  final String? imageUrl;
   final bool isUploading;
   final VoidCallback onToggle;
 
   const _ImageAttachmentZone(
-      {required this.attached, required this.isUploading, required this.onToggle});
+      {required this.imageUrl, required this.isUploading, required this.onToggle});
 
   @override
   State<_ImageAttachmentZone> createState() => _ImageAttachmentZoneState();
@@ -838,23 +837,21 @@ class _ImageAttachmentZoneState extends State<_ImageAttachmentZone> {
         onTap: widget.isUploading ? null : widget.onToggle,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          height: 160,
+          height: widget.imageUrl != null ? 220 : 160,
           decoration: BoxDecoration(
-            color: widget.attached
+            color: widget.imageUrl != null
                 ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
                 : _hovered
                     ? const Color(0xFFF0FAFB)
                     : Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: widget.attached
+              color: widget.imageUrl != null
                   ? Theme.of(context).colorScheme.primary
                   : _hovered
                       ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.4)
                       : const Color(0xFFCCE5EA),
-              width: widget.attached ? 1.5 : 1,
-              // Dashed border is approximated via a custom painter — using solid
-              // here for simplicity, styled to look lightweight.
+              width: widget.imageUrl != null ? 1.5 : 1,
             ),
           ),
           child: widget.isUploading
@@ -870,8 +867,8 @@ class _ImageAttachmentZoneState extends State<_ImageAttachmentZone> {
                     ],
                   ),
                 )
-              : widget.attached
-                  ? _AttachedPreview()
+              : widget.imageUrl != null
+                  ? _AttachedPreview(imageUrl: widget.imageUrl!)
                   : _UploadPrompt(hovered: _hovered),
         ),
       ),
@@ -924,36 +921,85 @@ class _UploadPrompt extends StatelessWidget {
 }
 
 class _AttachedPreview extends StatelessWidget {
+  final String imageUrl;
+  const _AttachedPreview({required this.imageUrl});
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(12),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(13),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // ── Actual image thumbnail via network URL ──────────────────────
+          Image.network(
+            imageUrl,
+            fit: BoxFit.cover,
+            loadingBuilder: (ctx, child, progress) {
+              if (progress == null) return child;
+              return Center(
+                child: CircularProgressIndicator(
+                  value: progress.expectedTotalBytes != null
+                      ? progress.cumulativeBytesLoaded /
+                          progress.expectedTotalBytes!
+                      : null,
+                  color: Theme.of(context).colorScheme.primary,
+                  strokeWidth: 2.5,
+                ),
+              );
+            },
+            errorBuilder: (ctx, error, _) => Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.broken_image_outlined,
+                      size: 32,
+                      color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
+                  const SizedBox(height: 6),
+                  Text('Could not load preview',
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey)),
+                ],
+              ),
+            ),
           ),
-          child: Icon(Icons.image_rounded,
-              size: 28, color: Theme.of(context).colorScheme.primary),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          'Photo attached',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.primary,
+          // ── Overlay footer strip ────────────────────────────────────────
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.55),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle_rounded,
+                      size: 14, color: Colors.white),
+                  const SizedBox(width: 5),
+                  const Text(
+                    'Photo uploaded  ·  Tap to replace',
+                    style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          'Tap to remove',
-          style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

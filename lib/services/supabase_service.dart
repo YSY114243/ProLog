@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/daily_log.dart';
 
@@ -120,21 +122,42 @@ class SupabaseService {
     return (res as List).length;
   }
 
-  // ── STORAGE ───────────────────────────────────────────────────────────────
+  // ── IMAGE HOSTING ─────────────────────────────────────────────────────────
 
-  /// Uploads an image to the 'log_images' bucket and returns its public URL.
-  Future<String?> uploadImage(String fileName, Uint8List bytes) async {
-    if (currentUserId == null) return null;
+  /// ImgBB free-tier API key.
+  ///
+  /// Get yours at https://api.imgbb.com/ (free account, no credit card).
+  /// For production deployments set this via an environment variable /
+  /// build-time secret rather than hardcoding it here.
+  static const String _imgbbApiKey = 'c2366f68046d02673cab6f1885d708f1';
+
+  /// Uploads [bytes] to ImgBB and returns the public HTTPS image URL, or
+  /// `null` on failure.
+  ///
+  /// Uses a standard `multipart/form-data` POST — no local filesystem access
+  /// is required, making this safe for serverless environments (Vercel, etc.).
+  Future<String?> uploadImageToImgBB(Uint8List bytes) async {
     try {
-      final path = '$currentUserId/$fileName';
-      await _client.storage.from('log_images').uploadBinary(
-        path,
-        bytes,
-        fileOptions: const FileOptions(upsert: true),
+      final base64Image = base64Encode(bytes);
+
+      final uri = Uri.parse(
+          'https://api.imgbb.com/1/upload?key=$_imgbbApiKey');
+
+      final response = await http.post(
+        uri,
+        body: {'image': base64Image},
       );
-      return _client.storage.from('log_images').getPublicUrl(path);
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body) as Map<String, dynamic>;
+        final data = json['data'] as Map<String, dynamic>?;
+        return data?['url'] as String?;
+      } else {
+        debugPrint('ImgBB upload failed (${response.statusCode}): ${response.body}');
+        return null;
+      }
     } catch (e) {
-      debugPrint('Error uploading image: $e');
+      debugPrint('Error uploading image to ImgBB: $e');
       return null;
     }
   }
