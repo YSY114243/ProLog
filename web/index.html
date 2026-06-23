@@ -71,9 +71,11 @@
     let _paddleCloseCallback = null;
 
     function initPaddle(token, isSandbox) {
+      if (isSandbox) {
+        Paddle.Environment.set('sandbox');
+      }
       Paddle.Initialize({ 
         token: token,
-        environment: isSandbox ? 'sandbox' : 'production',
         eventCallback: function(data) {
           if (data.name === "checkout.completed") {
             if (_paddleSuccessCallback) _paddleSuccessCallback(data.data);

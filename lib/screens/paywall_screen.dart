@@ -135,7 +135,21 @@ class _PaywallScreenState extends State<PaywallScreen> {
           ? AppBar(
               backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               elevation: 0,
-              leading: BackButton(color: Theme.of(context).colorScheme.onSurface),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                color: Theme.of(context).colorScheme.onSurface,
+                onPressed: () {
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                  } else {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                      (r) => false,
+                    );
+                  }
+                },
+              ),
             )
           : null,
       body: SafeArea(
