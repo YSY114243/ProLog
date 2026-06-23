@@ -62,27 +62,33 @@
         }
       }).render('#' + containerId);
     }
+  </script>
+
   <!-- Paddle JS SDK -->
   <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
   <script>
+    let _paddleSuccessCallback = null;
+    let _paddleCloseCallback = null;
+
     function initPaddle(token, isSandbox) {
       Paddle.Initialize({ 
         token: token,
-        environment: isSandbox ? 'sandbox' : 'production' 
+        environment: isSandbox ? 'sandbox' : 'production',
+        eventCallback: function(data) {
+          if (data.name === "checkout.completed") {
+            if (_paddleSuccessCallback) _paddleSuccessCallback(data.data);
+          } else if (data.name === "checkout.closed") {
+            if (_paddleCloseCallback) _paddleCloseCallback(data.data);
+          }
+        }
       });
     }
 
     function openPaddleCheckout(priceId, onSuccess, onClosed) {
+      _paddleSuccessCallback = onSuccess;
+      _paddleCloseCallback = onClosed;
       Paddle.Checkout.open({
-        items: [{ priceId: priceId, quantity: 1 }],
-        settings: {
-          successCallback: function(data) {
-            onSuccess(data);
-          },
-          closeCallback: function(data) {
-            onClosed(data);
-          }
-        }
+        items: [{ priceId: priceId, quantity: 1 }]
       });
     }
   </script>

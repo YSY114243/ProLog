@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_web_libraries_in_flutter
 
 import 'dart:html' as html;
+import 'dart:js' as js;
 
 void initPaddle(String token, bool isSandbox) {
   final win = html.window as dynamic;
@@ -20,8 +21,8 @@ void openPaddleCheckout({
   try {
     win.openPaddleCheckout(
       priceId,
-      (data) => onSuccess(data),
-      (data) => onClosed(data),
+      js.allowInterop((data) => onSuccess(data)),
+      js.allowInterop((data) => onClosed(data)),
     );
   } catch (e) {
     print('Error opening Paddle checkout: $e');
