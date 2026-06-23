@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/dashboard_screen.dart';
-import 'screens/landing_screen.dart';
+import 'landing/landing_page.dart';
 import 'screens/paywall_screen.dart';
 import 'services/supabase_service.dart';
 import 'theme/app_theme.dart';
@@ -44,7 +44,7 @@ class InternLogApp extends StatelessWidget {
       // otherwise show the landing / auth flow.
       home: isSignedIn 
           ? (showPaywall ? const PaywallScreen() : const DashboardScreen()) 
-          : const LandingScreen(),
+          : const LandingPage(),
     );
   }
 }

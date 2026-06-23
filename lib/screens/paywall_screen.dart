@@ -4,7 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_paypal/flutter_paypal.dart';
 import '../utils/paypal_facade.dart';
 import 'dashboard_screen.dart';
-import 'landing_screen.dart';
+import '../landing/landing_page.dart';
 
 class PaywallScreen extends StatefulWidget {
   final bool isVoluntary;
@@ -112,7 +112,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
     if (!mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => const LandingScreen()),
+      MaterialPageRoute(builder: (context) => const LandingPage()),
       (r) => false,
     );
   }

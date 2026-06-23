@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
-import 'landing_screen.dart';
+import '../landing/landing_page.dart';
 import 'paywall_screen.dart';
 
 class SettingsTab extends StatefulWidget {
@@ -99,7 +99,6 @@ class _SettingsTabState extends State<SettingsTab> {
 
     try {
       final bytes = await pickedFile.readAsBytes();
-      final user = Supabase.instance.client.auth.currentUser!;
       final url = await SupabaseService.instance.uploadImageToImgBB(bytes);
 
       // Save to metadata
@@ -132,7 +131,7 @@ class _SettingsTabState extends State<SettingsTab> {
     if (mounted) {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => const LandingScreen()),
+        MaterialPageRoute(builder: (context) => const LandingPage()),
         (r) => false,
       );
     }
