@@ -62,6 +62,29 @@
         }
       }).render('#' + containerId);
     }
+  <!-- Paddle JS SDK -->
+  <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+  <script>
+    function initPaddle(token) {
+      Paddle.Initialize({ 
+        token: token,
+        environment: 'production' 
+      });
+    }
+
+    function openPaddleCheckout(priceId, onSuccess, onClosed) {
+      Paddle.Checkout.open({
+        items: [{ priceId: priceId, quantity: 1 }],
+        settings: {
+          successCallback: function(data) {
+            onSuccess(data);
+          },
+          closeCallback: function(data) {
+            onClosed(data);
+          }
+        }
+      });
+    }
   </script>
 </head>
 <body>

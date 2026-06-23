@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_paypal/flutter_paypal.dart';
 import '../utils/paypal_facade.dart';
+import '../utils/paddle_facade.dart';
 import 'dashboard_screen.dart';
 import '../landing/landing_page.dart';
 
@@ -17,6 +18,14 @@ class PaywallScreen extends StatefulWidget {
 
 class _PaywallScreenState extends State<PaywallScreen> {
   bool _isProcessing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (kIsWeb) {
+      initPaddle('YOUR_CLIENT_SIDE_TOKEN');
+    }
+  }
 
   Future<void> _onPaymentSuccess() async {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
@@ -229,14 +238,43 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   if (_isProcessing)
                     Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary))
                   else if (kIsWeb)
-                    SizedBox(
-                      height: 48,
-                      child: buildPayPalButton(
-                        amount: '5.00',
-                        onSuccess: (details) => _onPaymentSuccess(),
-                        onError: (err) => _onPaymentError(err),
-                        onCancel: (data) => _onPaymentCancel(),
-                      ),
+                    Column(
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            openPaddleCheckout(
+                              priceId: 'YOUR_PADDLE_PRICE_ID',
+                              onSuccess: (data) => _onPaymentSuccess(),
+                              onClosed: (data) => print('Paddle closed'),
+                            );
+                          },
+                          icon: Icon(Icons.credit_card_rounded, color: Theme.of(context).colorScheme.surface),
+                          label: const Text(
+                            'Pay with Credit Card / Apple Pay',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            foregroundColor: Theme.of(context).colorScheme.surface,
+                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            elevation: 0,
+                            minimumSize: const Size(double.infinity, 56),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text('OR', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          height: 48,
+                          child: buildPayPalButton(
+                            amount: '5.00',
+                            onSuccess: (details) => _onPaymentSuccess(),
+                            onError: (err) => _onPaymentError(err),
+                            onCancel: (data) => _onPaymentCancel(),
+                          ),
+                        ),
+                      ],
                     )
                   else
                     ElevatedButton.icon(
