@@ -65,10 +65,10 @@
   <!-- Paddle JS SDK -->
   <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
   <script>
-    function initPaddle(token) {
+    function initPaddle(token, isSandbox) {
       Paddle.Initialize({ 
         token: token,
-        environment: 'production' 
+        environment: isSandbox ? 'sandbox' : 'production' 
       });
     }
 

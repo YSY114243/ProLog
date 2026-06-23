@@ -23,7 +23,8 @@ class _PaywallScreenState extends State<PaywallScreen> {
   void initState() {
     super.initState();
     if (kIsWeb) {
-      initPaddle('YOUR_CLIENT_SIDE_TOKEN');
+      // Change to false when you want to use the live production environment
+      initPaddle('YOUR_CLIENT_SIDE_TOKEN', true);
     }
   }
 

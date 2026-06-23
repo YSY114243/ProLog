@@ -1,4 +1,4 @@
-void initPaddle(String token) {}
+void initPaddle(String token, bool isSandbox) {}
 
 void openPaddleCheckout({
   required String priceId,

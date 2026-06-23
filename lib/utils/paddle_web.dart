@@ -2,10 +2,10 @@
 
 import 'dart:html' as html;
 
-void initPaddle(String token) {
+void initPaddle(String token, bool isSandbox) {
   final win = html.window as dynamic;
   try {
-    win.initPaddle(token);
+    win.initPaddle(token, isSandbox);
   } catch (e) {
     print('Error initializing Paddle: $e');
   }
