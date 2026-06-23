@@ -203,7 +203,17 @@ class PricingSection extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => _navigateToAuth(context, isSignUp: true),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AuthScreen(
+                      initialIsSignUp: true,
+                      intentToPurchase: isPopular,
+                    ),
+                  ),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: isPopular ? AppColors.accentRoyalBlue : AppColors.background,
                 foregroundColor: isPopular ? AppColors.surfaceWhite : AppColors.textPrimary,

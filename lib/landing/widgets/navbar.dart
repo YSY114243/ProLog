@@ -31,7 +31,14 @@ class Navbar extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const InternLogLogo.medium(),
+                GestureDetector(
+                  onTap: () {
+                    if (ModalRoute.of(context)?.settings.name != '/') {
+                      Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+                    }
+                  },
+                  child: const InternLogLogo.medium(),
+                ),
                 if (!isMobile)
                   Row(
                     children: [

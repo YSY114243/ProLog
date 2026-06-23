@@ -30,10 +30,22 @@ class Footer extends StatelessWidget {
             child: isMobile
                 ? Column(
                     children: [
-                      const InternLogLogo.medium(),
+                      GestureDetector(
+                        onTap: () {
+                          if (ModalRoute.of(context)?.settings.name != '/') {
+                            Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+                          }
+                        },
+                        child: const InternLogLogo.medium(),
+                      ),
                       const SizedBox(height: AppSpacing.xl),
                       _buildLinks(context),
-                      const SizedBox(height: AppSpacing.xxl),
+                      const SizedBox(height: AppSpacing.md),
+                      const Text(
+                        'Contact Support: eng.d.ysy@gmail.com',
+                        style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
                       const Text(
                         '© 2026 InternLog. All rights reserved.',
                         style: TextStyle(color: AppColors.textSecondary),
@@ -43,12 +55,24 @@ class Footer extends StatelessWidget {
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Column(
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          InternLogLogo.medium(),
-                          SizedBox(height: AppSpacing.md),
-                          Text(
+                          GestureDetector(
+                            onTap: () {
+                              if (ModalRoute.of(context)?.settings.name != '/') {
+                                Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+                              }
+                            },
+                            child: const InternLogLogo.medium(),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          const Text(
+                            'Contact Support: eng.d.ysy@gmail.com',
+                            style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                          const Text(
                             '© 2026 InternLog. All rights reserved.',
                             style: TextStyle(color: AppColors.textSecondary),
                           ),

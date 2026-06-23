@@ -15,8 +15,14 @@ import 'paywall_screen.dart';
 class AuthScreen extends StatefulWidget {
   /// Whether to start in Sign-Up mode (`true`) or Login mode (`false`).
   final bool initialIsSignUp;
+  /// If true, navigates to the Paywall immediately after successful auth.
+  final bool intentToPurchase;
 
-  const AuthScreen({super.key, this.initialIsSignUp = false});
+  const AuthScreen({
+    super.key,
+    this.initialIsSignUp = false,
+    this.intentToPurchase = false,
+  });
 
   @override
   State<AuthScreen> createState() => _AuthScreenState();
@@ -88,8 +94,8 @@ class _AuthScreenState extends State<AuthScreen> {
 
   void _toDashboard() {
     final user = Supabase.instance.client.auth.currentUser;
-    bool showPaywall = false;
-    if (user != null) {
+    bool showPaywall = widget.intentToPurchase;
+    if (user != null && !showPaywall) {
       final createdAt = DateTime.tryParse(user.createdAt) ?? DateTime.now();
       final daysSinceCreation = DateTime.now().difference(createdAt).inDays;
       final isPremium = user.userMetadata?['is_premium'] == true;
@@ -99,7 +105,7 @@ class _AuthScreenState extends State<AuthScreen> {
     }
 
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => showPaywall ? const PaywallScreen() : const DashboardScreen()),
+      MaterialPageRoute(builder: (_) => showPaywall ? PaywallScreen(isVoluntary: widget.intentToPurchase) : const DashboardScreen()),
       (route) => false,
     );
   }
