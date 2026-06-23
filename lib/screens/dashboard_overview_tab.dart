@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/daily_log.dart';
 import '../widgets/log_card.dart';
@@ -107,7 +106,7 @@ class DashboardOverviewTab extends StatelessWidget {
                       color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: FaIcon(FontAwesomeIcons.crown, size: 28, color: Theme.of(context).colorScheme.primary),
+                    child: Icon(Icons.workspace_premium_rounded, size: 28, color: Theme.of(context).colorScheme.primary),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -225,10 +224,10 @@ class _StatsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final stats = [
-      (FontAwesomeIcons.clipboardList, 'Total Logs',   '$totalLogs',      Theme.of(context).colorScheme.primary),
-      (FontAwesomeIcons.helmetSafety, 'Field Work',   '$fieldWorkCount',  TaskType.fieldWork.color),
-      (FontAwesomeIcons.buildingColumns,'Office Work', '$officeWorkCount', TaskType.officeWork.color),
-      (FontAwesomeIcons.laptopCode,   'Software',     '$softwareCount',   TaskType.software.color),
+      (Icons.assessment_rounded, 'Total Logs',   '$totalLogs',      Theme.of(context).colorScheme.primary),
+      (Icons.engineering_rounded, 'Field Work',   '$fieldWorkCount',  TaskType.fieldWork.color),
+      (Icons.business_rounded,'Office Work', '$officeWorkCount', TaskType.officeWork.color),
+      (Icons.computer_rounded,   'Software',     '$softwareCount',   TaskType.software.color),
     ];
 
     if (isMobile) {
@@ -416,15 +415,15 @@ class _TaskDistributionChartState extends State<_TaskDistributionChart> {
     final radius = isTouched ? 60.0 : 50.0;
 
     return PieChartSectionData(
-      color: color,
+      color: color.withValues(alpha: 0.25),
       value: value > 0 ? value : 0.1, // So empty sections don't crash the chart visually
       title: value > 0 ? title : '',
       radius: radius,
+      borderSide: BorderSide(color: color.withValues(alpha: 0.6), width: 1.5),
       titleStyle: TextStyle(
         fontSize: fontSize,
-        fontWeight: FontWeight.bold,
-        color: const Color(0xffffffff),
-        shadows: const [Shadow(color: Colors.black26, blurRadius: 2)],
+        fontWeight: FontWeight.w800,
+        color: color, // Solid color for text since background is glassy
       ),
     );
   }

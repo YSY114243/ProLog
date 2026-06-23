@@ -88,18 +88,30 @@ class _AddLogScreenState extends State<AddLogScreen> {
           'Concrete Pouring': 'Supervised concrete pouring for the slab, monitored slump test, and ensured proper vibration.',
           'Formwork Inspection': 'Inspected formwork installation, verified dimensions against approved shop drawings, and checked support stability.',
           'Rebar Check': 'Checked reinforcement steel placement, verified bar spacing, and ensured adequate concrete cover.',
+          'Site Safety': 'Conducted a site safety tour, ensured PPE compliance among workers, and identified potential hazards.',
+          'Material Inspection': 'Received and inspected delivered materials, checked quantities against POs, and verified quality.',
+          'صب الخرسانة': 'الإشراف على صب الخرسانة، ومراقبة اختبار الهبوط، والتأكد من استخدام الهزاز بشكل صحيح.',
+          'استلام حديد التسليح': 'تم استلام حديد التسليح والتأكد من الأقطار والمسافات حسب المخططات المعتمدة.',
         };
       case TaskType.officeWork:
         return {
-          'Quantity Take-off': 'Performed detailed quantity take-off from architectural and structural drawings using measurement software.',
-          'Progress Meeting': 'Attended weekly progress meeting, reviewed project schedule, and discussed site coordination issues.',
+          'Quantity Take-off': 'Performed detailed quantity take-off from architectural and structural drawings.',
+          'Progress Meeting': 'Attended weekly progress meeting, reviewed project schedule, and discussed site issues.',
           'Drawing Review': 'Reviewed structural shop drawings for constructability and cross-referenced with architectural plans.',
+          'Report Writing': 'Drafted the weekly progress report, highlighting completed milestones and upcoming tasks.',
+          'Supplier Specs': 'Communicated with suppliers to request quotations, compare prices, and arrange delivery.',
+          'حصر كميات': 'تم عمل حصر كميات تفصيلي للمواد المطلوبة بناءً على المخططات التنفيذية.',
+          'مراجعة المخططات': 'مراجعة المخططات المعمارية والإنشائية والتأكد من عدم وجود تعارضات.',
         };
       case TaskType.software:
         return {
-          'Revit Modeling': 'Developed 3D structural model in Revit, coordinated MEP clashes, and extracted initial material schedules.',
-          'SAP2000 Analysis': 'Modeled structural frame in SAP2000, applied dead and live loads, and analyzed deflection and shear forces.',
-          'AutoCAD Editing': 'Drafted and revised 2D structural details in AutoCAD based on the engineer\'s redline markups.',
+          'Revit Modeling': 'Developed 3D structural model in Revit, coordinated MEP clashes, and extracted schedules.',
+          'SAP2000 Analysis': 'Modeled structural frame in SAP2000, applied loads, and analyzed deflection and shear forces.',
+          'AutoCAD Editing': 'Drafted and revised 2D structural details in AutoCAD based on the engineer\'s markups.',
+          'ETABS Design': 'Performed structural design and lateral load analysis for a multi-story building using ETABS.',
+          'Primavera P6': 'Updated the project baseline schedule, adding new activities and adjusting logic ties.',
+          'تصميم ETABS': 'عمل نموذج إنشائي على برنامج إيتابس وإدخال الأحمال وتحليل النتائج.',
+          'رسم AutoCAD': 'رسم تفاصيل إنشائية وتعديل الملاحظات على المخططات باستخدام أوتوكاد.',
         };
     }
   }

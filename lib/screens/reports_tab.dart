@@ -3,7 +3,9 @@ import 'package:intl/intl.dart';
 import '../models/daily_log.dart';
 import '../services/pdf_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
+import 'package:printing/printing.dart';
+import 'dart:convert';
+import 'dart:typed_data';
 /// The Reports tab providing a summary, date range filtering, and PDF generation.
 class ReportsTab extends StatefulWidget {
   final List<DailyLog> allLogs;
@@ -125,6 +127,36 @@ class _ReportsTabState extends State<ReportsTab> {
       }
     } finally {
       if (mounted) setState(() => _isGenerating = false);
+    }
+  }
+
+  Future<void> _downloadCsv() async {
+    final logs = _filteredLogs;
+    if (logs.isEmpty) return;
+
+    final buffer = StringBuffer();
+    // Add UTF-8 BOM so Excel automatically recognizes UTF-8 encoding (important for Arabic)
+    buffer.write('\uFEFF');
+    buffer.writeln('Date,Task Type,Description,Issues & Solutions');
+    
+    for (final log in logs) {
+      final date = DateFormat('yyyy-MM-dd').format(log.date);
+      final type = log.taskType.label;
+      final desc = '"${log.description.replaceAll('"', '""')}"';
+      final issues = '"${log.issuesFound.replaceAll('"', '""')}"';
+      buffer.writeln('$date,$type,$desc,$issues');
+    }
+
+    final bytes = Uint8List.fromList(utf8.encode(buffer.toString()));
+
+    try {
+      await Printing.sharePdf(bytes: bytes, filename: 'Internship_Report.csv');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to export CSV: $e')),
+        );
+      }
     }
   }
 
@@ -292,6 +324,24 @@ class _ReportsTabState extends State<ReportsTab> {
                           foregroundColor: Theme.of(context).colorScheme.surface,
                           disabledBackgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
                           elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: OutlinedButton.icon(
+                        onPressed: _isGenerating || total == 0 ? null : _downloadCsv,
+                        icon: const Icon(Icons.table_chart_rounded, size: 22),
+                        label: const Text(
+                          'Export to Excel (CSV)',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Theme.of(context).colorScheme.primary,
+                          side: BorderSide(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5), width: 1.5),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                         ),
                       ),

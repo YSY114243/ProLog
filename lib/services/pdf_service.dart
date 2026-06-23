@@ -72,30 +72,7 @@ class PdfService {
   PdfService._();
   static final PdfService instance = PdfService._();
 
-  // Amiri — an Arabic/Latin typeface designed for Naskh-style Arabic typesetting.
-  // Served from the Google Fonts CDN; falls back to Helvetica if unavailable.
-  static const _amiriUrl =
-      'https://fonts.gstatic.com/s/amiri/v27/J7aRnpd8CGxBHqUpvqKo.ttf';
-  static const _amiriBoldUrl =
-      'https://fonts.gstatic.com/s/amiri/v27/J7acnpd8CGxBHp2VkZY40iM.ttf';
 
-  // ── Font loading ──────────────────────────────────────────────────────────
-
-  /// Attempts to load the Amiri TTF font for Arabic text support.
-  /// Falls back to the built-in Helvetica if the network request fails.
-  Future<pw.Font> _loadArabicFont({bool bold = false}) async {
-    try {
-      final resp = await http
-          .get(Uri.parse(bold ? _amiriBoldUrl : _amiriUrl))
-          .timeout(const Duration(seconds: 8));
-      if (resp.statusCode == 200) {
-        return pw.Font.ttf(resp.bodyBytes.buffer.asByteData());
-      }
-    } catch (_) {
-      // Network unavailable or timeout — silent fallback
-    }
-    return bold ? pw.Font.helveticaBold() : pw.Font.helvetica();
-  }
 
   /// Attempts to load the custom logo from the given URL.
   Future<pw.MemoryImage?> _loadCustomLogo(String? url) async {
@@ -121,19 +98,13 @@ class PdfService {
     required List<DailyLog> logs,
     required StudentInfo student,
   }) async {
-    // Load fonts concurrently
-    final results = await Future.wait([
-      _loadArabicFont(bold: false),
-      _loadArabicFont(bold: true),
-      _loadCustomLogo(student.customLogoUrl),
-    ]);
-    final baseFont = results[0] as pw.Font;
-    final boldFont = results[1] as pw.Font;
-    final customLogo = results[2] as pw.MemoryImage?;
+    final arabicFont = await PdfGoogleFonts.cairoRegular();
+    final arabicBold = await PdfGoogleFonts.cairoBold();
+    final customLogo = await _loadCustomLogo(student.customLogoUrl);
 
     final theme = pw.ThemeData.withFont(
-      base: baseFont,
-      bold: boldFont,
+      base: arabicFont,
+      bold: arabicBold,
       italic: pw.Font.helveticaOblique(),
       boldItalic: pw.Font.helveticaBoldOblique(),
     );
@@ -243,7 +214,7 @@ class PdfService {
                             pw.Radius.circular(6)),
                       ),
                       child: pw.Text(
-                        'InternLog  ·  Professional Log',
+                        'InternLog',
                         style: pw.TextStyle(
                           font:     pw.Font.helveticaBold(),
                           fontSize: 9,
@@ -431,14 +402,20 @@ class PdfService {
   }
 
   pw.Widget _statBox(String value, String label, PdfColor accent) {
+    // Calculate a solid light background color (no alpha) to ensure it renders correctly on all PDF viewers
+    final lightR = 1.0 - ((1.0 - accent.red) * 0.1);
+    final lightG = 1.0 - ((1.0 - accent.green) * 0.1);
+    final lightB = 1.0 - ((1.0 - accent.blue) * 0.1);
+    final lightColor = PdfColor(lightR, lightG, lightB);
+
     return pw.Expanded(
       child: pw.Container(
         padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 10),
         decoration: pw.BoxDecoration(
-          color:        PdfColor(accent.red, accent.green, accent.blue, 0.06),
+          color:        lightColor,
           borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
           border: pw.Border.all(
-            color: PdfColor(accent.red, accent.green, accent.blue, 0.22),
+            color: PdfColor(accent.red, accent.green, accent.blue, 0.4),
             width: 0.8,
           ),
         ),
@@ -593,13 +570,39 @@ class PdfService {
                 ? pw.TextDirection.rtl
                 : pw.TextDirection.ltr,
           ),
-          // Issues — RTL if Arabic
-          _tdCell(
-            log.issuesFound.trim().isEmpty ? '—' : log.issuesFound,
-            direction: hasArabic(log.issuesFound)
-                ? pw.TextDirection.rtl
-                : pw.TextDirection.ltr,
-            dimmed: log.issuesFound.trim().isEmpty,
+          // Issues & Solutions + Image — RTL if Arabic
+          pw.Padding(
+            padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+            child: pw.Column(
+              crossAxisAlignment: hasArabic(log.issuesFound) ? pw.CrossAxisAlignment.end : pw.CrossAxisAlignment.start,
+              children: [
+                pw.Directionality(
+                  textDirection: hasArabic(log.issuesFound) ? pw.TextDirection.rtl : pw.TextDirection.ltr,
+                  child: pw.Text(
+                    log.issuesFound.trim().isEmpty ? '—' : log.issuesFound,
+                    style: pw.TextStyle(
+                      fontSize: 8,
+                      color: log.issuesFound.trim().isEmpty ? _C.muted : _C.dark,
+                      lineSpacing: 1.5,
+                    ),
+                  ),
+                ),
+                if (log.imageUrl != null && log.imageUrl!.isNotEmpty) ...[
+                  pw.SizedBox(height: 6),
+                  pw.UrlLink(
+                    destination: log.imageUrl!,
+                    child: pw.Text(
+                      'View Attached Image',
+                      style: pw.TextStyle(
+                        fontSize: 8,
+                        color: _C.cyan,
+                        decoration: pw.TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ]
+              ],
+            ),
           ),
         ],
       );
@@ -650,17 +653,19 @@ class PdfService {
   }) {
     return pw.Padding(
       padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-      child: pw.Text(
-        text,
+      child: pw.Directionality(
         textDirection: direction,
-        style: pw.TextStyle(
-          font:        isBold ? pw.Font.helveticaBold() : pw.Font.helvetica(),
-          fontSize:    8,
-          color:       dimmed ? _C.muted : (color ?? _C.dark),
-          lineSpacing: 1.5,
+        child: pw.Text(
+          text,
+          style: pw.TextStyle(
+            font:        isBold ? pw.Font.helveticaBold() : null, // Uses default theme font
+            fontSize:    8,
+            color:       dimmed ? _C.muted : (color ?? _C.dark),
+            lineSpacing: 1.5,
+          ),
+          maxLines: 6,
+          overflow: pw.TextOverflow.clip,
         ),
-        maxLines: 6,
-        overflow: pw.TextOverflow.clip,
       ),
     );
   }
