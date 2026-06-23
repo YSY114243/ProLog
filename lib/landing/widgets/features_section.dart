@@ -121,7 +121,7 @@ class FeaturesSection extends StatelessWidget {
 }
 
 class _FeatureData {
-  final IconData icon;
+  final dynamic icon;
   final String title;
   final String description;
 

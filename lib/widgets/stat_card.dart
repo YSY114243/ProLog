@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Stat card for the summary row at the top of the dashboard.
 class StatCard extends StatefulWidget {
-  final IconData icon;
+  final dynamic icon;
   final String label;
   final String value;
   final Color? accentColor;

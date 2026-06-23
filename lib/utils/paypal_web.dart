@@ -1,7 +1,6 @@
 // ignore_for_file: avoid_web_libraries_in_flutter, deprecated_member_use
 
 import 'dart:html' as html;
-import 'dart:js_util' as js_util;
 import 'dart:ui_web' as ui_web;
 import 'package:flutter/material.dart';
 
@@ -22,13 +21,16 @@ Widget buildPayPalButton({
     
     // Defer the JS call to ensure the element is in the DOM
     Future.delayed(const Duration(milliseconds: 200), () {
-      js_util.callMethod(html.window, 'renderPayPalButton', [
+      // We will use standard interop or dynamic call
+      // Because dart:js_util is missing in 3.12, we can just use dynamic call via window
+      final win = html.window as dynamic;
+      win.renderPayPalButton(
         viewId,
         amount,
-        js_util.allowInterop((details) => onSuccess(details)),
-        js_util.allowInterop((err) => onError(err.toString())),
-        js_util.allowInterop((data) => onCancel(data)),
-      ]);
+        (details) => onSuccess(details),
+        (err) => onError(err.toString()),
+        (data) => onCancel(data),
+      );
     });
 
     return elem;

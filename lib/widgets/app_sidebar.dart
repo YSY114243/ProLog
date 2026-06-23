@@ -135,7 +135,7 @@ class AppSidebar extends StatelessWidget {
 
 /// Simple data holder for a sidebar destination using FA icons.
 class _FaDestination {
-  final IconData icon;
+  final dynamic icon;
   final String label;
   const _FaDestination({required this.icon, required this.label});
 }
