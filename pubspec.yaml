@@ -21,7 +21,7 @@ dependencies:
   image_picker: ^1.2.1
   flutter_paypal: ^0.2.1
   image: ^4.5.4
-  font_awesome_flutter: ^10.7.0
+  font_awesome_flutter: ^11.0.0
 
 dev_dependencies:
   flutter_test:
