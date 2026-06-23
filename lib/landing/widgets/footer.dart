@@ -64,19 +64,52 @@ class Footer extends StatelessWidget {
   }
 
   Widget _buildLinks(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    return Column(
+      crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
       children: [
-        TextButton(
-          onPressed: () => _navigateToAuth(context, isSignUp: false),
-          style: TextButton.styleFrom(foregroundColor: AppColors.textSecondary),
-          child: const Text('Log in'),
+        Wrap(
+          spacing: AppSpacing.lg,
+          runSpacing: AppSpacing.sm,
+          alignment: isMobile ? WrapAlignment.center : WrapAlignment.start,
+          children: [
+            TextButton(
+              onPressed: () => Navigator.pushNamed(context, '/pricing'),
+              style: TextButton.styleFrom(foregroundColor: AppColors.textSecondary),
+              child: const Text('Pricing'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pushNamed(context, '/terms'),
+              style: TextButton.styleFrom(foregroundColor: AppColors.textSecondary),
+              child: const Text('Terms of Service'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pushNamed(context, '/privacy'),
+              style: TextButton.styleFrom(foregroundColor: AppColors.textSecondary),
+              child: const Text('Privacy Policy'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pushNamed(context, '/refund'),
+              style: TextButton.styleFrom(foregroundColor: AppColors.textSecondary),
+              child: const Text('Refund Policy'),
+            ),
+          ],
         ),
-        const SizedBox(width: AppSpacing.lg),
-        TextButton(
-          onPressed: () => _navigateToAuth(context, isSignUp: true),
-          style: TextButton.styleFrom(foregroundColor: AppColors.textSecondary),
-          child: const Text('Sign up'),
+        const SizedBox(height: AppSpacing.md),
+        Wrap(
+          spacing: AppSpacing.lg,
+          alignment: isMobile ? WrapAlignment.center : WrapAlignment.start,
+          children: [
+            TextButton(
+              onPressed: () => _navigateToAuth(context, isSignUp: false),
+              style: TextButton.styleFrom(foregroundColor: AppColors.textSecondary),
+              child: const Text('Log in'),
+            ),
+            TextButton(
+              onPressed: () => _navigateToAuth(context, isSignUp: true),
+              style: TextButton.styleFrom(foregroundColor: AppColors.textSecondary),
+              child: const Text('Sign up'),
+            ),
+          ],
         ),
       ],
     );

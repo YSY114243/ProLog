@@ -36,6 +36,15 @@ class Navbar extends StatelessWidget {
                   Row(
                     children: [
                       TextButton(
+                        onPressed: () => Navigator.pushNamed(context, '/pricing'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.textSecondary,
+                          textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                        ),
+                        child: const Text('Pricing'),
+                      ),
+                      const SizedBox(width: 16),
+                      TextButton(
                         onPressed: () => _navigateToAuth(context, isSignUp: false),
                         style: TextButton.styleFrom(
                           foregroundColor: AppColors.textSecondary,
@@ -58,9 +67,21 @@ class Navbar extends StatelessWidget {
                     ],
                   )
                 else
-                  IconButton(
-                    icon: const Icon(Icons.menu, color: AppColors.textPrimary),
-                    onPressed: () => _navigateToAuth(context, isSignUp: true),
+                  Row(
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pushNamed(context, '/pricing'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.textSecondary,
+                          textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                        ),
+                        child: const Text('Pricing'),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.menu, color: AppColors.textPrimary),
+                        onPressed: () => _navigateToAuth(context, isSignUp: true),
+                      ),
+                    ],
                   ),
               ],
             ),
