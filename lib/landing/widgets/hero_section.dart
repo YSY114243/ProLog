@@ -140,9 +140,23 @@ class HeroSection extends StatelessWidget {
           border: Border.all(color: AppColors.borderSubtle, width: 1),
           boxShadow: AppColors.floatingShadow,
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(24),
-          child: Image.asset('assets/images/hero_image.png', fit: BoxFit.contain),
+        child: Container(
+          width: double.infinity,
+          height: 650,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            gradient: LinearGradient(
+              colors: [
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                Theme.of(context).colorScheme.secondary.withValues(alpha: 0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Center(
+            child: Icon(Icons.dashboard_customize_rounded, size: 80, color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5)),
+          ),
         ),
       ),
     );
