@@ -33,8 +33,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String _filterType  = 'All'; // 'All' | TaskType.label values
   final  TextEditingController _searchCtrl = TextEditingController();
 
-  // Starts with placeholders; replaced by Supabase data when available.
-  List<DailyLog> _logs = List.from(placeholderLogs);
+  // Starts empty; populated from Supabase.
+  List<DailyLog> _logs = [];
 
   // ── Derived data ──────────────────────────────────────────────────────────
 
@@ -64,11 +64,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _loadFromSupabase() async {
     try {
       final remote = await SupabaseService.instance.fetchLogs();
-      if (remote.isNotEmpty && mounted) {
+      if (mounted) {
         setState(() => _logs = remote);
       }
     } catch (_) {
-      // Stay on placeholder data — user not signed in yet.
+      // Keep empty list — user not signed in or network error.
     }
   }
 
@@ -138,7 +138,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (confirmed != true) return;
 
     try {
-      if (log.id.isNotEmpty) {
+      // Only call Supabase delete for real UUID IDs (not placeholders)
+      if (log.id.isNotEmpty && !log.id.startsWith('placeholder')) {
         await SupabaseService.instance.deleteLog(log.id);
       }
       if (mounted) {
