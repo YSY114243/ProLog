@@ -104,7 +104,7 @@ class ShowcaseSection extends StatelessWidget {
 
   Widget _buildImage(String assetPath) {
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxHeight: 750, maxWidth: 850),
+      constraints: const BoxConstraints(maxHeight: 750, maxWidth: 350),
       child: Container(
         padding: const EdgeInsets.all(1), // Subtle sub-pixel border trick
         decoration: BoxDecoration(

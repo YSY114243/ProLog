@@ -81,8 +81,8 @@ class InternLogLogo extends StatelessWidget {
                   ],
                 ),
           child: Center(
-            child: FaIcon(
-              FontAwesomeIcons.helmetSafety,
+            child: Icon(
+              Icons.engineering,
               color: light ? Colors.white : Theme.of(context).colorScheme.surface,
               size: iconSize,
             ),

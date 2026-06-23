@@ -90,8 +90,8 @@ class HeroSection extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.xl),
         Text(
-          'Log work.\nGenerate PDFs.\nDone.',
-          style: isMobile ? AppTextStyles.h1.copyWith(fontSize: 56) : AppTextStyles.h1,
+          'Track your internship.\nGenerate reports automatically.',
+          style: isMobile ? AppTextStyles.h1.copyWith(fontSize: 44) : AppTextStyles.h1.copyWith(fontSize: 56, height: 1.1),
         ),
         const SizedBox(height: AppSpacing.lg),
         const Text(
@@ -132,7 +132,7 @@ class HeroSection extends StatelessWidget {
 
   Widget _buildImage(BuildContext context) {
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxHeight: 650, maxWidth: 520),
+      constraints: const BoxConstraints(maxHeight: 650, maxWidth: 350),
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.surfaceWhite,
