@@ -23,8 +23,8 @@ class _PaywallScreenState extends State<PaywallScreen> {
   void initState() {
     super.initState();
     if (kIsWeb) {
-      // Change to false when you want to use the live production environment
-      initPaddle('YOUR_CLIENT_SIDE_TOKEN', true);
+      // live token -> false for sandbox
+      initPaddle('live_46f7465238e1906ec3c688e27af', false);
     }
   }
 
@@ -244,7 +244,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                         ElevatedButton.icon(
                           onPressed: () {
                             openPaddleCheckout(
-                              priceId: 'YOUR_PADDLE_PRICE_ID',
+                              priceId: 'pri_01kvtm34kcx4jt8qba0fj4fg0v',
                               onSuccess: (data) => _onPaymentSuccess(),
                               onClosed: (data) => print('Paddle closed'),
                             );
