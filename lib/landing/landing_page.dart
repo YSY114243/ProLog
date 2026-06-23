@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import 'widgets/navbar.dart';
 import 'widgets/hero_section.dart';
-import 'widgets/stats_section.dart';
 import 'widgets/features_section.dart';
 import 'widgets/showcase_section.dart';
 import 'widgets/pricing_section.dart';
@@ -30,7 +29,6 @@ class LandingPage extends StatelessWidget {
                   child: Column(
                     children: [
                       HeroSection(isMobile: isMobile),
-                      StatsSection(isMobile: isMobile),
                       FeaturesSection(isMobile: isMobile),
                       ShowcaseSection(isMobile: isMobile),
                       PricingSection(isMobile: isMobile),

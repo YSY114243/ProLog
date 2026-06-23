@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_text_styles.dart';
 import '../../core/app_spacing.dart';
@@ -13,22 +12,22 @@ class FeaturesSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final features = [
       _FeatureData(
-        icon: FontAwesomeIcons.camera,
+        icon: Icons.camera_alt_outlined,
         title: 'Seamless Capture',
         description: 'Document site activities in seconds. Keep every detail organized automatically without manual data entry.',
       ),
       _FeatureData(
-        icon: FontAwesomeIcons.filePdf,
+        icon: Icons.picture_as_pdf_outlined,
         title: 'Instant Reporting',
         description: 'Generate pristine, university-ready PDFs. Formatted perfectly with zero layout struggles.',
       ),
       _FeatureData(
-        icon: FontAwesomeIcons.cloudArrowUp,
+        icon: Icons.cloud_sync_outlined,
         title: 'Cloud Resilience',
         description: 'Your data is protected. Sync observations securely across all devices instantly.',
       ),
       _FeatureData(
-        icon: FontAwesomeIcons.bolt,
+        icon: Icons.bolt_outlined,
         title: 'Auto-Optimization',
         description: 'Upload massive site photos without hitting storage limits. Intelligently optimized for clarity.',
       ),
@@ -148,7 +147,7 @@ class _HoverableFeatureCardState extends State<_HoverableFeatureCard> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.all(40),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: AppColors.surfaceWhite,
           borderRadius: BorderRadius.circular(24),
@@ -178,13 +177,13 @@ class _HoverableFeatureCardState extends State<_HoverableFeatureCard> {
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: _isHovered ? AppColors.accentRoyalBlue.withValues(alpha: 0.2) : AppColors.borderSubtle.withValues(alpha: 0.5)),
               ),
-              child: FaIcon(
+              child: Icon(
                 widget.data.icon, 
-                size: 24, 
+                size: 28, 
                 color: _isHovered ? AppColors.accentRoyalBlue : AppColors.textPrimary.withValues(alpha: 0.8),
               ),
             ),
-            const SizedBox(height: AppSpacing.xl),
+            const SizedBox(height: AppSpacing.lg),
             Text(
               widget.data.title, 
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary, letterSpacing: -0.5),

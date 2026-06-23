@@ -51,19 +51,16 @@ class HeroSection extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: isMobile ? 24.0 : 64.0),
                 child: isMobile
                     ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           _buildCopy(context),
-                          const SizedBox(height: 80),
-                          _buildImage(context),
                         ],
                       )
                     : Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Expanded(flex: 5, child: _buildCopy(context)),
-                          const SizedBox(width: 80),
-                          Expanded(flex: 6, child: _buildImage(context)),
+                          Expanded(child: _buildCopy(context)),
                         ],
                       ),
               ),
@@ -76,7 +73,7 @@ class HeroSection extends StatelessWidget {
 
   Widget _buildCopy(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -91,17 +88,20 @@ class HeroSection extends StatelessWidget {
         const SizedBox(height: AppSpacing.xl),
         Text(
           'Track your internship.\nGenerate reports automatically.',
+          textAlign: TextAlign.center,
           style: isMobile ? AppTextStyles.h1.copyWith(fontSize: 44) : AppTextStyles.h1.copyWith(fontSize: 56, height: 1.1),
         ),
         const SizedBox(height: AppSpacing.lg),
         const Text(
           'The digital standard for engineering students. Turn daily site observations into university-ready reports instantly.',
+          textAlign: TextAlign.center,
           style: AppTextStyles.bodyLarge,
         ),
         const SizedBox(height: AppSpacing.xxl),
         Wrap(
           spacing: 16,
           runSpacing: 16,
+          alignment: WrapAlignment.center,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             ElevatedButton(
@@ -127,38 +127,6 @@ class HeroSection extends StatelessWidget {
           ],
         ),
       ],
-    );
-  }
-
-  Widget _buildImage(BuildContext context) {
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxHeight: 650, maxWidth: 350),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surfaceWhite,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.borderSubtle, width: 1),
-          boxShadow: AppColors.floatingShadow,
-        ),
-        child: Container(
-          width: double.infinity,
-          height: 650,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            gradient: LinearGradient(
-              colors: [
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                Theme.of(context).colorScheme.secondary.withValues(alpha: 0.05),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: Center(
-            child: Icon(Icons.dashboard_customize_rounded, size: 80, color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5)),
-          ),
-        ),
-      ),
     );
   }
 }

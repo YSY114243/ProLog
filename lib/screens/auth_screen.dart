@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../widgets/intern_log_logo.dart';
+import '../core/app_colors.dart';
 import 'dashboard_screen.dart';
 import 'paywall_screen.dart';
 
@@ -167,7 +168,7 @@ class _BrandPanel extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF00BCD4), Color(0xFF00796B)],
+          colors: [AppColors.accentRoyalBlue, AppColors.primaryDeepNavy],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -597,8 +598,8 @@ class _Field extends StatelessWidget {
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                  color: Color(0xFFD0ECF0), width: 1),
+              borderSide: BorderSide(
+                  color: AppColors.borderSubtle, width: 1),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
