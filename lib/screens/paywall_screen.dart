@@ -1,9 +1,9 @@
-import 'package:flutter/foundation.dart';
+// Removed foundation import
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_paypal/flutter_paypal.dart';
-import '../utils/paypal_facade.dart';
-import '../utils/paddle_facade.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'dashboard_screen.dart';
 import '../landing/landing_page.dart';
 
@@ -18,13 +18,76 @@ class PaywallScreen extends StatefulWidget {
 
 class _PaywallScreenState extends State<PaywallScreen> {
   bool _isProcessing = false;
+  final TextEditingController _licenseController = TextEditingController();
+
+  final String gumroadProductLink = 'https://yahyay.gumroad.com/l/internlog';
+  final String gumroadPermalink = 'internlog';
 
   @override
-  void initState() {
-    super.initState();
-    if (kIsWeb) {
-      // live token -> false for sandbox
-      initPaddle('live_46f7465238e1906ec3c688e27af', false);
+  void dispose() {
+    _licenseController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _launchGumroad() async {
+    final Uri url = Uri.parse(gumroadProductLink);
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not launch $gumroadProductLink')),
+        );
+      }
+    }
+  }
+
+  Future<void> _verifyLicenseKey() async {
+    final key = _licenseController.text.trim();
+    if (key.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter an activation key.')),
+      );
+      return;
+    }
+
+    setState(() => _isProcessing = true);
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://api.gumroad.com/v2/licenses/verify'),
+        body: {
+          'product_permalink': gumroadPermalink,
+          'license_key': key,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true && data['uses'] != null) {
+          await _onPaymentSuccess();
+          return;
+        }
+      }
+      
+      // If we reach here, it failed
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid or expired activation key.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error verifying key: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
     }
   }
 
@@ -32,7 +95,6 @@ class _PaywallScreenState extends State<PaywallScreen> {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
             
-    setState(() => _isProcessing = true);
     try {
       await Supabase.instance.client.auth.updateUser(
         UserAttributes(
@@ -43,7 +105,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
       if (!mounted) return;
       scaffoldMessenger.showSnackBar(
         SnackBar(
-          content: Text('Welcome to InternLog Premium!'),
+          content: const Text('Welcome to Premium!'),
           backgroundColor: Theme.of(context).colorScheme.primary,
         ),
       );
@@ -58,63 +120,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
           SnackBar(content: Text('Failed to activate premium: $e')),
         );
       }
-    } finally {
-      if (mounted) setState(() => _isProcessing = false);
     }
-  }
-
-  void _onPaymentError(dynamic error) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Payment Error: $error')),
-    );
-  }
-
-  void _onPaymentCancel() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Payment Cancelled')),
-    );
-  }
-
-  void _upgradeToPremium() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (BuildContext context) => UsePaypal(
-          sandboxMode: false,
-          clientId: "Ae7xARZuVt90cXuMSC7Bdri_bcoxPUSKJ6kIxz2mloWwMLFURhaFYi1zEg5dpp3zwo_x37h878AUKpqC",
-          secretKey: "PLACEHOLDER_NOT_NEEDED_FOR_CLIENT_SDK_BUT_REQUIRED_BY_PLUGIN",
-          returnURL: "https://samplesite.com/return",
-          cancelURL: "https://samplesite.com/cancel",
-          transactions: const [
-            {
-              "amount": {
-                "total": '5.00',
-                "currency": "USD",
-                "details": {
-                  "subtotal": '5.00',
-                  "shipping": '0',
-                  "shipping_discount": 0
-                }
-              },
-              "description": "InternLog Premium Lifetime Subscription",
-              "item_list": {
-                "items": [
-                  {
-                    "name": "InternLog Premium",
-                    "quantity": 1,
-                    "price": '5.00',
-                    "currency": "USD"
-                  }
-                ],
-              }
-            }
-          ],
-          note: "Contact support for any queries.",
-          onSuccess: (Map params) async => _onPaymentSuccess(),
-          onError: (error) => _onPaymentError(error),
-          onCancel: (params) => _onPaymentCancel(),
-        ),
-      ),
-    );
   }
 
   Future<void> _logout() async {
@@ -252,20 +258,14 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
                   if (_isProcessing)
                     Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary))
-                  else if (kIsWeb)
+                  else
                     Column(
                       children: [
                         ElevatedButton.icon(
-                          onPressed: () {
-                            openPaddleCheckout(
-                              priceId: 'pri_01kvtm34kcx4jt8qba0fj4fg0v',
-                              onSuccess: (data) => _onPaymentSuccess(),
-                              onClosed: (data) => print('Paddle closed'),
-                            );
-                          },
-                          icon: Icon(Icons.credit_card_rounded, color: Theme.of(context).colorScheme.surface),
+                          onPressed: _launchGumroad,
+                          icon: Icon(Icons.shopping_cart_rounded, color: Theme.of(context).colorScheme.surface),
                           label: const Text(
-                            'Pay with Credit Card / Apple Pay',
+                            'Buy Premium via Gumroad',
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                           ),
                           style: ElevatedButton.styleFrom(
@@ -277,35 +277,36 @@ class _PaywallScreenState extends State<PaywallScreen> {
                             minimumSize: const Size(double.infinity, 56),
                           ),
                         ),
+                        const SizedBox(height: 24),
+                        const Divider(),
+                        const SizedBox(height: 24),
+                        TextField(
+                          controller: _licenseController,
+                          decoration: InputDecoration(
+                            labelText: 'Enter Activation Key',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            prefixIcon: const Icon(Icons.key_rounded),
+                          ),
+                        ),
                         const SizedBox(height: 16),
-                        const Text('OR', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          height: 48,
-                          child: buildPayPalButton(
-                            amount: '5.00',
-                            onSuccess: (details) => _onPaymentSuccess(),
-                            onError: (err) => _onPaymentError(err),
-                            onCancel: (data) => _onPaymentCancel(),
+                        ElevatedButton.icon(
+                          onPressed: _verifyLicenseKey,
+                          icon: Icon(Icons.check_circle_rounded, color: Theme.of(context).colorScheme.primary),
+                          label: Text(
+                            'Activate',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.primary),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            minimumSize: const Size(double.infinity, 56),
                           ),
                         ),
                       ],
-                    )
-                  else
-                    ElevatedButton.icon(
-                      onPressed: _upgradeToPremium,
-                      icon: Icon(Icons.payment_rounded, color: Theme.of(context).colorScheme.surface),
-                      label: const Text(
-                        'Unlock Premium via PayPal',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Theme.of(context).colorScheme.surface,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        elevation: 0,
-                      ),
                     ),
                   
                   const SizedBox(height: 24),

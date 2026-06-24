@@ -19,7 +19,7 @@ dependencies:
   http: ^1.6.0
   fl_chart: ^0.69.0
   image_picker: ^1.2.1
-  flutter_paypal: ^0.2.1
+  url_launcher: ^6.2.5
   image: ^4.5.4
   font_awesome_flutter: ^11.0.0
 
