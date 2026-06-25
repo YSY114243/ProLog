@@ -58,7 +58,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: {
-          'product_permalink': 'internlog',
+          'product_id': 'ScNGem9rrUi9yIAFnDiVQQ==',
           'license_key': key,
         },
       );

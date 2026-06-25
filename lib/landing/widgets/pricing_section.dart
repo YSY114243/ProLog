@@ -73,7 +73,7 @@ class PricingSection extends StatelessWidget {
                           _buildPricingCard(
                             context,
                             title: 'Premium',
-                            price: '\$5',
+                            price: '\$9.99',
                             subtitle: 'One-time fee',
                             features: ['Unlimited Logs', 'Pro PDF Reports', 'Max Compression', 'Cloud Sync', 'Priority Support'],
                             isPopular: true,
@@ -99,7 +99,7 @@ class PricingSection extends StatelessWidget {
                             child: _buildPricingCard(
                               context,
                               title: 'Premium',
-                              price: '\$5',
+                              price: '\$9.99',
                               subtitle: 'One-time fee',
                               features: ['Unlimited Logs', 'Pro PDF Reports', 'Max Compression', 'Cloud Sync', 'Priority Support'],
                               isPopular: true,
