@@ -54,25 +54,30 @@ class _PaywallScreenState extends State<PaywallScreen> {
     try {
       final response = await http.post(
         Uri.parse('https://api.gumroad.com/v2/licenses/verify'),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
         body: {
-          'product_permalink': gumroadPermalink,
+          'product_permalink': 'internlog',
           'license_key': key,
         },
       );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['success'] == true && data['uses'] != null) {
-          await _onPaymentSuccess();
-          return;
-        }
+      print('Gumroad Response: ${response.body}');
+
+      final Map<String, dynamic> data = json.decode(response.body);
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        await _onPaymentSuccess();
+        return;
       }
       
       // If we reach here, it failed
       if (mounted) {
+        final errorMessage = data['message'] ?? 'Invalid or expired activation key.';
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid or expired activation key.'),
+          SnackBar(
+            content: Text(errorMessage),
             backgroundColor: Colors.red,
           ),
         );
@@ -81,7 +86,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error verifying key: $e'),
+            content: Text('Network/Connection Error: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -239,7 +244,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   // Price & CTA
                   Center(
                     child: Text(
-                      '\$5.00',
+                      '\$9.99',
                       style: TextStyle(
                         fontSize: 48,
                         fontWeight: FontWeight.w900,
@@ -250,7 +255,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                   ),
                   Center(
                     child: Text(
-                      'One-time payment (~20 SAR)',
+                      'One-time payment (~38 SAR)',
                       style: TextStyle(fontSize: 14, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
                     ),
                   ),
