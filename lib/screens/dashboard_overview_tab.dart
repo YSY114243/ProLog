@@ -74,13 +74,38 @@ class DashboardOverviewTab extends StatelessWidget {
           ),
           const SizedBox(height: 40),
 
-          // ── Task Distribution Chart ──────────────────────────────────────
+          // ── Dual-Panel Charts ────────────────────────────────────────
           if (allLogs.isNotEmpty) ...[
-            _TaskDistributionChart(
-              fieldWorkCount: fieldWorkCount,
-              officeWorkCount: officeWorkCount,
-              softwareCount: softwareCount,
-            ),
+            isMobile
+                ? Column(
+                    children: [
+                      _TaskDistributionChart(
+                        fieldWorkCount: fieldWorkCount,
+                        officeWorkCount: officeWorkCount,
+                        softwareCount: softwareCount,
+                      ),
+                      const SizedBox(height: 16),
+                      _WeeklyProgressChart(allLogs: allLogs),
+                    ],
+                  )
+                : IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: _TaskDistributionChart(
+                            fieldWorkCount: fieldWorkCount,
+                            officeWorkCount: officeWorkCount,
+                            softwareCount: softwareCount,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _WeeklyProgressChart(allLogs: allLogs),
+                        ),
+                      ],
+                    ),
+                  ),
             const SizedBox(height: 40),
           ],
 
@@ -312,7 +337,7 @@ class _TaskDistributionChartState extends State<_TaskDistributionChart> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Task Distribution',
+            'Detailed Task Distribution',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
@@ -424,6 +449,195 @@ class _TaskDistributionChartState extends State<_TaskDistributionChart> {
         fontSize: fontSize,
         fontWeight: FontWeight.w800,
         color: color, // Solid color for text since background is glassy
+      ),
+    );
+  }
+}
+
+// ── Weekly Progress Chart ─────────────────────────────────────────────────────
+
+class _WeeklyProgressChart extends StatelessWidget {
+  final List<DailyLog> allLogs;
+
+  const _WeeklyProgressChart({required this.allLogs});
+
+  @override
+  Widget build(BuildContext context) {
+    // Group logs by day of the week (Mon=1 .. Sun=7)
+    final Map<int, int> dayCounts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0};
+    for (final log in allLogs) {
+      final dow = log.date.weekday; // 1=Mon, 7=Sun
+      dayCounts[dow] = (dayCounts[dow] ?? 0) + 1;
+    }
+
+    final spots = dayCounts.entries
+        .map((e) => FlSpot((e.key - 1).toDouble(), e.value.toDouble()))
+        .toList()
+      ..sort((a, b) => a.x.compareTo(b.x));
+
+    final maxY = spots.map((s) => s.y).reduce((a, b) => a > b ? a : b);
+    final yMax = (maxY < 2 ? 2 : maxY + 1).toDouble();
+
+    final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final primary = Theme.of(context).colorScheme.primary;
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Theme.of(context).dividerColor),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Weekly Progress Chart (Days vs Tasks)',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            height: 180,
+            child: LineChart(
+              LineChartData(
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: true,
+                  horizontalInterval: 1,
+                  verticalInterval: 1,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: Theme.of(context).dividerColor,
+                    strokeWidth: 0.8,
+                  ),
+                  getDrawingVerticalLine: (value) => FlLine(
+                    color: Theme.of(context).dividerColor,
+                    strokeWidth: 0.8,
+                  ),
+                ),
+                titlesData: FlTitlesData(
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 30,
+                      interval: 1,
+                      getTitlesWidget: (value, meta) {
+                        final idx = value.toInt();
+                        if (idx < 0 || idx > 6) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            days[idx],
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context).textTheme.bodyMedium?.color,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  leftTitles: AxisTitles(
+                    axisNameWidget: Text(
+                      'Tasks Logged',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).textTheme.labelSmall?.color,
+                      ),
+                    ),
+                    axisNameSize: 20,
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 28,
+                      interval: 1,
+                      getTitlesWidget: (value, meta) {
+                        if (value == meta.max || value == meta.min) {
+                          return const SizedBox.shrink();
+                        }
+                        return Text(
+                          value.toInt().toString(),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Theme.of(context).textTheme.labelSmall?.color,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                ),
+                borderData: FlBorderData(
+                  show: true,
+                  border: Border(
+                    bottom: BorderSide(color: Theme.of(context).dividerColor),
+                    left: BorderSide(color: Theme.of(context).dividerColor),
+                  ),
+                ),
+                minX: 0,
+                maxX: 6,
+                minY: 0,
+                maxY: yMax,
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: spots,
+                    isCurved: true,
+                    curveSmoothness: 0.3,
+                    color: primary,
+                    barWidth: 3,
+                    isStrokeCapRound: true,
+                    dotData: FlDotData(
+                      show: true,
+                      getDotPainter: (spot, percent, barData, index) {
+                        return FlDotCirclePainter(
+                          radius: 5,
+                          color: Theme.of(context).colorScheme.surface,
+                          strokeWidth: 2.5,
+                          strokeColor: primary,
+                        );
+                      },
+                    ),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      color: primary.withValues(alpha: 0.08),
+                    ),
+                  ),
+                ],
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipItems: (touchedSpots) {
+                      return touchedSpots.map((spot) {
+                        final day = days[spot.x.toInt()];
+                        return LineTooltipItem(
+                          '$day: ${spot.y.toInt()} tasks',
+                          TextStyle(
+                            color: Theme.of(context).colorScheme.surface,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                          ),
+                        );
+                      }).toList();
+                    },
+                  ),
+                ),
+              ),
+              duration: const Duration(milliseconds: 600),
+              curve: Curves.easeInOut,
+            ),
+          ),
+        ],
       ),
     );
   }
