@@ -5,6 +5,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import '../models/daily_log.dart';
+import '../models/challenge.dart';
 
 // ── Student metadata ──────────────────────────────────────────────────────────
 
@@ -97,6 +98,7 @@ class PdfService {
   Future<Uint8List> generateInternshipReport({
     required List<DailyLog> logs,
     required StudentInfo student,
+    List<Challenge> challenges = const [],
   }) async {
     final arabicFont = await PdfGoogleFonts.cairoRegular();
     final arabicBold = await PdfGoogleFonts.cairoBold();
@@ -159,6 +161,23 @@ class PdfService {
           header: (ctx) => _pageHeader(ctx, student, customLogo),
           footer: (ctx) => _pageFooter(ctx),
           build:  (ctx) => _buildLogTable(logs, dateFormat),
+        ),
+      );
+    }
+
+    // ── Challenges & Lessons Learned (multi-page) ─────────────────────────
+    if (challenges.isNotEmpty) {
+      doc.addPage(
+        pw.MultiPage(
+          pageTheme: pw.PageTheme(
+            theme: theme,
+            pageFormat: PdfPageFormat.a4,
+            margin: const pw.EdgeInsets.symmetric(horizontal: 36, vertical: 36),
+            buildBackground: buildWatermark,
+          ),
+          header: (ctx) => _challengesPageHeader(ctx),
+          footer: (ctx) => _pageFooter(ctx),
+          build:  (ctx) => _buildChallengesTable(challenges, dateFormat),
         ),
       );
     }
@@ -707,5 +726,79 @@ class PdfService {
       case TaskType.officeWork: return _C.blue;
       case TaskType.software:   return _C.purple;
     }
+  }
+
+  // ── Challenges section ──────────────────────────────────────────────────
+
+  pw.Widget _challengesPageHeader(pw.Context ctx) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(
+          'Challenges & Lessons Learned',
+          style: pw.TextStyle(
+            font:     pw.Font.helveticaBold(),
+            fontSize: 14,
+            color:    _C.dark,
+          ),
+        ),
+        pw.SizedBox(height: 5),
+        pw.Container(height: 2, color: _C.cyan),
+        pw.SizedBox(height: 14),
+      ],
+    );
+  }
+
+  List<pw.Widget> _buildChallengesTable(List<Challenge> challenges, DateFormat fmt) {
+    final sortedChallenges = [...challenges]..sort((a, b) => a.date.compareTo(b.date));
+
+    final header = pw.TableRow(
+      decoration: const pw.BoxDecoration(
+        color: _C.cyan,
+        borderRadius: pw.BorderRadius.only(
+          topLeft:  pw.Radius.circular(4),
+          topRight: pw.Radius.circular(4),
+        ),
+      ),
+      children: [
+        _thCell('DATE'),
+        _thCell('PROBLEM'),
+        _thCell('RESOLUTION'),
+      ],
+    );
+
+    final rows = sortedChallenges.asMap().entries.map((e) {
+      final i = e.key;
+      final c = e.value;
+      final bg = i.isEven ? PdfColors.white : _C.rowAlt;
+
+      return pw.TableRow(
+        decoration: pw.BoxDecoration(color: bg),
+        children: [
+          _tdCell(fmt.format(c.date), isBold: true, color: _C.cyan),
+          _tdCell(c.problem),
+          _tdCell(c.resolution.trim().isEmpty ? '—' : c.resolution, dimmed: c.resolution.trim().isEmpty),
+        ],
+      );
+    }).toList();
+
+    return [
+      pw.Table(
+        columnWidths: {
+          0: const pw.FixedColumnWidth(68),
+          1: const pw.FlexColumnWidth(3),
+          2: const pw.FlexColumnWidth(3),
+        },
+        border: pw.TableBorder(
+          horizontalInside: pw.BorderSide(color: _C.divider, width: 0.5),
+          verticalInside:   pw.BorderSide(color: _C.divider, width: 0.5),
+          bottom: pw.BorderSide(color: _C.cardBord, width: 0.8),
+          left:   pw.BorderSide(color: _C.cardBord, width: 0.8),
+          right:  pw.BorderSide(color: _C.cardBord, width: 0.8),
+          top:    pw.BorderSide(color: _C.cardBord, width: 0.8),
+        ),
+        children: [header, ...rows],
+      ),
+    ];
   }
 }

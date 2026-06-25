@@ -12,6 +12,7 @@ import 'reports_tab.dart';
 import 'settings_tab.dart';
 import 'my_logs_tab.dart';
 import 'dashboard_overview_tab.dart';
+import 'challenges_tab.dart';
 
 /// Breakpoints for responsive layout.
 class _Bp {
@@ -222,6 +223,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final bytes = await PdfService.instance.generateInternshipReport(
         logs: _logs,
         student: student,
+        challenges: await SupabaseService.instance.fetchChallenges(),
       );
       await PdfService.instance.downloadPdf(bytes, 'Internship_Report.pdf');
     } catch (e) {
@@ -277,6 +279,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   label: 'Reports',
                 ),
                 NavigationDestination(
+                  icon: FaIcon(FontAwesomeIcons.shield, size: 18),
+                  selectedIcon: FaIcon(FontAwesomeIcons.shield,
+                      size: 18, color: Theme.of(context).colorScheme.primary),
+                  label: 'Challenges',
+                ),
+                NavigationDestination(
                   icon: FaIcon(FontAwesomeIcons.gear, size: 18),
                   selectedIcon: FaIcon(FontAwesomeIcons.gear,
                       size: 18, color: Theme.of(context).colorScheme.primary),
@@ -325,7 +333,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   isMobile: isMobile,
                   title: _navIndex == 0 ? 'Dashboard' :
                          _navIndex == 1 ? 'My Logs' :
-                         _navIndex == 2 ? 'Reports' : 'Settings',
+                         _navIndex == 2 ? 'Reports' :
+                         _navIndex == 3 ? 'Challenges' : 'Settings',
                   onDownload: _downloadReport,
                 ),
                 Expanded(
@@ -355,6 +364,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             )
                       : _navIndex == 2
                           ? ReportsTab(allLogs: _logs)
+                      : _navIndex == 3
+                          ? ChallengesTab(isMobile: isMobile, isDesktop: isDesktop)
                           : const SettingsTab(),
                 ),
               ],

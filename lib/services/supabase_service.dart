@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/daily_log.dart';
+import '../models/challenge.dart';
 
 /// Singleton service that owns all Supabase interactions for InternLog.
 ///
@@ -120,6 +121,45 @@ class SupabaseService {
         .not('image_url', 'is', null);
     
     return (res as List).length;
+  }
+
+  // ── CHALLENGES ────────────────────────────────────────────────────────────
+
+  static const String _challengesTable = 'challenges';
+
+  /// Fetches all `challenges` rows belonging to the current user, ordered by
+  /// `date` descending (most recent first).
+  Future<List<Challenge>> fetchChallenges() async {
+    final userId = currentUserId;
+    if (userId == null || userId.isEmpty) return [];
+
+    final response = await _client
+        .from(_challengesTable)
+        .select()
+        .eq('user_id', userId)
+        .order('date', ascending: false);
+
+    return (response as List<dynamic>)
+        .map((row) => Challenge.fromJson(row as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Inserts a new [challenge] row into `challenges`.
+  Future<void> insertChallenge(Challenge challenge) async {
+    await _client.from(_challengesTable).insert(challenge.toJson());
+  }
+
+  /// Updates an existing [challenge] row identified by [challenge.id].
+  Future<void> updateChallenge(Challenge challenge) async {
+    await _client
+        .from(_challengesTable)
+        .update(challenge.toJson())
+        .eq('id', challenge.id);
+  }
+
+  /// Permanently deletes the challenge with the given [id].
+  Future<void> deleteChallenge(String id) async {
+    await _client.from(_challengesTable).delete().eq('id', id);
   }
 
   // ── IMAGE HOSTING ─────────────────────────────────────────────────────────

@@ -28,6 +28,10 @@ class AppSidebar extends StatelessWidget {
       label: 'Reports',
     ),
     _FaDestination(
+      icon: FontAwesomeIcons.shield,
+      label: 'Challenges',
+    ),
+    _FaDestination(
       icon: FontAwesomeIcons.gear,
       label: 'Settings',
     ),
