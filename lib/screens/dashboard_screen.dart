@@ -282,7 +282,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   icon: FaIcon(FontAwesomeIcons.shield, size: 18),
                   selectedIcon: FaIcon(FontAwesomeIcons.shield,
                       size: 18, color: Theme.of(context).colorScheme.primary),
-                  label: 'Challenges',
+                  label: 'Challenges & Learnings',
                 ),
                 NavigationDestination(
                   icon: FaIcon(FontAwesomeIcons.gear, size: 18),
@@ -334,7 +334,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   title: _navIndex == 0 ? 'Dashboard' :
                          _navIndex == 1 ? 'My Logs' :
                          _navIndex == 2 ? 'Reports' :
-                         _navIndex == 3 ? 'Challenges' : 'Settings',
+                         _navIndex == 3 ? 'Challenges & Learnings' : 'Settings',
                   onDownload: _downloadReport,
                 ),
                 Expanded(

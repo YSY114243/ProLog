@@ -152,7 +152,7 @@ class _ChallengesTabState extends State<ChallengesTab> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Challenges & Solutions',
+                      'Challenges & Learnings',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w800,
@@ -398,6 +398,50 @@ class _ChallengeCard extends StatelessWidget {
               ],
             ),
           ],
+          const SizedBox(height: 16),
+
+          // ── Lessons Learned ──────────────────────────────────────────────
+          if (challenge.lessonsLearned.trim().isNotEmpty) ...[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(Icons.lightbulb_outline_rounded, size: 18, color: Colors.blue.shade700),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Lessons Learned',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                          color: Colors.blue.shade700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        challenge.lessonsLearned,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Theme.of(context).colorScheme.onSurface,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -418,6 +462,7 @@ class _ChallengeFormDialogState extends State<_ChallengeFormDialog> {
   late DateTime _date;
   late TextEditingController _problemCtrl;
   late TextEditingController _resolutionCtrl;
+  late TextEditingController _lessonsCtrl;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -426,12 +471,14 @@ class _ChallengeFormDialogState extends State<_ChallengeFormDialog> {
     _date = widget.existing?.date ?? DateTime.now();
     _problemCtrl = TextEditingController(text: widget.existing?.problem ?? '');
     _resolutionCtrl = TextEditingController(text: widget.existing?.resolution ?? '');
+    _lessonsCtrl = TextEditingController(text: widget.existing?.lessonsLearned ?? '');
   }
 
   @override
   void dispose() {
     _problemCtrl.dispose();
     _resolutionCtrl.dispose();
+    _lessonsCtrl.dispose();
     super.dispose();
   }
 
@@ -456,6 +503,7 @@ class _ChallengeFormDialogState extends State<_ChallengeFormDialog> {
       date: _date,
       problem: _problemCtrl.text.trim(),
       resolution: _resolutionCtrl.text.trim(),
+      lessonsLearned: _lessonsCtrl.text.trim(),
     );
 
     Navigator.pop(context, challenge);
@@ -575,6 +623,27 @@ class _ChallengeFormDialogState extends State<_ChallengeFormDialog> {
                       hintText: 'How did you resolve it? What actions were taken?',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // ── Lessons Learned ─────────────────────────────────────────
+                  Text(
+                    'Lessons Learned / What I Learned Today',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _lessonsCtrl,
+                    maxLines: 4,
+                    decoration: InputDecoration(
+                      hintText: 'What did you learn from this? What are your key takeaways?',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Please add your lessons learned' : null,
                   ),
                   const SizedBox(height: 32),
 

@@ -29,7 +29,7 @@ class AppSidebar extends StatelessWidget {
     ),
     _FaDestination(
       icon: FontAwesomeIcons.shield,
-      label: 'Challenges',
+      label: 'Challenges & Learnings',
     ),
     _FaDestination(
       icon: FontAwesomeIcons.gear,

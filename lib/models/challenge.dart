@@ -17,6 +17,7 @@ class Challenge {
   final DateTime date;
   final String problem;
   final String resolution;
+  final String lessonsLearned;
 
   const Challenge({
     required this.id,
@@ -24,24 +25,27 @@ class Challenge {
     required this.date,
     required this.problem,
     required this.resolution,
+    required this.lessonsLearned,
   });
 
   factory Challenge.fromJson(Map<String, dynamic> json) {
     return Challenge(
-      id:         json['id']         as String,
-      userId:     json['user_id']    as String,
-      date:       DateTime.parse(json['date'] as String),
-      problem:    json['problem']    as String,
-      resolution: json['resolution'] as String? ?? '',
+      id:             json['id']             as String,
+      userId:         json['user_id']        as String,
+      date:           DateTime.parse(json['date'] as String),
+      problem:        json['problem']        as String,
+      resolution:     json['resolution']     as String? ?? '',
+      lessonsLearned: json['lessons_learned'] as String? ?? '',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'user_id':    userId,
-      'date':       DateFormat('yyyy-MM-dd').format(date),
-      'problem':    problem,
-      'resolution': resolution,
+      'user_id':         userId,
+      'date':            DateFormat('yyyy-MM-dd').format(date),
+      'problem':         problem,
+      'resolution':      resolution,
+      'lessons_learned': lessonsLearned,
     };
   }
 
@@ -51,13 +55,15 @@ class Challenge {
     DateTime? date,
     String? problem,
     String? resolution,
+    String? lessonsLearned,
   }) {
     return Challenge(
-      id:         id         ?? this.id,
-      userId:     userId     ?? this.userId,
-      date:       date       ?? this.date,
-      problem:    problem    ?? this.problem,
-      resolution: resolution ?? this.resolution,
+      id:             id             ?? this.id,
+      userId:         userId         ?? this.userId,
+      date:           date           ?? this.date,
+      problem:        problem        ?? this.problem,
+      resolution:     resolution     ?? this.resolution,
+      lessonsLearned: lessonsLearned ?? this.lessonsLearned,
     );
   }
 }

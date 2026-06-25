@@ -763,7 +763,7 @@ class PdfService {
       children: [
         _thCell('DATE'),
         _thCell('PROBLEM'),
-        _thCell('RESOLUTION'),
+        _thCell('ACTION TAKEN & LESSONS LEARNED'),
       ],
     );
 
@@ -772,12 +772,17 @@ class PdfService {
       final c = e.value;
       final bg = i.isEven ? PdfColors.white : _C.rowAlt;
 
+      final combined = [
+        if (c.resolution.trim().isNotEmpty) 'Action:\n${c.resolution}',
+        if (c.lessonsLearned.trim().isNotEmpty) 'Learnings:\n${c.lessonsLearned}',
+      ].join('\n\n');
+
       return pw.TableRow(
         decoration: pw.BoxDecoration(color: bg),
         children: [
           _tdCell(fmt.format(c.date), isBold: true, color: _C.cyan),
           _tdCell(c.problem),
-          _tdCell(c.resolution.trim().isEmpty ? '—' : c.resolution, dimmed: c.resolution.trim().isEmpty),
+          _tdCell(combined.trim().isEmpty ? '—' : combined, dimmed: combined.trim().isEmpty),
         ],
       );
     }).toList();
