@@ -27,7 +27,6 @@ class InternLogLogo extends StatelessWidget {
     final textColor = light ? Colors.white : Theme.of(context).colorScheme.onSurface;
 
     final double iconBoxSize;
-    final double iconSize;
     final double fontSize;
     final double subSize;
     final double spacing;
@@ -35,22 +34,19 @@ class InternLogLogo extends StatelessWidget {
 
     switch (_size) {
       case LogoSize.small:
-        iconBoxSize = 32; iconSize = 14; fontSize = 15;
+        iconBoxSize = 32; fontSize = 15;
         subSize = 9;  spacing = 8;  borderRadius = 8;
         break;
       case LogoSize.medium:
-        iconBoxSize = 38; iconSize = 17; fontSize = 19;
+        iconBoxSize = 38; fontSize = 19;
         subSize = 10; spacing = 10; borderRadius = 10;
         break;
       case LogoSize.large:
-        iconBoxSize = 52; iconSize = 24; fontSize = 26;
+        iconBoxSize = 52; fontSize = 26;
         subSize = 12; spacing = 13; borderRadius = 14;
         break;
     }
 
-    final iconBg = light
-        ? Colors.white.withValues(alpha: 0.18)
-        : Theme.of(context).colorScheme.primary.withValues(alpha: 0.12);
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -59,31 +55,24 @@ class InternLogLogo extends StatelessWidget {
         Container(
           width: iconBoxSize,
           height: iconBoxSize,
-          decoration: light
-              ? BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(borderRadius))
-              : BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(context).colorScheme.primary,
-                      Theme.of(context).colorScheme.secondary,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(borderRadius),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(borderRadius),
+            boxShadow: [
+              if (!light)
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
                 ),
-          child: Center(
-            child: Icon(
-              Icons.engineering,
-              color: light ? Colors.white : Theme.of(context).colorScheme.surface,
-              size: iconSize,
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(borderRadius),
+            child: Image.asset(
+              'assets/images/app_icon.png',
+              width: iconBoxSize,
+              height: iconBoxSize,
+              fit: BoxFit.cover,
             ),
           ),
         ),
