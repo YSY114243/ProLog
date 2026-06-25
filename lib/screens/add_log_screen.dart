@@ -6,6 +6,8 @@ import 'package:image/image.dart' as img;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/daily_log.dart';
 import '../services/supabase_service.dart';
+import '../services/speech_service.dart';
+import '../services/ai_service.dart';
 import 'paywall_screen.dart';
 
 Future<Uint8List?> _compressImage(Uint8List bytes) async {
@@ -63,6 +65,11 @@ class _AddLogScreenState extends State<AddLogScreen> {
   bool     _isUploadingImage = false;
   bool     _isSaving       = false;
 
+  // ── Voice-to-text state ──────────────────────────────────────────────────
+  bool _speechAvailable = false;
+  TextEditingController? _activeVoiceCtrl;
+  String _voiceBuffer = '';
+
   /// True when the screen was opened with an existing log to edit.
   bool get _isEditing => widget.initialLog != null;
 
@@ -76,6 +83,59 @@ class _AddLogScreenState extends State<AddLogScreen> {
       _descCtrl.text  = log.description;
       _issuesCtrl.text = log.issuesFound;
       _imageUrl = log.imageUrl;
+    }
+    _initSpeech();
+  }
+
+  Future<void> _initSpeech() async {
+    _speechAvailable = await SpeechService.instance.initialize();
+    if (mounted) setState(() {});
+  }
+
+  void _toggleVoice(TextEditingController ctrl) {
+    if (SpeechService.instance.isListening) {
+      SpeechService.instance.stopListening();
+      setState(() => _activeVoiceCtrl = null);
+      return;
+    }
+    _voiceBuffer = ctrl.text;
+    setState(() => _activeVoiceCtrl = ctrl);
+    SpeechService.instance.startListening(
+      onResult: (words) {
+        if (mounted) {
+          setState(() {
+            ctrl.text = _voiceBuffer.isEmpty
+                ? words
+                : '$_voiceBuffer $words';
+            ctrl.selection = TextSelection.fromPosition(
+              TextPosition(offset: ctrl.text.length),
+            );
+          });
+        }
+      },
+    );
+  }
+
+  Future<void> _polishWithAi(TextEditingController ctrl) async {
+    if (!AiService.instance.isConfigured) {
+      _showSnackbar('AI polishing is not configured yet.', isError: true);
+      return;
+    }
+    if (ctrl.text.trim().isEmpty) return;
+
+    final original = ctrl.text;
+    _showSnackbar('Polishing text with AI...', isError: false);
+
+    final result = await AiService.instance.polishText(original);
+    if (result != null && mounted) {
+      ctrl.text = result;
+      ctrl.selection = TextSelection.fromPosition(
+        TextPosition(offset: ctrl.text.length),
+      );
+      _showSnackbar('Text polished ✓', isError: false);
+    } else if (mounted) {
+      // Keep original text intact
+      _showSnackbar('Servers are busy. Your original text is saved.', isError: true);
     }
   }
 
@@ -404,6 +464,11 @@ class _AddLogScreenState extends State<AddLogScreen> {
                         validator: (v) => (v == null || v.trim().isEmpty)
                             ? 'Description cannot be empty'
                             : null,
+                        showMic: _speechAvailable,
+                        isListening: _activeVoiceCtrl == _descCtrl && SpeechService.instance.isListening,
+                        onMicPressed: () => _toggleVoice(_descCtrl),
+                        showAiPolish: AiService.instance.isConfigured,
+                        onAiPolish: () => _polishWithAi(_descCtrl),
                       ),
                       const SizedBox(height: 12),
                       SingleChildScrollView(
@@ -439,6 +504,9 @@ class _AddLogScreenState extends State<AddLogScreen> {
                         fillColor: const Color(0xFFFFFDE7),
                         borderColor: const Color(0xFFFFECB3),
                         focusBorderColor: const Color(0xFFF57C00),
+                        showMic: _speechAvailable,
+                        isListening: _activeVoiceCtrl == _issuesCtrl && SpeechService.instance.isListening,
+                        onMicPressed: () => _toggleVoice(_issuesCtrl),
                       ),
                       const SizedBox(height: 24),
 
@@ -751,6 +819,15 @@ class _StyledTextArea extends StatelessWidget {
   final Color? focusBorderColor;
   final String? Function(String?)? validator;
 
+  // Voice-to-text
+  final bool showMic;
+  final bool isListening;
+  final VoidCallback? onMicPressed;
+
+  // AI polish
+  final bool showAiPolish;
+  final VoidCallback? onAiPolish;
+
   const _StyledTextArea({
     required this.controller,
     required this.hint,
@@ -762,6 +839,12 @@ class _StyledTextArea extends StatelessWidget {
     this.borderColor,
     this.focusBorderColor,
     this.validator,
+
+    this.showMic = false,
+    this.isListening = false,
+    this.onMicPressed,
+    this.showAiPolish = false,
+    this.onAiPolish,
   });
 
   @override
@@ -770,6 +853,40 @@ class _StyledTextArea extends StatelessWidget {
     final border = borderColor ?? const Color(0xFFD0ECF0);
     final focus  = focusBorderColor ?? Theme.of(context).colorScheme.primary;
     final icon   = accentColor ?? Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey;
+
+    // Build suffix icons
+    final suffixWidgets = <Widget>[];
+    if (showAiPolish) {
+      suffixWidgets.add(
+        Tooltip(
+          message: 'Polish with AI',
+          child: IconButton(
+            icon: Icon(Icons.auto_fix_high_rounded, size: 18,
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7)),
+            onPressed: onAiPolish,
+            splashRadius: 18,
+          ),
+        ),
+      );
+    }
+    if (showMic) {
+      suffixWidgets.add(
+        Tooltip(
+          message: isListening ? 'Stop listening' : 'Voice input',
+          child: IconButton(
+            icon: Icon(
+              isListening ? Icons.mic_rounded : Icons.mic_none_rounded,
+              size: 20,
+              color: isListening
+                  ? Colors.redAccent
+                  : Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
+            ),
+            onPressed: onMicPressed,
+            splashRadius: 18,
+          ),
+        ),
+      );
+    }
 
     return TextFormField(
       controller: controller,
@@ -793,6 +910,15 @@ class _StyledTextArea extends StatelessWidget {
           child: Icon(prefixIcon, size: 18, color: icon),
         ),
         prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+        suffixIcon: suffixWidgets.isEmpty
+            ? null
+            : Padding(
+                padding: const EdgeInsets.only(top: 6, right: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: suffixWidgets,
+                ),
+              ),
         filled: true,
         fillColor: fill,
         contentPadding:

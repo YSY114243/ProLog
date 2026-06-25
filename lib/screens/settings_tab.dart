@@ -16,10 +16,22 @@ class _SettingsTabState extends State<SettingsTab> {
   final _formKey = GlobalKey<FormState>();
 
   final _uniIdCtrl = TextEditingController();
-  final _majorCtrl = TextEditingController();
   final _uniNameCtrl = TextEditingController();
   final _companyCtrl = TextEditingController();
   final _supervisorCtrl = TextEditingController();
+
+  /// Engineering disciplines available in the dropdown.
+  static const _majors = [
+    'Civil Engineering',
+    'Mechanical Engineering',
+    'Electrical Engineering',
+    'Architecture',
+    'Industrial Engineering',
+    'Software Engineering',
+    'Other',
+  ];
+
+  String? _selectedMajor;
 
   String? _customLogoUrl;
   bool _isSaving = false;
@@ -36,7 +48,7 @@ class _SettingsTabState extends State<SettingsTab> {
     if (user != null && user.userMetadata != null) {
       final meta = user.userMetadata!;
       _uniIdCtrl.text = meta['uni_id'] ?? '';
-      _majorCtrl.text = meta['major'] ?? '';
+      _selectedMajor = _majors.contains(meta['major']) ? meta['major'] : (meta['major']?.toString().isNotEmpty == true ? meta['major'] : null);
       _uniNameCtrl.text = meta['uni_name'] ?? '';
       _companyCtrl.text = meta['company'] ?? '';
       _supervisorCtrl.text = meta['supervisor'] ?? '';
@@ -54,7 +66,7 @@ class _SettingsTabState extends State<SettingsTab> {
         UserAttributes(
           data: {
             'uni_id': _uniIdCtrl.text.trim(),
-            'major': _majorCtrl.text.trim(),
+            'major': _selectedMajor ?? '',
             'uni_name': _uniNameCtrl.text.trim(),
             'company': _companyCtrl.text.trim(),
             'supervisor': _supervisorCtrl.text.trim(),
@@ -140,7 +152,6 @@ class _SettingsTabState extends State<SettingsTab> {
   @override
   void dispose() {
     _uniIdCtrl.dispose();
-    _majorCtrl.dispose();
     _uniNameCtrl.dispose();
     _companyCtrl.dispose();
     _supervisorCtrl.dispose();
@@ -196,7 +207,7 @@ class _SettingsTabState extends State<SettingsTab> {
                     children: [
                       _buildTextField('University ID', _uniIdCtrl, Icons.badge_outlined),
                       const SizedBox(height: 16),
-                      _buildTextField('Major (e.g., Civil Engineering)', _majorCtrl, Icons.school_outlined),
+                      _buildMajorDropdown(),
                       const SizedBox(height: 16),
                       _buildTextField('University Name', _uniNameCtrl, Icons.account_balance_outlined),
                       const SizedBox(height: 16),
@@ -389,6 +400,38 @@ class _SettingsTabState extends State<SettingsTab> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildMajorDropdown() {
+    return DropdownButtonFormField<String>(
+      initialValue: _selectedMajor,
+      decoration: InputDecoration(
+        labelText: 'Engineering Major',
+        labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey, fontSize: 14),
+        prefixIcon: Icon(Icons.school_outlined, size: 20, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
+        filled: true,
+        fillColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFD0ECF0), width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
+        ),
+      ),
+      style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface),
+      icon: Icon(Icons.arrow_drop_down_rounded, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
+      borderRadius: BorderRadius.circular(12),
+      items: _majors.map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
+      onChanged: (v) => setState(() => _selectedMajor = v),
+      validator: (v) => (v == null || v.isEmpty) ? 'Please select your major' : null,
     );
   }
 

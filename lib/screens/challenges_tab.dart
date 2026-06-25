@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/challenge.dart';
 import '../services/supabase_service.dart';
+import '../services/speech_service.dart';
 
 /// Full-screen tab for viewing, adding, editing, and deleting challenges.
 class ChallengesTab extends StatefulWidget {
@@ -472,6 +473,41 @@ class _ChallengeFormDialogState extends State<_ChallengeFormDialog> {
     _problemCtrl = TextEditingController(text: widget.existing?.problem ?? '');
     _resolutionCtrl = TextEditingController(text: widget.existing?.resolution ?? '');
     _lessonsCtrl = TextEditingController(text: widget.existing?.lessonsLearned ?? '');
+    _initSpeech();
+  }
+
+  // ── Voice-to-text ──────────────────────────────────────────────────────────
+  bool _speechAvailable = false;
+  TextEditingController? _activeVoiceCtrl;
+  String _voiceBuffer = '';
+
+  Future<void> _initSpeech() async {
+    _speechAvailable = await SpeechService.instance.initialize();
+    if (mounted) setState(() {});
+  }
+
+  void _toggleVoice(TextEditingController ctrl) {
+    if (SpeechService.instance.isListening) {
+      SpeechService.instance.stopListening();
+      setState(() => _activeVoiceCtrl = null);
+      return;
+    }
+    _voiceBuffer = ctrl.text;
+    setState(() => _activeVoiceCtrl = ctrl);
+    SpeechService.instance.startListening(
+      onResult: (words) {
+        if (mounted) {
+          setState(() {
+            ctrl.text = _voiceBuffer.isEmpty
+                ? words
+                : '$_voiceBuffer $words';
+            ctrl.selection = TextSelection.fromPosition(
+              TextPosition(offset: ctrl.text.length),
+            );
+          });
+        }
+      },
+    );
   }
 
   @override
@@ -601,6 +637,23 @@ class _ChallengeFormDialogState extends State<_ChallengeFormDialog> {
                     decoration: InputDecoration(
                       hintText: 'Describe the problem or challenge you encountered...',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      suffixIcon: _speechAvailable
+                          ? IconButton(
+                              icon: Icon(
+                                _activeVoiceCtrl == _problemCtrl && SpeechService.instance.isListening
+                                    ? Icons.mic_rounded
+                                    : Icons.mic_none_rounded,
+                                size: 20,
+                                color: _activeVoiceCtrl == _problemCtrl && SpeechService.instance.isListening
+                                    ? Colors.redAccent
+                                    : Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
+                              ),
+                              tooltip: _activeVoiceCtrl == _problemCtrl && SpeechService.instance.isListening
+                                  ? 'Stop listening'
+                                  : 'Voice input',
+                              onPressed: () => _toggleVoice(_problemCtrl),
+                            )
+                          : null,
                     ),
                     validator: (v) => (v == null || v.trim().isEmpty) ? 'Please describe the problem' : null,
                   ),
@@ -622,6 +675,23 @@ class _ChallengeFormDialogState extends State<_ChallengeFormDialog> {
                     decoration: InputDecoration(
                       hintText: 'How did you resolve it? What actions were taken?',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      suffixIcon: _speechAvailable
+                          ? IconButton(
+                              icon: Icon(
+                                _activeVoiceCtrl == _resolutionCtrl && SpeechService.instance.isListening
+                                    ? Icons.mic_rounded
+                                    : Icons.mic_none_rounded,
+                                size: 20,
+                                color: _activeVoiceCtrl == _resolutionCtrl && SpeechService.instance.isListening
+                                    ? Colors.redAccent
+                                    : Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
+                              ),
+                              tooltip: _activeVoiceCtrl == _resolutionCtrl && SpeechService.instance.isListening
+                                  ? 'Stop listening'
+                                  : 'Voice input',
+                              onPressed: () => _toggleVoice(_resolutionCtrl),
+                            )
+                          : null,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -642,6 +712,23 @@ class _ChallengeFormDialogState extends State<_ChallengeFormDialog> {
                     decoration: InputDecoration(
                       hintText: 'What did you learn from this? What are your key takeaways?',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      suffixIcon: _speechAvailable
+                          ? IconButton(
+                              icon: Icon(
+                                _activeVoiceCtrl == _lessonsCtrl && SpeechService.instance.isListening
+                                    ? Icons.mic_rounded
+                                    : Icons.mic_none_rounded,
+                                size: 20,
+                                color: _activeVoiceCtrl == _lessonsCtrl && SpeechService.instance.isListening
+                                    ? Colors.redAccent
+                                    : Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
+                              ),
+                              tooltip: _activeVoiceCtrl == _lessonsCtrl && SpeechService.instance.isListening
+                                  ? 'Stop listening'
+                                  : 'Voice input',
+                              onPressed: () => _toggleVoice(_lessonsCtrl),
+                            )
+                          : null,
                     ),
                     validator: (v) => (v == null || v.trim().isEmpty) ? 'Please add your lessons learned' : null,
                   ),

@@ -1,14 +1,19 @@
 // ignore_for_file: avoid_web_libraries_in_flutter
 
-import 'dart:html' as html;
-import 'dart:js' as js;
+import 'dart:js_interop';
+import 'package:flutter/foundation.dart';
+
+@JS('window.initPaddle')
+external void _initPaddle(String token, bool isSandbox);
+
+@JS('window.openPaddleCheckout')
+external void _openPaddleCheckout(String priceId, JSFunction onSuccess, JSFunction onClosed);
 
 void initPaddle(String token, bool isSandbox) {
-  final win = html.window as dynamic;
   try {
-    win.initPaddle(token, isSandbox);
+    _initPaddle(token, isSandbox);
   } catch (e) {
-    print('Error initializing Paddle: $e');
+    debugPrint('Error initializing Paddle: $e');
   }
 }
 
@@ -17,14 +22,13 @@ void openPaddleCheckout({
   required Function(dynamic) onSuccess,
   required Function(dynamic) onClosed,
 }) {
-  final win = html.window as dynamic;
   try {
-    win.openPaddleCheckout(
+    _openPaddleCheckout(
       priceId,
-      js.allowInterop((data) => onSuccess(data)),
-      js.allowInterop((data) => onClosed(data)),
+      ((JSAny? data) => onSuccess(data)).toJS,
+      ((JSAny? data) => onClosed(data)).toJS,
     );
   } catch (e) {
-    print('Error opening Paddle checkout: $e');
+    debugPrint('Error opening Paddle checkout: $e');
   }
 }

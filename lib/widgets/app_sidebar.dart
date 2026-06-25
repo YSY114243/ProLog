@@ -118,7 +118,9 @@ class AppSidebar extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        'Civil Engineering',
+                        user?.userMetadata?['major']?.toString().isNotEmpty == true
+                            ? user!.userMetadata!['major'].toString()
+                            : 'Engineering',
                         style: TextStyle(
                           fontSize: 10,
                           color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey,

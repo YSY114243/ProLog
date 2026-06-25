@@ -8,12 +8,7 @@ class PricingSection extends StatelessWidget {
 
   const PricingSection({super.key, required this.isMobile});
 
-  void _navigateToAuth(BuildContext context, {required bool isSignUp}) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => AuthScreen(initialIsSignUp: isSignUp)),
-    );
-  }
+
 
   @override
   Widget build(BuildContext context) {

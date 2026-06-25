@@ -265,7 +265,7 @@ class _BrandPanel extends StatelessWidget {
                 const Spacer(),
 
                 Text(
-                  '© ${DateTime.now().year} InternLog  ·  Civil Engineering Internship Platform',
+                  '© ${DateTime.now().year} InternLog  ·  Engineering Internship Platform',
                   style: TextStyle(
                     fontSize: 12,
                     color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.45),

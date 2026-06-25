@@ -63,7 +63,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
         },
       );
 
-      print('Gumroad Response: ${response.body}');
+      debugPrint('Gumroad Response: ${response.body}');
 
       final Map<String, dynamic> data = json.decode(response.body);
 
