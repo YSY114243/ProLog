@@ -165,6 +165,53 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  Future<void> _inviteSupervisor() async {
+    try {
+      final code = await SupabaseService.instance.generateSupervisorInviteCode();
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Invite Supervisor'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Share this code with your supervisor to link your accounts:'),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: SelectableText(
+                  code,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 4,
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Done'),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to generate invite code: $e')),
+      );
+    }
+  }
+
   Future<void> _downloadReport() async {
     if (_logs.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -336,6 +383,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                          _navIndex == 2 ? 'Reports' :
                          _navIndex == 3 ? 'Challenges & Learnings' : 'Settings',
                   onDownload: _downloadReport,
+                  onInvite: _inviteSupervisor,
                 ),
                 Expanded(
                   child: _navIndex == 0
@@ -384,12 +432,14 @@ class _AppHeader extends StatelessWidget {
   final bool isMobile;
   final String title;
   final VoidCallback onDownload;
+  final VoidCallback onInvite;
 
   const _AppHeader({
     required this.isDesktop,
     required this.isMobile,
     required this.title,
     required this.onDownload,
+    required this.onInvite,
   });
 
   @override
@@ -423,6 +473,20 @@ class _AppHeader extends StatelessWidget {
             const Spacer(),
           ],
 
+          // Invite Supervisor Button
+          OutlinedButton.icon(
+            onPressed: onInvite,
+            icon: const FaIcon(FontAwesomeIcons.userPlus, size: 15),
+            label: const Text('Invite Supervisor', style: TextStyle(fontWeight: FontWeight.w600)),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.secondary,
+              side: BorderSide(color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.3)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            ),
+          ),
+          const SizedBox(width: 12),
+          
           // Download Report Button
           OutlinedButton.icon(
             onPressed: onDownload,

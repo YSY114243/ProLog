@@ -32,10 +32,12 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   late bool   _isSignUp;
-  final _formKey   = GlobalKey<FormState>();
-  final _nameCtrl  = TextEditingController();
-  final _emailCtrl = TextEditingController();
-  final _passCtrl  = TextEditingController();
+  bool        _isSupervisorSignUp = false;
+  final _formKey        = GlobalKey<FormState>();
+  final _nameCtrl       = TextEditingController();
+  final _emailCtrl      = TextEditingController();
+  final _passCtrl       = TextEditingController();
+  final _inviteCodeCtrl = TextEditingController();
   bool    _obscure   = true;
   bool    _loading   = false;
   String? _errorMsg;
@@ -51,6 +53,7 @@ class _AuthScreenState extends State<AuthScreen> {
     _nameCtrl.dispose();
     _emailCtrl.dispose();
     _passCtrl.dispose();
+    _inviteCodeCtrl.dispose();
     super.dispose();
   }
 
@@ -67,17 +70,22 @@ class _AuthScreenState extends State<AuthScreen> {
 
     try {
       if (_isSignUp) {
-        final res = await client.auth.signUp(
-          email: email,
-          password: pass,
-          data: {'full_name': name},
-        );
-        if (!mounted) return;
-        if (res.user != null) {
-          _toDashboard();
+        if (_isSupervisorSignUp) {
+          final inviteCode = _inviteCodeCtrl.text.trim();
+          await SupabaseService.instance.registerSupervisor(email, pass, name, inviteCode);
+          if (mounted) _toDashboard();
         } else {
-          setState(() => _errorMsg =
-              'Check your email to confirm your account, then sign in.');
+          final res = await client.auth.signUp(
+            email: email,
+            password: pass,
+            data: {'full_name': name},
+          );
+          if (!mounted) return;
+          if (res.user != null) {
+            _toDashboard();
+          } else {
+            setState(() => _errorMsg = 'Check your email to confirm your account, then sign in.');
+          }
         }
       } else {
         await client.auth.signInWithPassword(email: email, password: pass);
@@ -133,6 +141,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
   void _toggleMode() => setState(() {
         _isSignUp  = !_isSignUp;
+        _isSupervisorSignUp = false;
         _errorMsg  = null;
         _formKey.currentState?.reset();
       });
@@ -153,17 +162,19 @@ class _AuthScreenState extends State<AuthScreen> {
                   width: 500,
                   child: _FormPanel(
                     isSignUp: _isSignUp,
+                    isSupervisorSignUp: _isSupervisorSignUp,
                     formKey: _formKey,
                     nameCtrl: _nameCtrl,
                     emailCtrl: _emailCtrl,
                     passCtrl: _passCtrl,
+                    inviteCodeCtrl: _inviteCodeCtrl,
                     obscure: _obscure,
                     loading: _loading,
                     errorMsg: _errorMsg,
-                    onToggleObscure: () =>
-                        setState(() => _obscure = !_obscure),
+                    onToggleObscure: () => setState(() => _obscure = !_obscure),
                     onSubmit: _submit,
                     onToggleMode: _toggleMode,
+                    onToggleSupervisorMode: (v) => setState(() => _isSupervisorSignUp = v ?? false),
                     onBack: () => Navigator.pop(context),
                   ),
                 ),
@@ -171,16 +182,19 @@ class _AuthScreenState extends State<AuthScreen> {
             )
           : _FormPanel(
               isSignUp: _isSignUp,
+              isSupervisorSignUp: _isSupervisorSignUp,
               formKey: _formKey,
               nameCtrl: _nameCtrl,
               emailCtrl: _emailCtrl,
               passCtrl: _passCtrl,
+              inviteCodeCtrl: _inviteCodeCtrl,
               obscure: _obscure,
               loading: _loading,
               errorMsg: _errorMsg,
               onToggleObscure: () => setState(() => _obscure = !_obscure),
               onSubmit: _submit,
               onToggleMode: _toggleMode,
+              onToggleSupervisorMode: (v) => setState(() => _isSupervisorSignUp = v ?? false),
               onBack: () => Navigator.pop(context),
             ),
     );
@@ -325,30 +339,36 @@ class _Blob extends StatelessWidget {
 
 class _FormPanel extends StatelessWidget {
   final bool isSignUp;
+  final bool isSupervisorSignUp;
   final GlobalKey<FormState> formKey;
   final TextEditingController nameCtrl;
   final TextEditingController emailCtrl;
   final TextEditingController passCtrl;
+  final TextEditingController inviteCodeCtrl;
   final bool obscure;
   final bool loading;
   final String? errorMsg;
   final VoidCallback onToggleObscure;
   final VoidCallback onSubmit;
   final VoidCallback onToggleMode;
+  final ValueChanged<bool?> onToggleSupervisorMode;
   final VoidCallback onBack;
 
   const _FormPanel({
     required this.isSignUp,
+    required this.isSupervisorSignUp,
     required this.formKey,
     required this.nameCtrl,
     required this.emailCtrl,
     required this.passCtrl,
+    required this.inviteCodeCtrl,
     required this.obscure,
     required this.loading,
     required this.errorMsg,
     required this.onToggleObscure,
     required this.onSubmit,
     required this.onToggleMode,
+    required this.onToggleSupervisorMode,
     required this.onBack,
   });
 
@@ -419,6 +439,33 @@ class _FormPanel extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: isSupervisorSignUp,
+                          onChanged: onToggleSupervisorMode,
+                          activeColor: Theme.of(context).colorScheme.primary,
+                        ),
+                        const Text('Register as Supervisor', style: TextStyle(fontWeight: FontWeight.w500)),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    if (isSupervisorSignUp) ...[
+                      _Field(
+                        controller: inviteCodeCtrl,
+                        label: 'Student Invite Code',
+                        hint: 'e.g. A8F3K9',
+                        icon: Icons.key_outlined,
+                        type: TextInputType.text,
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return 'Invite code is required for supervisors';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                   ],
                   _Field(
                     controller: emailCtrl,

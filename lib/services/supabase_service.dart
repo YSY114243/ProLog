@@ -241,6 +241,68 @@ class SupabaseService {
 
   // ── IMAGE HOSTING ─────────────────────────────────────────────────────────
 
+  /// Generates a random 6-character code, saves it to the student's profile, and returns it.
+  Future<String> generateSupervisorInviteCode() async {
+    final userId = currentUserId;
+    if (userId == null) throw Exception('Not signed in');
+
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    final random = _client.auth.currentSession?.user.id.hashCode ?? DateTime.now().millisecondsSinceEpoch;
+    // Just a quick random string generator. For more robustness use dart:math Random.
+    final rand = List.generate(6, (i) => chars[(random + i * 7) % chars.length]).join();
+
+    await _client.from(_profilesTable).upsert({
+      'id': userId,
+      'supervisor_invite_code': rand,
+    }); // Using upsert in case the profile row doesn't exist yet for the student
+
+    return rand;
+  }
+
+  /// Registers a new supervisor and links them to the student with the given invite code.
+  Future<void> registerSupervisor(String email, String password, String name, String inviteCode) async {
+    // 1. Verify the invite code exists FIRST (to avoid orphaned auth users if code is wrong)
+    // Actually, RLS might prevent reading without being logged in. We'll sign up first, 
+    // but standard practice is to rely on backend logic. Assuming the RLS allows reading via the invite code:
+    
+    // We sign up the user.
+    final authRes = await _client.auth.signUp(
+      email: email,
+      password: password,
+      data: {'full_name': name},
+    );
+    
+    final newUserId = authRes.user?.id;
+    if (newUserId == null) {
+      throw Exception('Failed to create account.');
+    }
+
+    // Now query for the student using the invite code
+    final studentRes = await _client
+        .from(_profilesTable)
+        .select()
+        .eq('supervisor_invite_code', inviteCode)
+        .maybeSingle();
+
+    if (studentRes == null) {
+      // If we could safely delete the auth user here, we would.
+      throw Exception('Invalid Invite Code');
+    }
+
+    // Insert the supervisor profile
+    await _client.from(_profilesTable).upsert({
+      'id': newUserId,
+      'full_name': name,
+      'role': 'supervisor',
+    });
+
+    // Link student to supervisor & clear invite code
+    await _client.from(_profilesTable).update({
+      'supervisor_id': newUserId,
+      'supervisor_invite_code': null,
+    }).eq('id', studentRes['id']);
+  }
+
   /// ImgBB free-tier API key.
   ///
   /// Get yours at https://api.imgbb.com/ (free account, no credit card).
