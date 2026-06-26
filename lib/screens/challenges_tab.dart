@@ -72,9 +72,8 @@ class _ChallengesTabState extends State<ChallengesTab> {
         await prefs.remove('draft_chal_prob');
         await prefs.remove('draft_chal_res');
         await prefs.remove('draft_chal_les');
-      }
-      
-      if (mounted) {
+
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Challenge logged!'),
