@@ -164,7 +164,6 @@ class PdfService {
           footer: (ctx) => _pageFooter(ctx, student),
           build:  (ctx) => [
             ..._buildLogTable(logs, dateFormat),
-            if (challenges.isEmpty) _buildSignatureBlock(),
           ],
         ),
       );
@@ -184,11 +183,41 @@ class PdfService {
           footer: (ctx) => _pageFooter(ctx, student),
           build:  (ctx) => [
             ..._buildChallengesTable(challenges, dateFormat),
-            _buildSignatureBlock(),
           ],
         ),
       );
     }
+
+    // ── Signature Block (Fixed at bottom of a new page) ─────────────────────────
+    doc.addPage(
+      pw.Page(
+        pageTheme: pw.PageTheme(
+          theme: theme,
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.symmetric(horizontal: 36, vertical: 36),
+          buildBackground: buildWatermark,
+        ),
+        build: (ctx) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+          children: [
+            pw.Text(
+              'Final Approval',
+              style: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                fontSize: 14,
+                color: PdfColors.black,
+              ),
+            ),
+            pw.SizedBox(height: 5),
+            pw.Container(height: 2, color: PdfColors.black),
+            pw.Spacer(),
+            _buildSignatureBlock(),
+            pw.SizedBox(height: 20),
+            _pageFooter(ctx, student),
+          ],
+        ),
+      ),
+    );
 
     // ── Appendix: Site Progress Photos (multi-page) ─────────────────────────
     if (appendixImages.isNotEmpty) {
@@ -336,7 +365,7 @@ class PdfService {
 
                 pw.SizedBox(height: 40),
                 pw.Divider(color: _C.cardBord, thickness: 1),
-                pw.SizedBox(height: 32),
+                pw.Spacer(),
 
                 // Student info card
                 _coverInfoCard(student, logs, dateFrom, dateTo, fmt),

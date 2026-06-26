@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/challenge.dart';
 import '../services/supabase_service.dart';
 import '../services/speech_service.dart';
+import '../services/ai_service.dart';
 
 /// Full-screen tab for viewing, adding, editing, and deleting challenges.
 class ChallengesTab extends StatefulWidget {
@@ -580,6 +581,46 @@ class _ChallengeFormDialogState extends State<_ChallengeFormDialog> {
     if (picked != null) setState(() => _date = picked);
   }
 
+  Future<void> _polishWithAi(TextEditingController ctrl) async {
+    if (!AiService.instance.isConfigured) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('AI polishing is not configured yet.'), backgroundColor: Colors.red),
+        );
+      }
+      return;
+    }
+    if (ctrl.text.trim().isEmpty) return;
+
+    final original = ctrl.text;
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Polishing text with AI...'),
+          backgroundColor: Theme.of(context).colorScheme.primary,
+        ),
+      );
+    }
+
+    final result = await AiService.instance.polishText(original);
+    if (result != null && mounted) {
+      ctrl.text = result;
+      ctrl.selection = TextSelection.fromPosition(
+        TextPosition(offset: ctrl.text.length),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Text polished ✓'),
+          backgroundColor: Theme.of(context).colorScheme.primary,
+        ),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Connection failed. Original text saved.'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
 
@@ -689,8 +730,12 @@ class _ChallengeFormDialogState extends State<_ChallengeFormDialog> {
                     decoration: InputDecoration(
                       hintText: 'Describe the problem or challenge you encountered...',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      suffixIcon: _speechAvailable
-                          ? IconButton(
+                      suffixIcon: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (_speechAvailable)
+                            IconButton(
                               icon: Icon(
                                 _activeVoiceCtrl == _problemCtrl && SpeechService.instance.isListening
                                     ? Icons.mic_rounded
@@ -704,8 +749,16 @@ class _ChallengeFormDialogState extends State<_ChallengeFormDialog> {
                                   ? 'Stop listening'
                                   : 'Voice input',
                               onPressed: () => _toggleVoice(_problemCtrl),
-                            )
-                          : null,
+                            ),
+                          if (AiService.instance.isConfigured)
+                            IconButton(
+                              icon: const FaIcon(FontAwesomeIcons.wandMagicSparkles, size: 16),
+                              color: Colors.purple.withValues(alpha: 0.7),
+                              tooltip: 'Polish text with AI',
+                              onPressed: () => _polishWithAi(_problemCtrl),
+                            ),
+                        ],
+                      ),
                     ),
                     validator: (v) => (v == null || v.trim().isEmpty) ? 'Please describe the problem' : null,
                   ),
@@ -727,8 +780,12 @@ class _ChallengeFormDialogState extends State<_ChallengeFormDialog> {
                     decoration: InputDecoration(
                       hintText: 'How did you resolve it? What actions were taken?',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      suffixIcon: _speechAvailable
-                          ? IconButton(
+                      suffixIcon: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (_speechAvailable)
+                            IconButton(
                               icon: Icon(
                                 _activeVoiceCtrl == _resolutionCtrl && SpeechService.instance.isListening
                                     ? Icons.mic_rounded
@@ -742,8 +799,16 @@ class _ChallengeFormDialogState extends State<_ChallengeFormDialog> {
                                   ? 'Stop listening'
                                   : 'Voice input',
                               onPressed: () => _toggleVoice(_resolutionCtrl),
-                            )
-                          : null,
+                            ),
+                          if (AiService.instance.isConfigured)
+                            IconButton(
+                              icon: const FaIcon(FontAwesomeIcons.wandMagicSparkles, size: 16),
+                              color: Colors.purple.withValues(alpha: 0.7),
+                              tooltip: 'Polish text with AI',
+                              onPressed: () => _polishWithAi(_resolutionCtrl),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -764,8 +829,12 @@ class _ChallengeFormDialogState extends State<_ChallengeFormDialog> {
                     decoration: InputDecoration(
                       hintText: 'What did you learn from this? What are your key takeaways?',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      suffixIcon: _speechAvailable
-                          ? IconButton(
+                      suffixIcon: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (_speechAvailable)
+                            IconButton(
                               icon: Icon(
                                 _activeVoiceCtrl == _lessonsCtrl && SpeechService.instance.isListening
                                     ? Icons.mic_rounded
@@ -779,8 +848,16 @@ class _ChallengeFormDialogState extends State<_ChallengeFormDialog> {
                                   ? 'Stop listening'
                                   : 'Voice input',
                               onPressed: () => _toggleVoice(_lessonsCtrl),
-                            )
-                          : null,
+                            ),
+                          if (AiService.instance.isConfigured)
+                            IconButton(
+                              icon: const FaIcon(FontAwesomeIcons.wandMagicSparkles, size: 16),
+                              color: Colors.purple.withValues(alpha: 0.7),
+                              tooltip: 'Polish text with AI',
+                              onPressed: () => _polishWithAi(_lessonsCtrl),
+                            ),
+                        ],
+                      ),
                     ),
                     validator: (v) => (v == null || v.trim().isEmpty) ? 'Please add your lessons learned' : null,
                   ),
