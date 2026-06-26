@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../widgets/intern_log_logo.dart';
 import '../core/app_colors.dart';
+import '../services/supabase_service.dart';
 import 'dashboard_screen.dart';
 import 'paywall_screen.dart';
+import 'supervisor_dashboard_screen.dart';
 
 /// Full-screen authentication flow — supports both Login and Sign Up.
 ///
@@ -92,7 +94,7 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
-  void _toDashboard() {
+  Future<void> _toDashboard() async {
     final user = Supabase.instance.client.auth.currentUser;
     bool showPaywall = widget.intentToPurchase;
     if (user != null && !showPaywall) {
@@ -104,10 +106,29 @@ class _AuthScreenState extends State<AuthScreen> {
       }
     }
 
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => showPaywall ? PaywallScreen(isVoluntary: widget.intentToPurchase) : const DashboardScreen()),
-      (route) => false,
-    );
+    if (showPaywall) {
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => PaywallScreen(isVoluntary: widget.intentToPurchase)),
+        (route) => false,
+      );
+      return;
+    }
+
+    final role = await SupabaseService.instance.fetchUserRole();
+    if (!mounted) return;
+
+    if (role == 'supervisor') {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const SupervisorDashboardScreen()),
+        (route) => false,
+      );
+    } else {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        (route) => false,
+      );
+    }
   }
 
   void _toggleMode() => setState(() {

@@ -88,6 +88,7 @@ class DailyLog {
   final String description;
   final String issuesFound;
   final String? imageUrl;
+  final String approvalStatus;
 
   const DailyLog({
     required this.id,
@@ -97,6 +98,7 @@ class DailyLog {
     required this.description,
     required this.issuesFound,
     this.imageUrl,
+    this.approvalStatus = 'pending',
   });
 
   // ── Serialisation ─────────────────────────────────────────────────────────
@@ -111,6 +113,7 @@ class DailyLog {
       description: json['description']  as String,
       issuesFound: json['issues_found'] as String? ?? '',
       imageUrl:    json['image_url']    as String?,
+      approvalStatus: json['approval_status'] as String? ?? 'pending',
     );
   }
 
@@ -125,6 +128,7 @@ class DailyLog {
       'task_type':    taskType.label,
       'description':  description,
       'issues_found': issuesFound,
+      'approval_status': approvalStatus,
       if (imageUrl != null) 'image_url': imageUrl,
     };
   }
@@ -138,6 +142,7 @@ class DailyLog {
     String? description,
     String? issuesFound,
     String? imageUrl,
+    String? approvalStatus,
   }) {
     return DailyLog(
       id:          id          ?? this.id,
@@ -147,6 +152,7 @@ class DailyLog {
       description: description ?? this.description,
       issuesFound: issuesFound ?? this.issuesFound,
       imageUrl:    imageUrl    ?? this.imageUrl,
+      approvalStatus: approvalStatus ?? this.approvalStatus,
     );
   }
 }

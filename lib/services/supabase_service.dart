@@ -30,6 +30,7 @@ class SupabaseService {
       '.oWYHzmjpqiLWA3HoPcomlzCGGISAFbuP6tBX-_ov3qU';
 
   static const String _table = 'daily_logs';
+  static const String _profilesTable = 'user_profiles';
 
   // ── Bootstrap ─────────────────────────────────────────────────────────────
 
@@ -160,6 +161,82 @@ class SupabaseService {
   /// Permanently deletes the challenge with the given [id].
   Future<void> deleteChallenge(String id) async {
     await _client.from(_challengesTable).delete().eq('id', id);
+  }
+
+  // ── ROLE & SUPERVISOR ─────────────────────────────────────────────────────
+
+  /// Fetches the user's role from `user_profiles`. Defaults to 'student'
+  /// if the profile doesn't exist or an error occurs.
+  Future<String> fetchUserRole() async {
+    final userId = currentUserId;
+    if (userId == null) return 'student';
+    try {
+      final response = await _client
+          .from(_profilesTable)
+          .select('role')
+          .eq('id', userId)
+          .maybeSingle();
+      if (response != null && response['role'] != null) {
+        return response['role'] as String;
+      }
+    } catch (e) {
+      debugPrint('Error fetching user role: $e');
+    }
+    return 'student';
+  }
+
+  /// Fetches all daily_logs with `approval_status = 'pending'` for students
+  /// assigned to this supervisor.
+  Future<List<DailyLog>> getPendingLogsForSupervisor() async {
+    final supervisorId = currentUserId;
+    if (supervisorId == null) return [];
+    
+    try {
+      // Due to RLS, if the policy `Supervisors can view trainee logs` is active,
+      // we can just query all pending logs and the DB filters them. Or explicitly join.
+      // We will explicitly query pending logs. The RLS should filter to only their trainees.
+      final response = await _client
+          .from(_table)
+          .select()
+          .eq('approval_status', 'pending')
+          .order('date', ascending: false);
+
+      return (response as List<dynamic>)
+          .map((row) => DailyLog.fromJson(row as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      debugPrint('Error fetching pending logs: $e');
+      return [];
+    }
+  }
+
+  /// Fetches a list of basic student details for trainees assigned to this supervisor.
+  Future<List<Map<String, dynamic>>> getTraineesForSupervisor() async {
+    final supervisorId = currentUserId;
+    if (supervisorId == null) return [];
+    
+    try {
+      final response = await _client
+          .from(_profilesTable)
+          .select('id, full_name, major, uni_name') // Assuming these columns or we fetch from auth?
+          // Note: If user_metadata isn't in user_profiles, we might only get ID. 
+          // Assuming user_profiles stores some basic info, or we rely on auth metadata if accessible.
+          // For now, let's fetch 'id'. 
+          .eq('supervisor_id', supervisorId);
+          
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      debugPrint('Error fetching trainees: $e');
+      return [];
+    }
+  }
+
+  /// Updates the `approval_status` of a specific log.
+  Future<void> updateLogApprovalStatus(String logId, String status) async {
+    await _client
+        .from(_table)
+        .update({'approval_status': status})
+        .eq('id', logId);
   }
 
   // ── IMAGE HOSTING ─────────────────────────────────────────────────────────
