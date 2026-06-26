@@ -86,7 +86,7 @@ class _CoordinatorDashboardScreenState extends State<CoordinatorDashboardScreen>
               
               ElevatedButton.icon(
                 onPressed: () async {
-                  final pdfBytes = await PdfService().generateStForm02Pdf(
+                  final pdfBytes = await PdfService.instance.generateStForm02Pdf(
                     student: studentInfo,
                     trainingStartDate: DateTime.now(), // Adjust if you have a start date field
                   );
@@ -106,7 +106,7 @@ class _CoordinatorDashboardScreenState extends State<CoordinatorDashboardScreen>
                 onPressed: evaluation == null
                     ? null
                     : () async {
-                        final pdfBytes = await PdfService().generateTaForm03Pdf(
+                        final pdfBytes = await PdfService.instance.generateTaForm03Pdf(
                           student: studentInfo,
                           evaluation: evaluation,
                         );

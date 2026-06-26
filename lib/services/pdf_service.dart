@@ -821,7 +821,15 @@ class PdfService {
     required DateTime trainingStartDate,
   }) async {
     final doc = pw.Document();
-    final theme = await _buildTheme();
+    final arabicFont = await PdfGoogleFonts.cairoRegular();
+    final arabicBold = await PdfGoogleFonts.cairoBold();
+    final theme = pw.ThemeData.withFont(
+      base: pw.Font.times(),
+      bold: pw.Font.timesBold(),
+      italic: pw.Font.timesItalic(),
+      boldItalic: pw.Font.timesBoldItalic(),
+      fontFallback: [arabicFont, arabicBold],
+    );
     final dateFormat = DateFormat('dd MMM yyyy');
 
     doc.addPage(
@@ -913,7 +921,15 @@ class PdfService {
     required Map<String, dynamic> evaluation,
   }) async {
     final doc = pw.Document();
-    final theme = await _buildTheme();
+    final arabicFont = await PdfGoogleFonts.cairoRegular();
+    final arabicBold = await PdfGoogleFonts.cairoBold();
+    final theme = pw.ThemeData.withFont(
+      base: pw.Font.times(),
+      bold: pw.Font.timesBold(),
+      italic: pw.Font.timesItalic(),
+      boldItalic: pw.Font.timesBoldItalic(),
+      fontFallback: [arabicFont, arabicBold],
+    );
 
     final criteria = [
       {'label': 'Enthusiasm (ABET 4)', 'key': 'enthusiasm'},
