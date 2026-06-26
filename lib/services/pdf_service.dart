@@ -17,6 +17,7 @@ class StudentInfo {
   final String universityName;
   final String company;
   final String supervisor;
+  final String? supervisorEmail;
   final String? customLogoUrl;
 
   const StudentInfo({
@@ -26,6 +27,7 @@ class StudentInfo {
     required this.universityName,
     required this.company,
     required this.supervisor,
+    this.supervisorEmail,
     this.customLogoUrl,
   });
 
@@ -36,6 +38,7 @@ class StudentInfo {
     universityName: '',
     company: '',
     supervisor: '',
+    supervisorEmail: '',
     customLogoUrl: null,
   );
 }
@@ -809,6 +812,226 @@ class PdfService {
         children: [header, ...rows],
       ),
     ];
+  }
+
+  // ── Official Forms (ST-FORM 02 & TA-FORM 03) ─────────────────────────────
+
+  Future<Uint8List> generateStForm02Pdf({
+    required StudentInfo student,
+    required DateTime trainingStartDate,
+  }) async {
+    final doc = pw.Document();
+    final theme = await _buildTheme();
+    final dateFormat = DateFormat('dd MMM yyyy');
+
+    doc.addPage(
+      pw.Page(
+        pageTheme: pw.PageTheme(
+          theme: theme,
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(48),
+        ),
+        build: (ctx) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+            children: [
+              pw.Center(
+                child: pw.Text(
+                  'ST-FORM 02: Starting Date Form',
+                  style: pw.TextStyle(
+                    fontSize: 24,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+              ),
+              pw.SizedBox(height: 48),
+              _buildFormRow('Student Name:', student.name),
+              pw.SizedBox(height: 16),
+              _buildFormRow('Student ID:', student.universityId),
+              pw.SizedBox(height: 16),
+              _buildFormRow('Department / Major:', student.major),
+              pw.SizedBox(height: 16),
+              _buildFormRow('Training Start Date:', dateFormat.format(trainingStartDate)),
+              pw.SizedBox(height: 16),
+              _buildFormRow('Company Name:', student.company),
+              pw.SizedBox(height: 16),
+              _buildFormRow('Company Supervisor:', student.supervisor),
+              if (student.supervisorEmail != null && student.supervisorEmail!.isNotEmpty) ...[
+                pw.SizedBox(height: 16),
+                _buildFormRow('Supervisor Email:', student.supervisorEmail!),
+              ],
+              pw.Spacer(),
+              pw.Divider(),
+              pw.SizedBox(height: 24),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.center,
+                    children: [
+                      pw.Text('Student Signature', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      pw.SizedBox(height: 40),
+                      pw.Container(width: 150, height: 1, color: PdfColors.black),
+                    ],
+                  ),
+                  pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.center,
+                    children: [
+                      pw.Text('Supervisor Signature', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      pw.SizedBox(height: 40),
+                      pw.Container(width: 150, height: 1, color: PdfColors.black),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    return doc.save();
+  }
+
+  pw.Widget _buildFormRow(String label, String value) {
+    return pw.Row(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.SizedBox(
+          width: 150,
+          child: pw.Text(label, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 14)),
+        ),
+        pw.Expanded(
+          child: pw.Text(value, style: const pw.TextStyle(fontSize: 14)),
+        ),
+      ],
+    );
+  }
+
+  Future<Uint8List> generateTaForm03Pdf({
+    required StudentInfo student,
+    required Map<String, dynamic> evaluation,
+  }) async {
+    final doc = pw.Document();
+    final theme = await _buildTheme();
+
+    final criteria = [
+      {'label': 'Enthusiasm (ABET 4)', 'key': 'enthusiasm'},
+      {'label': 'Delivering accurate work (ABET 4)', 'key': 'delivering_accurate_work'},
+      {'label': 'Dealing with new systems (ABET 7)', 'key': 'dealing_with_new_systems'},
+      {'label': 'Initiative (ABET 5)', 'key': 'initiative'},
+      {'label': 'Dependability (ABET 4)', 'key': 'dependability'},
+      {'label': 'Learning and searching (ABET 7)', 'key': 'learning_and_searching'},
+      {'label': 'Judgment and decision making (ABET 4)', 'key': 'judgment_and_decision_making'},
+      {'label': 'Effective relations (ABET 5)', 'key': 'effective_relations'},
+      {'label': 'Reporting and presenting (ABET 3)', 'key': 'reporting_and_presenting'},
+      {'label': 'Attendance and punctuality (ABET 4)', 'key': 'attendance_and_punctuality'},
+    ];
+
+    final int totalScore = evaluation['total_score'] ?? 0;
+
+    doc.addPage(
+      pw.Page(
+        pageTheme: pw.PageTheme(
+          theme: theme,
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(48),
+        ),
+        build: (ctx) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+            children: [
+              pw.Center(
+                child: pw.Text(
+                  'TA-FORM 03: Supervisor Evaluation',
+                  style: pw.TextStyle(
+                    fontSize: 24,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+              ),
+              pw.SizedBox(height: 24),
+              _buildFormRow('Student Name:', student.name),
+              pw.SizedBox(height: 8),
+              _buildFormRow('Student ID:', student.universityId),
+              pw.SizedBox(height: 8),
+              _buildFormRow('Company:', student.company),
+              pw.SizedBox(height: 8),
+              _buildFormRow('Supervisor:', student.supervisor),
+              pw.SizedBox(height: 32),
+              pw.Table(
+                border: pw.TableBorder.all(color: PdfColors.black, width: 0.5),
+                columnWidths: {
+                  0: const pw.FlexColumnWidth(4),
+                  1: const pw.FlexColumnWidth(1),
+                },
+                children: [
+                  pw.TableRow(
+                    decoration: const pw.BoxDecoration(color: PdfColors.grey300),
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Evaluation Criteria', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Score (1-5)', style: pw.TextStyle(fontWeight: pw.FontWeight.bold), textAlign: pw.TextAlign.center),
+                      ),
+                    ],
+                  ),
+                  ...criteria.map((c) {
+                    final score = evaluation[c['key']] ?? 0;
+                    return pw.TableRow(
+                      children: [
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(c['label'] as String),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(score.toString(), textAlign: pw.TextAlign.center),
+                        ),
+                      ],
+                    );
+                  }),
+                  pw.TableRow(
+                    decoration: const pw.BoxDecoration(color: PdfColors.grey200),
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Total Score', style: pw.TextStyle(fontWeight: pw.FontWeight.bold), textAlign: pw.TextAlign.right),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('$totalScore / 50', style: pw.TextStyle(fontWeight: pw.FontWeight.bold), textAlign: pw.TextAlign.center),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              pw.Spacer(),
+              pw.Divider(),
+              pw.SizedBox(height: 24),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.end,
+                children: [
+                  pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.center,
+                    children: [
+                      pw.Text('Supervisor Signature & Stamp', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      pw.SizedBox(height: 50),
+                      pw.Container(width: 200, height: 1, color: PdfColors.black),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    return doc.save();
   }
 }
 

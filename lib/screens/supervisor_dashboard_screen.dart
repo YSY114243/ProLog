@@ -3,7 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/daily_log.dart';
 import '../services/supabase_service.dart';
+import '../widgets/milestone_timeline.dart';
 import 'auth_screen.dart';
+import 'supervisor_evaluation_screen.dart';
 
 class SupervisorDashboardScreen extends StatefulWidget {
   const SupervisorDashboardScreen({super.key});
@@ -17,6 +19,7 @@ class _SupervisorDashboardScreenState extends State<SupervisorDashboardScreen> {
 
   List<DailyLog> _pendingLogs = [];
   List<Map<String, dynamic>> _trainees = [];
+  List<String> _evaluatedStudentIds = [];
   bool _loadingLogs = true;
   bool _loadingTrainees = true;
 
@@ -45,9 +48,11 @@ class _SupervisorDashboardScreenState extends State<SupervisorDashboardScreen> {
   Future<void> _loadTrainees() async {
     setState(() => _loadingTrainees = true);
     final trainees = await SupabaseService.instance.getTraineesForSupervisor();
+    final evaluatedIds = await SupabaseService.instance.getEvaluatedStudentIds();
     if (mounted) {
       setState(() {
         _trainees = trainees;
+        _evaluatedStudentIds = evaluatedIds;
         _loadingTrainees = false;
       });
     }
@@ -264,6 +269,10 @@ class _SupervisorDashboardScreenState extends State<SupervisorDashboardScreen> {
       itemCount: _trainees.length,
       itemBuilder: (context, index) {
         final trainee = _trainees[index];
+        final studentId = trainee['id'] as String;
+        final studentName = trainee['full_name'] ?? 'Unknown Student';
+        final isEvaluated = _evaluatedStudentIds.contains(studentId);
+
         return Card(
           elevation: 1,
           margin: const EdgeInsets.only(bottom: 12),
@@ -273,12 +282,119 @@ class _SupervisorDashboardScreenState extends State<SupervisorDashboardScreen> {
               backgroundColor: Theme.of(context).colorScheme.primary.withAlpha(25),
               child: Icon(Icons.person, color: Theme.of(context).colorScheme.primary),
             ),
-            title: Text(trainee['full_name'] ?? 'Unknown Student', style: const TextStyle(fontWeight: FontWeight.w600)),
+            title: Text(studentName, style: const TextStyle(fontWeight: FontWeight.w600)),
             subtitle: Text('${trainee['major'] ?? 'Unknown Major'} • ${trainee['uni_name'] ?? 'Unknown University'}'),
-            trailing: const Icon(Icons.chevron_right),
+            trailing: FilledButton.icon(
+              onPressed: isEvaluated
+                  ? null
+                  : () async {
+                      final result = await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => SupervisorEvaluationScreen(
+                            studentId: studentId,
+                            studentName: studentName,
+                          ),
+                        ),
+                      );
+                      if (result == true) {
+                        _loadTrainees(); // Refresh the list
+                      }
+                    },
+              icon: Icon(isEvaluated ? Icons.check : Icons.assignment_turned_in, size: 18),
+              label: Text(isEvaluated ? 'Evaluated' : 'Evaluate'),
+              style: FilledButton.styleFrom(
+                backgroundColor: isEvaluated ? Colors.grey : Colors.blue.shade700,
+                disabledBackgroundColor: Colors.grey.shade300,
+                disabledForegroundColor: Colors.grey.shade600,
+              ),
+            ),
             onTap: () {
-              // Could open a screen to view this specific student's log history
+              _showSupervisorTimeline(context, trainee, isEvaluated);
             },
+          ),
+        );
+      },
+    );
+  }
+
+  void _showSupervisorTimeline(BuildContext context, Map<String, dynamic> trainee, bool isEvaluated) {
+    final studentId = trainee['id'] as String;
+    final studentName = trainee['full_name'] ?? 'Unknown Student';
+    DateTime? startDate;
+    if (trainee['training_start_date'] != null) {
+      startDate = DateTime.tryParse(trainee['training_start_date'].toString());
+    }
+    
+    final List<String> submittedForms = trainee['submitted_forms'] != null 
+        ? List<String>.from(trainee['submitted_forms']) 
+        : [];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: MediaQuery.of(context).padding.bottom + 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Timeline for $studentName',
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              MilestoneTimeline(
+                trainingStartDate: startDate,
+                isSupervisorView: true,
+                tasks: [
+                  MilestoneTask(
+                    title: 'Submit Training Plan',
+                    formId: 'TA-FORM 01',
+                    requiredWeek: 1,
+                    isCompleted: submittedForms.contains('TA-FORM 01'),
+                    onTap: () {
+                      // Handle TA-FORM 01
+                    },
+                  ),
+                  MilestoneTask(
+                    title: 'Confidential Student Evaluation',
+                    formId: 'TA-FORM 03',
+                    requiredWeek: 8,
+                    isCompleted: isEvaluated || submittedForms.contains('TA-FORM 03'),
+                    onTap: () async {
+                      if (!isEvaluated) {
+                        Navigator.pop(context);
+                        final result = await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => SupervisorEvaluationScreen(
+                              studentId: studentId,
+                              studentName: studentName,
+                            ),
+                          ),
+                        );
+                        if (result == true) {
+                          _loadTrainees();
+                        }
+                      }
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
           ),
         );
       },

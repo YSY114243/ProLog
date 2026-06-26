@@ -56,6 +56,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
+  DateTime? _trainingStartDate;
+  List<String> _submittedForms = [];
+
   @override
   void initState() {
     super.initState();
@@ -65,8 +68,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _loadFromSupabase() async {
     try {
       final remote = await SupabaseService.instance.fetchLogs();
+      final profile = await SupabaseService.instance.getUserProfile();
+      
       if (mounted) {
-        setState(() => _logs = remote);
+        setState(() {
+          _logs = remote;
+          if (profile != null) {
+            if (profile['training_start_date'] != null) {
+              _trainingStartDate = DateTime.tryParse(profile['training_start_date'].toString());
+            }
+            if (profile['submitted_forms'] != null) {
+              _submittedForms = List<String>.from(profile['submitted_forms']);
+            }
+          }
+        });
       }
     } catch (_) {
       // Keep empty list — user not signed in or network error.
@@ -394,6 +409,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           softwareCount: _countByType(TaskType.software),
                           isMobile: isMobile,
                           isDesktop: isDesktop,
+                          trainingStartDate: _trainingStartDate,
+                          submittedForms: _submittedForms,
                           onAddLog: _openAddLog,
                           onEdit: _editLog,
                           onDelete: _deleteLog,

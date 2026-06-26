@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/daily_log.dart';
 import '../widgets/log_card.dart';
 import '../widgets/stat_card.dart';
+import '../widgets/milestone_timeline.dart';
 import 'paywall_screen.dart';
 
 class DashboardOverviewTab extends StatelessWidget {
@@ -13,6 +14,8 @@ class DashboardOverviewTab extends StatelessWidget {
   final int softwareCount;
   final bool isMobile;
   final bool isDesktop;
+  final DateTime? trainingStartDate;
+  final List<String> submittedForms;
   final VoidCallback onAddLog;
   final ValueChanged<DailyLog>? onEdit;
   final ValueChanged<DailyLog>? onDelete;
@@ -25,6 +28,8 @@ class DashboardOverviewTab extends StatelessWidget {
     required this.softwareCount,
     required this.isMobile,
     required this.isDesktop,
+    this.trainingStartDate,
+    this.submittedForms = const [],
     required this.onAddLog,
     this.onEdit,
     this.onDelete,
@@ -71,6 +76,41 @@ class DashboardOverviewTab extends StatelessWidget {
             officeWorkCount: officeWorkCount,
             softwareCount: softwareCount,
             isMobile: isMobile,
+          ),
+          const SizedBox(height: 40),
+
+          // ── Milestone Timeline ──────────────────────────────────────────
+          MilestoneTimeline(
+            trainingStartDate: trainingStartDate,
+            tasks: [
+              MilestoneTask(
+                title: 'Start Date Form',
+                formId: 'ST-FORM 02',
+                requiredWeek: 1,
+                isCompleted: submittedForms.contains('ST-FORM 02'),
+                onTap: () {
+                  // TODO: Navigate to ST-FORM 02 submission or download
+                },
+              ),
+              MilestoneTask(
+                title: 'First Progress Report',
+                formId: 'ST-FORM 03',
+                requiredWeek: 4,
+                isCompleted: submittedForms.contains('ST-FORM 03'),
+                onTap: () {
+                  // TODO: Handle ST-FORM 03
+                },
+              ),
+              MilestoneTask(
+                title: 'Final Progress Report & Evaluation',
+                formId: 'ST-FORM 07 & 08',
+                requiredWeek: 8,
+                isCompleted: submittedForms.contains('ST-FORM 07 & 08'),
+                onTap: () {
+                  // TODO: Handle ST-FORM 07 & 08
+                },
+              ),
+            ],
           ),
           const SizedBox(height: 40),
 

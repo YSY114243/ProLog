@@ -48,7 +48,26 @@ class SupabaseService {
 
   SupabaseClient get _client => Supabase.instance.client;
 
-  /// Returns the UID of the currently signed-in user, or `null` if not
+  /// Fetches all trainees for the coordinator view.
+  Future<List<Map<String, dynamic>>> getAllStudents() async {
+    final res = await _client
+        .from(_profilesTable)
+        .select()
+        .eq('role', 'student');
+    return List<Map<String, dynamic>>.from(res as List);
+  }
+
+  /// Fetches the details of a specific supervisor.
+  Future<Map<String, dynamic>?> getSupervisorProfile(String supervisorId) async {
+    final res = await _client
+        .from(_profilesTable)
+        .select()
+        .eq('id', supervisorId)
+        .maybeSingle();
+    return res;
+  }
+
+  /// Returns the current signed-in user's UID or `null` if none.
   /// authenticated.
   String? get currentUserId => _client.auth.currentUser?.id;
 
@@ -88,6 +107,18 @@ class SupabaseService {
   /// Throws a [PostgrestException] on database / RLS errors.
   Future<void> insertLog(DailyLog log) async {
     await _client.from(_table).insert(log.toJson());
+  }
+
+  /// Fetches the current user's profile.
+  Future<Map<String, dynamic>?> getUserProfile() async {
+    final uid = currentUserId;
+    if (uid == null) return null;
+    final res = await _client
+        .from(_profilesTable)
+        .select()
+        .eq('id', uid)
+        .maybeSingle();
+    return res;
   }
 
   /// Updates an existing [log] row identified by [log.id].
@@ -301,6 +332,38 @@ class SupabaseService {
       'supervisor_id': newUserId,
       'supervisor_invite_code': null,
     }).eq('id', studentRes['id']);
+  }
+
+  // ── EVALUATIONS ───────────────────────────────────────────────────────────
+
+  static const String _evaluationsTable = 'supervisor_evaluations';
+
+  /// Submits the TA-FORM 03 supervisor evaluation.
+  Future<void> submitSupervisorEvaluation(Map<String, dynamic> evaluationData) async {
+    await _client.from(_evaluationsTable).insert(evaluationData);
+  }
+
+  /// Returns a list of student IDs that the current supervisor has evaluated.
+  Future<List<String>> getEvaluatedStudentIds() async {
+    final supervisorId = currentUserId;
+    if (supervisorId == null) return [];
+
+    final res = await _client
+        .from(_evaluationsTable)
+        .select('student_id')
+        .eq('supervisor_id', supervisorId);
+
+    return (res as List).map((row) => row['student_id'] as String).toList();
+  }
+
+  /// Fetches the evaluation for a specific student, if any.
+  Future<Map<String, dynamic>?> getEvaluationForStudent(String studentId) async {
+    final res = await _client
+        .from(_evaluationsTable)
+        .select()
+        .eq('student_id', studentId)
+        .maybeSingle();
+    return res;
   }
 
   /// ImgBB free-tier API key.
