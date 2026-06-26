@@ -253,7 +253,7 @@ class _SupervisorDashboardScreenState extends State<SupervisorDashboardScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              backgroundColor: Theme.of(context).colorScheme.primary.withAlpha(25),
               child: Icon(Icons.person, color: Theme.of(context).colorScheme.primary),
             ),
             title: Text(trainee['full_name'] ?? 'Unknown Student', style: const TextStyle(fontWeight: FontWeight.w600)),
