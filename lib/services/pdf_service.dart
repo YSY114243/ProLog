@@ -43,8 +43,6 @@ class StudentInfo {
 // ── PDF brand colours (0.0–1.0 components) ───────────────────────────────────
 
 class _C {
-  static const cyan      = PdfColor(0.000, 0.737, 0.831); // #00BCD4
-  static const teal      = PdfColor(0.000, 0.588, 0.533); // #009688
   static const dark      = PdfColor(0.102, 0.102, 0.180); // #1A1A2E
   static const muted     = PdfColor(0.361, 0.420, 0.478); // #5C6B7A
   static const cardBord  = PdfColor(0.816, 0.929, 0.941); // #D0ECF0
@@ -101,6 +99,20 @@ class PdfService {
     final arabicBold = await PdfGoogleFonts.cairoBold();
     final customLogo = await _loadCustomLogo(student.customLogoUrl);
 
+    final Map<String, pw.MemoryImage> appendixImages = {};
+    for (final log in logs) {
+      if (log.imageUrl != null && log.imageUrl!.isNotEmpty && !appendixImages.containsKey(log.imageUrl)) {
+        try {
+          final res = await http.get(Uri.parse(log.imageUrl!)).timeout(const Duration(seconds: 15));
+          if (res.statusCode == 200) {
+            appendixImages[log.imageUrl!] = pw.MemoryImage(res.bodyBytes);
+          }
+        } catch (e) {
+          print('Failed to fetch image for appendix: $e');
+        }
+      }
+    }
+
     final theme = pw.ThemeData.withFont(
       base: pw.Font.times(),
       bold: pw.Font.timesBold(),
@@ -150,7 +162,10 @@ class PdfService {
           ),
           header: (ctx) => _pageHeader(ctx, student, customLogo),
           footer: (ctx) => _pageFooter(ctx, student),
-          build:  (ctx) => _buildLogTable(logs, dateFormat),
+          build:  (ctx) => [
+            ..._buildLogTable(logs, dateFormat),
+            if (challenges.isEmpty) _buildSignatureBlock(),
+          ],
         ),
       );
     }
@@ -167,7 +182,72 @@ class PdfService {
           ),
           header: (ctx) => _challengesPageHeader(ctx),
           footer: (ctx) => _pageFooter(ctx, student),
-          build:  (ctx) => _buildChallengesTable(challenges, dateFormat),
+          build:  (ctx) => [
+            ..._buildChallengesTable(challenges, dateFormat),
+            _buildSignatureBlock(),
+          ],
+        ),
+      );
+    }
+
+    // ── Appendix: Site Progress Photos (multi-page) ─────────────────────────
+    if (appendixImages.isNotEmpty) {
+      doc.addPage(
+        pw.MultiPage(
+          pageTheme: pw.PageTheme(
+            theme: theme,
+            pageFormat: PdfPageFormat.a4,
+            margin: const pw.EdgeInsets.symmetric(horizontal: 36, vertical: 36),
+            buildBackground: buildWatermark,
+          ),
+          header: (ctx) => pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(
+                'Appendix: Site Progress Photos',
+                style: pw.TextStyle(
+                  fontWeight: pw.FontWeight.bold,
+                  fontSize: 14,
+                  color: PdfColors.black,
+                ),
+              ),
+              pw.SizedBox(height: 5),
+              pw.Container(height: 2, color: PdfColors.black),
+              pw.SizedBox(height: 14),
+            ],
+          ),
+          footer: (ctx) => _pageFooter(ctx, student),
+          build: (ctx) {
+            final widgets = <pw.Widget>[];
+            for (final log in sorted) {
+              if (log.imageUrl != null && appendixImages.containsKey(log.imageUrl)) {
+                widgets.add(
+                  pw.Container(
+                    margin: const pw.EdgeInsets.only(bottom: 30),
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.center,
+                      children: [
+                        pw.Container(
+                          height: 300,
+                          child: pw.Image(appendixImages[log.imageUrl!]!, fit: pw.BoxFit.contain),
+                        ),
+                        pw.SizedBox(height: 8),
+                        pw.Text(
+                          'Photo from ${dateFormat.format(log.date)}',
+                          style: pw.TextStyle(
+                            fontStyle: pw.FontStyle.italic,
+                            fontSize: 10,
+                            color: PdfColors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+            }
+            return widgets;
+          },
         ),
       );
     }
@@ -193,12 +273,10 @@ class PdfService {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.stretch,
       children: [
-        // ── Gradient top banner ──────────────────────────────────────────
+        // ── Top line ──────────────────────────────────────────
         pw.Container(
-          height: 10,
-          decoration: const pw.BoxDecoration(
-            gradient: pw.LinearGradient(colors: [_C.cyan, _C.teal]),
-          ),
+          height: 2,
+          color: PdfColors.black,
         ),
 
         // ── White content area ───────────────────────────────────────────
@@ -211,33 +289,49 @@ class PdfService {
 
                 pw.SizedBox(height: 10),
 
-                // Main title
-                pw.Text(
-                  'Summer Training Documentation',
-                  style: pw.TextStyle(
-                    font:      pw.Font.helveticaBold(),
-                    fontSize:  36,
-                    color:     _C.dark,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                pw.Text(
-                  'Record of Professional Practice',
-                  style: pw.TextStyle(
-                    font:      pw.Font.helveticaBold(),
-                    fontSize:  36,
-                    color:     _C.cyan,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                pw.SizedBox(height: 10),
-                pw.Text(
-                  student.major.isNotEmpty ? student.major : 'Engineering',
-                  style: pw.TextStyle(
-                    font:     pw.Font.helveticaOblique(),
-                    fontSize: 13,
-                    color:    _C.muted,
-                  ),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Expanded(
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          // Main title
+                          pw.Text(
+                            'Summer Training Documentation',
+                            style: pw.TextStyle(
+                              fontWeight: pw.FontWeight.bold,
+                              fontSize:  16,
+                              color: PdfColors.black,
+                            ),
+                          ),
+                          pw.Text(
+                            'Record of Professional Practice',
+                            style: pw.TextStyle(
+                              fontWeight: pw.FontWeight.bold,
+                              fontSize:  14,
+                              color: PdfColors.black,
+                            ),
+                          ),
+                          pw.SizedBox(height: 10),
+                          pw.Text(
+                            student.major.isNotEmpty ? student.major : 'Engineering',
+                            style: pw.TextStyle(
+                              fontStyle: pw.FontStyle.italic,
+                              fontSize: 13,
+                              color: PdfColors.black,
+                            ),
+                          ),
+                        ]
+                      ),
+                    ),
+                    if (customLogo != null)
+                      pw.Container(
+                        height: 50,
+                        child: pw.Image(customLogo),
+                      ),
+                  ],
                 ),
 
                 pw.SizedBox(height: 40),
@@ -254,9 +348,9 @@ class PdfService {
                   'Generated by InternLog on '
                   '${DateFormat('MMMM d, yyyy \'at\' HH:mm').format(DateTime.now())}',
                   style: pw.TextStyle(
-                    font:     pw.Font.helveticaOblique(),
+                    fontStyle: pw.FontStyle.italic,
                     fontSize: 8,
-                    color:    _C.muted,
+                    color: PdfColors.black,
                   ),
                 ),
               ],
@@ -265,7 +359,7 @@ class PdfService {
         ),
 
         // ── Cyan accent bottom bar ───────────────────────────────────────
-        pw.Container(height: 6, color: _C.cyan),
+        pw.Container(height: 6, color: PdfColors.black),
       ],
     );
   }
@@ -293,9 +387,9 @@ class PdfService {
           pw.Text(
             'STUDENT INFORMATION',
             style: pw.TextStyle(
-              font:          pw.Font.helveticaBold(),
+              fontWeight: pw.FontWeight.bold,
               fontSize:      8,
-              color:         _C.muted,
+              color: PdfColors.black,
               letterSpacing: 1.4,
             ),
           ),
@@ -328,27 +422,27 @@ class PdfService {
             child: pw.Text(
               label,
               style: pw.TextStyle(
-                font:     pw.Font.helveticaBold(),
+                fontWeight: pw.FontWeight.bold,
                 fontSize: 9.5,
-                color:    _C.muted,
+                color: PdfColors.black,
               ),
             ),
           ),
           pw.Text(
             ':  ',
             style: pw.TextStyle(
-              font:     pw.Font.helvetica(),
+              fontWeight: pw.FontWeight.normal,
               fontSize: 9.5,
-              color:    _C.muted,
+              color: PdfColors.black,
             ),
           ),
           pw.Expanded(
             child: pw.Text(
               value,
               style: pw.TextStyle(
-                font:     pw.Font.helveticaBold(),
+                fontWeight: pw.FontWeight.bold,
                 fontSize: 9.5,
-                color:    _C.dark,
+                color: PdfColors.black,
               ),
             ),
           ),
@@ -372,9 +466,9 @@ class PdfService {
             pw.Text(
               'Daily Activity Log',
               style: pw.TextStyle(
-                font:     pw.Font.helveticaBold(),
+                fontWeight: pw.FontWeight.bold,
                 fontSize: 14,
-                color:    _C.dark,
+                color: PdfColors.black,
               ),
             ),
             if (customLogo != null)
@@ -388,15 +482,15 @@ class PdfService {
                     ? student.name
                     : 'Internship Student',
                 style: pw.TextStyle(
-                  font:     pw.Font.helveticaOblique(),
+                  fontStyle: pw.FontStyle.italic,
                   fontSize: 9,
-                  color:    _C.muted,
+                  color: PdfColors.black,
                 ),
               ),
           ],
         ),
         pw.SizedBox(height: 5),
-        pw.Container(height: 2, color: _C.cyan),
+        pw.Container(height: 2, color: PdfColors.black),
         pw.SizedBox(height: 14),
       ],
     );
@@ -413,17 +507,17 @@ class PdfService {
             pw.Text(
               'Generated by InternLog - Professional Log for ${student.major.isNotEmpty ? student.major : 'Engineering'}',
               style: pw.TextStyle(
-                font:     pw.Font.helveticaOblique(),
+                fontStyle: pw.FontStyle.italic,
                 fontSize: 7.5,
-                color:    _C.muted,
+                color: PdfColors.black,
               ),
             ),
             pw.Text(
               'Page ${ctx.pageNumber} of ${ctx.pagesCount}',
               style: pw.TextStyle(
-                font:     pw.Font.helveticaBold(),
+                fontWeight: pw.FontWeight.bold,
                 fontSize: 7.5,
-                color:    _C.muted,
+                color: PdfColors.black,
               ),
             ),
           ],
@@ -466,7 +560,7 @@ class PdfService {
           _tdCell(
             fmt.format(log.date),
             isBold: true,
-            color: _C.cyan,
+            color: PdfColors.black,
           ),
           // Task type with coloured dot
           _taskTypeCell(log.taskType),
@@ -489,22 +583,19 @@ class PdfService {
                     log.issuesFound.trim().isEmpty ? '—' : log.issuesFound,
                     style: pw.TextStyle(
                       fontSize: 8,
-                      color: log.issuesFound.trim().isEmpty ? _C.muted : _C.dark,
+                      color: PdfColors.black,
                       lineSpacing: 1.5,
                     ),
                   ),
                 ),
                 if (log.imageUrl != null && log.imageUrl!.isNotEmpty) ...[
                   pw.SizedBox(height: 6),
-                  pw.UrlLink(
-                    destination: log.imageUrl!,
-                    child: pw.Text(
-                      'View Attached Image',
-                      style: pw.TextStyle(
-                        fontSize: 8,
-                        color: _C.cyan,
-                        decoration: pw.TextDecoration.underline,
-                      ),
+                  pw.Text(
+                    '(Photo in Appendix)',
+                    style: pw.TextStyle(
+                      fontSize: 8,
+                      fontStyle: pw.FontStyle.italic,
+                      color: PdfColors.black,
                     ),
                   ),
                 ]
@@ -531,15 +622,59 @@ class PdfService {
 
   pw.Widget _thCell(String text) {
     return pw.Padding(
-      padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       child: pw.Text(
         text,
         style: pw.TextStyle(
-          font:          pw.Font.helveticaBold(),
-          fontSize:      7.5,
-          color:         PdfColors.black,
-          letterSpacing: 0.6,
+          fontWeight: pw.FontWeight.bold,
+          fontSize: 8.5,
+          color: PdfColors.black,
+          lineSpacing: 1.5,
         ),
+      ),
+    );
+  }
+
+  // ── Signature Block ───────────────────────────────────────────────────────
+
+  pw.Widget _buildSignatureBlock() {
+    return pw.Container(
+      margin: const pw.EdgeInsets.only(top: 50),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            'Supervisor Sign-off',
+            style: pw.TextStyle(
+              fontWeight: pw.FontWeight.bold,
+              fontSize: 14,
+              color: PdfColors.black,
+            ),
+          ),
+          pw.SizedBox(height: 8),
+          pw.Container(height: 1, color: PdfColors.black),
+          pw.SizedBox(height: 30),
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Text(
+                'Supervisor Name & Signature: .................................................',
+                style: pw.TextStyle(
+                  fontSize: 12,
+                  color: PdfColors.black,
+                ),
+              ),
+              pw.Text(
+                'Company Stamp: ........................................',
+                style: pw.TextStyle(
+                  fontSize: 12,
+                  color: PdfColors.black,
+                ),
+              ),
+            ],
+          ),
+          pw.SizedBox(height: 30),
+        ],
       ),
     );
   }
@@ -590,7 +725,7 @@ class PdfService {
             child: pw.Text(
               type.label,
               style: pw.TextStyle(
-                font:     pw.Font.helveticaBold(),
+                fontWeight: pw.FontWeight.bold,
                 fontSize: 7.5,
                 color:    color,
               ),
@@ -618,13 +753,13 @@ class PdfService {
         pw.Text(
           'Challenges & Lessons Learned',
           style: pw.TextStyle(
-            font:     pw.Font.helveticaBold(),
+            fontWeight: pw.FontWeight.bold,
             fontSize: 14,
-            color:    _C.dark,
+            color: PdfColors.black,
           ),
         ),
         pw.SizedBox(height: 5),
-        pw.Container(height: 2, color: _C.cyan),
+        pw.Container(height: 2, color: PdfColors.black),
         pw.SizedBox(height: 14),
       ],
     );
@@ -656,7 +791,7 @@ class PdfService {
       return pw.TableRow(
         decoration: pw.BoxDecoration(color: bg),
         children: [
-          _tdCell(fmt.format(c.date), isBold: true, color: _C.cyan),
+          _tdCell(fmt.format(c.date), isBold: true, color: PdfColors.black),
           _tdCell(c.problem),
           _tdCell(combined.trim().isEmpty ? '—' : combined, dimmed: combined.trim().isEmpty),
         ],
@@ -676,3 +811,4 @@ class PdfService {
     ];
   }
 }
+

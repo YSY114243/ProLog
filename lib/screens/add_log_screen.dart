@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/daily_log.dart';
 import '../services/supabase_service.dart';
 import '../services/speech_service.dart';
@@ -70,6 +71,8 @@ class _AddLogScreenState extends State<AddLogScreen> {
   TextEditingController? _activeVoiceCtrl;
   String _voiceBuffer = '';
 
+  bool _hasDraft = false;
+
   /// True when the screen was opened with an existing log to edit.
   bool get _isEditing => widget.initialLog != null;
 
@@ -83,8 +86,53 @@ class _AddLogScreenState extends State<AddLogScreen> {
       _descCtrl.text  = log.description;
       _issuesCtrl.text = log.issuesFound;
       _imageUrl = log.imageUrl;
+    } else {
+      _loadDrafts();
     }
+    
+    _descCtrl.addListener(_saveDraft);
+    _issuesCtrl.addListener(_saveDraft);
+
     _initSpeech();
+  }
+
+  Future<void> _loadDrafts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final draftDesc = prefs.getString('draft_log_desc');
+    final draftIssues = prefs.getString('draft_log_issues');
+    
+    if ((draftDesc != null && draftDesc.isNotEmpty) || 
+        (draftIssues != null && draftIssues.isNotEmpty)) {
+      if (mounted) {
+        setState(() {
+          if (draftDesc != null) _descCtrl.text = draftDesc;
+          if (draftIssues != null) _issuesCtrl.text = draftIssues;
+          _hasDraft = true;
+        });
+      }
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    if (_isEditing) return;
+    
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('draft_log_desc', _descCtrl.text);
+    await prefs.setString('draft_log_issues', _issuesCtrl.text);
+    
+    final hasText = _descCtrl.text.isNotEmpty || _issuesCtrl.text.isNotEmpty;
+    if (!_hasDraft && hasText) {
+      if (mounted) setState(() => _hasDraft = true);
+    } else if (_hasDraft && !hasText) {
+      if (mounted) setState(() => _hasDraft = false);
+    }
+  }
+
+  Future<void> _clearDraft() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('draft_log_desc');
+    await prefs.remove('draft_log_issues');
+    if (mounted) setState(() => _hasDraft = false);
   }
 
   Future<void> _initSpeech() async {
@@ -342,6 +390,8 @@ class _AddLogScreenState extends State<AddLogScreen> {
             isError: false);
       }
 
+      await _clearDraft();
+
       widget.onSaved?.call(log);
       if (mounted) Navigator.pop(context);
     } catch (e) {
@@ -507,6 +557,8 @@ class _AddLogScreenState extends State<AddLogScreen> {
                         showMic: _speechAvailable,
                         isListening: _activeVoiceCtrl == _issuesCtrl && SpeechService.instance.isListening,
                         onMicPressed: () => _toggleVoice(_issuesCtrl),
+                        showAiPolish: AiService.instance.isConfigured,
+                        onAiPolish: () => _polishWithAi(_issuesCtrl),
                       ),
                       const SizedBox(height: 24),
 
@@ -538,8 +590,9 @@ class _AddLogScreenState extends State<AddLogScreen> {
       // ── Sticky Save button ────────────────────────────────────────────────
       bottomNavigationBar: _SaveBar(
         isSaving: _isSaving,
+        hasDraft: _hasDraft,
         onSave:   _save,
-        label:    _isEditing ? 'Update Log' : 'Save Log',
+        label:    _isEditing ? 'Save Changes' : 'Save Log',
       ),
     );
   }
@@ -1146,12 +1199,14 @@ class _AttachedPreview extends StatelessWidget {
 
 class _SaveBar extends StatelessWidget {
   final bool isSaving;
+  final bool hasDraft;
   final VoidCallback onSave;
   final String label;
 
   const _SaveBar({
     required this.isSaving,
     required this.onSave,
+    this.hasDraft = false,
     this.label = 'Save Log',
   });
 
@@ -1168,10 +1223,13 @@ class _SaveBar extends StatelessWidget {
         20,
         MediaQuery.of(context).padding.bottom + 12,
       ),
-      child: SizedBox(
-        width: double.infinity,
-        height: 52,
-        child: ElevatedButton(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton(
           onPressed: isSaving ? null : onSave,
           style: ElevatedButton.styleFrom(
             backgroundColor: Theme.of(context).colorScheme.primary,
@@ -1207,6 +1265,25 @@ class _SaveBar extends StatelessWidget {
                   ],
                 ),
         ),
+          ),
+          if (hasDraft) ...[
+            const SizedBox(height: 6),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.check_circle_outline, size: 12, color: Colors.grey),
+                SizedBox(width: 4),
+                Text(
+                  'Draft saved locally',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
       ),
     );
   }

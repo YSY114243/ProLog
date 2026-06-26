@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/challenge.dart';
 import '../services/supabase_service.dart';
 import '../services/speech_service.dart';
@@ -64,9 +65,16 @@ class _ChallengesTabState extends State<ChallengesTab> {
         }
       } else {
         // Insert
-        await SupabaseService.instance.insertChallenge(result);
-        await _loadChallenges(); // Reload to get the DB-generated ID
-        if (mounted) {
+        final inserted = await SupabaseService.instance.insertChallenge(result);
+        if (mounted) setState(() => _challenges.insert(0, inserted));
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('draft_chal_prob');
+        await prefs.remove('draft_chal_res');
+        await prefs.remove('draft_chal_les');
+      }
+      
+      if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Challenge logged!'),
@@ -466,6 +474,8 @@ class _ChallengeFormDialogState extends State<_ChallengeFormDialog> {
   late TextEditingController _lessonsCtrl;
   final _formKey = GlobalKey<FormState>();
 
+  bool _hasDraft = false;
+
   @override
   void initState() {
     super.initState();
@@ -473,7 +483,50 @@ class _ChallengeFormDialogState extends State<_ChallengeFormDialog> {
     _problemCtrl = TextEditingController(text: widget.existing?.problem ?? '');
     _resolutionCtrl = TextEditingController(text: widget.existing?.resolution ?? '');
     _lessonsCtrl = TextEditingController(text: widget.existing?.lessonsLearned ?? '');
+    
+    if (widget.existing == null) {
+      _loadDrafts();
+    }
+
+    _problemCtrl.addListener(_saveDraft);
+    _resolutionCtrl.addListener(_saveDraft);
+    _lessonsCtrl.addListener(_saveDraft);
+
     _initSpeech();
+  }
+
+  Future<void> _loadDrafts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final p = prefs.getString('draft_chal_prob');
+    final r = prefs.getString('draft_chal_res');
+    final l = prefs.getString('draft_chal_les');
+
+    if ((p != null && p.isNotEmpty) || (r != null && r.isNotEmpty) || (l != null && l.isNotEmpty)) {
+      if (mounted) {
+        setState(() {
+          if (p != null) _problemCtrl.text = p;
+          if (r != null) _resolutionCtrl.text = r;
+          if (l != null) _lessonsCtrl.text = l;
+          _hasDraft = true;
+        });
+      }
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    if (widget.existing != null) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('draft_chal_prob', _problemCtrl.text);
+    await prefs.setString('draft_chal_res', _resolutionCtrl.text);
+    await prefs.setString('draft_chal_les', _lessonsCtrl.text);
+
+    final hasText = _problemCtrl.text.isNotEmpty || _resolutionCtrl.text.isNotEmpty || _lessonsCtrl.text.isNotEmpty;
+    if (!_hasDraft && hasText) {
+      if (mounted) setState(() => _hasDraft = true);
+    } else if (_hasDraft && !hasText) {
+      if (mounted) setState(() => _hasDraft = false);
+    }
   }
 
   // ── Voice-to-text ──────────────────────────────────────────────────────────
@@ -763,6 +816,23 @@ class _ChallengeFormDialogState extends State<_ChallengeFormDialog> {
                       ),
                     ],
                   ),
+                  if (_hasDraft) ...[
+                    const SizedBox(height: 8),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.check_circle_outline, size: 12, color: Colors.grey),
+                        SizedBox(width: 4),
+                        Text(
+                          'Draft saved locally',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
