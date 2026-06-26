@@ -66,7 +66,11 @@ class _ChallengesTabState extends State<ChallengesTab> {
       } else {
         // Insert
         final inserted = await SupabaseService.instance.insertChallenge(result);
-        if (mounted) setState(() => _challenges.insert(0, inserted));
+        if (mounted) {
+          setState(() {
+            _challenges.insert(0, inserted);
+          });
+        }
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.remove('draft_chal_prob');
