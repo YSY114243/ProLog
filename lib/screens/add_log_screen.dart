@@ -135,7 +135,7 @@ class _AddLogScreenState extends State<AddLogScreen> {
       _showSnackbar('Text polished ✓', isError: false);
     } else if (mounted) {
       // Keep original text intact
-      _showSnackbar('Servers are busy. Your original text is saved.', isError: true);
+      _showSnackbar('Connection failed. Original text saved.', isError: true);
     }
   }
 
