@@ -156,6 +156,8 @@ class _SupervisorDashboardScreenState extends State<SupervisorDashboardScreen> {
       itemCount: _pendingLogs.length,
       itemBuilder: (context, index) {
         final log = _pendingLogs[index];
+        final studentName = _trainees.firstWhere((t) => t['id'] == log.userId, orElse: () => {'full_name': 'Unknown Student'})['full_name'];
+        
         return Card(
           elevation: 2,
           margin: const EdgeInsets.only(bottom: 16),
@@ -165,6 +167,21 @@ class _SupervisorDashboardScreenState extends State<SupervisorDashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Row(
+                  children: [
+                    Icon(Icons.person, size: 20, color: Theme.of(context).colorScheme.primary),
+                    const SizedBox(width: 8),
+                    Text(
+                      studentName,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
