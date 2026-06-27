@@ -413,7 +413,7 @@ class _SupervisorDashboardScreenState extends State<SupervisorDashboardScreen> {
       itemBuilder: (context, index) {
         final trainee = _trainees[index];
         final studentId = trainee['id'] as String;
-        final studentName = trainee['full_name'] ?? 'Unknown Student';
+        final studentName = trainee['full_name'] ?? trainee['email'] ?? 'Unnamed Intern';
         final isEvaluated = _evaluatedStudentIds.contains(studentId);
 
         return Card(
@@ -426,7 +426,7 @@ class _SupervisorDashboardScreenState extends State<SupervisorDashboardScreen> {
               child: Icon(Icons.person, color: Theme.of(context).colorScheme.primary),
             ),
             title: Text(studentName, style: const TextStyle(fontWeight: FontWeight.w600)),
-            subtitle: Text('${trainee['major'] ?? 'Unknown Major'} • ${trainee['uni_name'] ?? 'Unknown University'}'),
+            subtitle: const Text('Construction Engineering • Imam Abdulrahman bin Faisal University'),
             trailing: FilledButton.icon(
               onPressed: isEvaluated
                   ? null
