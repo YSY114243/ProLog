@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:intl/intl.dart';
 import 'pdf_service.dart';
 
 class PdfFormDelegates {
@@ -34,22 +35,16 @@ class PdfFormDelegates {
     );
   }
 
-  static pw.Widget buildAcademicFooter() {
+  static pw.Widget buildAcademicFooter(StudentInfo student) {
     return pw.Column(
       children: [
         pw.SizedBox(height: 30),
         pw.Row(
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text('Student Signature: _______________________'),
-            pw.Text('Supervisor Signature: _______________________'),
-          ],
-        ),
-        pw.SizedBox(height: 16),
-        pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.end,
-          children: [
-            pw.Text('Date: _______________________'),
+            PdfService.buildDigitalStamp(student.name, 'Student', student.universityId),
+            PdfService.buildDigitalStamp(student.supervisor, 'Supervisor', student.supervisorEmail ?? 'SUPERVISOR-AUTH'),
           ],
         ),
       ],
@@ -101,7 +96,7 @@ class PdfFormDelegates {
       pw.MultiPage(
         pageTheme: pw.PageTheme(theme: theme, pageFormat: PdfPageFormat.a4, margin: const pw.EdgeInsets.all(36)),
         header: (ctx) => header,
-        footer: (ctx) => buildAcademicFooter(),
+        footer: (ctx) => buildAcademicFooter(student),
         build: (ctx) => [content],
       ),
     );
@@ -168,7 +163,7 @@ class PdfFormDelegates {
           ],
         ),
         ...questions.map((q) {
-          final int score = int.tryParse(data[q['key']]?.toString() ?? '0') ?? 0;
+          final int score = (num.tryParse(data[q['key']]?.toString() ?? '0') ?? 0).toInt();
           return pw.TableRow(
             children: [
               pw.Padding(

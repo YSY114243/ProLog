@@ -73,6 +73,29 @@ class PdfService {
   PdfService._();
   static final PdfService instance = PdfService._();
 
+  static pw.Widget buildDigitalStamp(String signerName, String role, String systemId, {double? width = 200}) {
+    final now = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+    return pw.Container(
+      padding: const pw.EdgeInsets.all(8),
+      decoration: pw.BoxDecoration(
+        color: PdfColors.grey100,
+        border: pw.Border.all(color: PdfColors.grey400, width: 1),
+        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+      ),
+      width: width,
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.center,
+        children: [
+          pw.Text('Digitally Signed & Verified', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontStyle: pw.FontStyle.italic, fontSize: 10, color: PdfColors.blue800)),
+          pw.SizedBox(height: 4),
+          pw.Text('By: $signerName ($role)', style: pw.TextStyle(fontSize: 10)),
+          pw.Text('Date: $now', style: pw.TextStyle(fontSize: 10)),
+          pw.SizedBox(height: 4),
+          pw.Text('System ID: InternLog Auth - $systemId', style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey600)),
+        ],
+      ),
+    );
+  }
 
 
   /// Attempts to load the custom logo from the given URL.
@@ -169,7 +192,7 @@ class PdfService {
           footer: (ctx) => _pageFooter(ctx, student),
           build:  (ctx) => [
             ..._buildLogTable(logs, dateFormat),
-            if (challenges.isEmpty) _buildSignatureBlock(),
+            if (challenges.isEmpty) _buildSignatureBlock(student),
           ],
         ),
       );
@@ -189,7 +212,7 @@ class PdfService {
           footer: (ctx) => _pageFooter(ctx, student),
           build:  (ctx) => [
             ..._buildChallengesTable(challenges, dateFormat),
-            _buildSignatureBlock(),
+            _buildSignatureBlock(student),
           ],
         ),
       );
@@ -642,7 +665,7 @@ class PdfService {
 
   // ── Signature Block ───────────────────────────────────────────────────────
 
-  pw.Widget _buildSignatureBlock() {
+  pw.Widget _buildSignatureBlock(StudentInfo student) {
     return pw.Container(
       margin: const pw.EdgeInsets.only(top: 80),
       child: pw.Column(
@@ -661,14 +684,9 @@ class PdfService {
           pw.SizedBox(height: 30),
           pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: pw.CrossAxisAlignment.end,
             children: [
-              pw.Text(
-                'Supervisor Name & Signature: .................................................',
-                style: pw.TextStyle(
-                  fontSize: 12,
-                  color: PdfColors.black,
-                ),
-              ),
+              buildDigitalStamp(student.supervisor, 'Supervisor', student.supervisorEmail ?? 'SUPERVISOR-AUTH'),
               pw.Text(
                 'Company Stamp: ........................................',
                 style: pw.TextStyle(
@@ -876,22 +894,8 @@ class PdfService {
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    children: [
-                      pw.Text('Student Signature', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      pw.SizedBox(height: 40),
-                      pw.Container(width: 150, height: 1, color: PdfColors.black),
-                    ],
-                  ),
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    children: [
-                      pw.Text('Supervisor Signature', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      pw.SizedBox(height: 40),
-                      pw.Container(width: 150, height: 1, color: PdfColors.black),
-                    ],
-                  ),
+                  buildDigitalStamp(student.name, 'Student', student.universityId),
+                  buildDigitalStamp(student.supervisor, 'Supervisor', student.supervisorEmail ?? 'SUPERVISOR-AUTH'),
                 ],
               ),
             ],
@@ -960,7 +964,7 @@ class PdfService {
       {'label': 'Attendance and punctuality (ABET 4)', 'key': 'attendance_and_punctuality'},
     ];
 
-    final int totalScore = evaluation['total_score'] ?? 0;
+    final int totalScore = (num.tryParse(evaluation['total_score']?.toString() ?? '0') ?? 0).toInt();
 
     doc.addPage(
       pw.Page(
@@ -1034,7 +1038,7 @@ class PdfService {
                     ],
                   ),
                   ...criteria.map((c) {
-                    final int score = int.tryParse(evaluation[c['key']]?.toString() ?? '0') ?? 0;
+                    final int score = (num.tryParse(evaluation[c['key']]?.toString() ?? '0') ?? 0).toInt();
                     return pw.TableRow(
                       children: [
                         pw.Padding(
@@ -1073,17 +1077,9 @@ class PdfService {
               
               // Footer
               pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: pw.MainAxisAlignment.end,
                 children: [
-                  pw.Text('Date: ${DateFormat('dd/MM/yyyy').format(DateTime.now())}'),
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    children: [
-                      pw.Text('Supervisor Signature & Stamp', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      pw.SizedBox(height: 30),
-                      pw.Container(width: 200, height: 1, color: PdfColors.black),
-                    ],
-                  ),
+                  buildDigitalStamp(student.supervisor, 'Supervisor', student.supervisorEmail ?? 'SUPERVISOR-AUTH'),
                 ],
               ),
             ],
@@ -1236,7 +1232,7 @@ class PdfService {
                     ),
                     for (final q in (domain['questions'] as List<Map<String, Object>>)) ...[
                       () {
-                        final int score = int.tryParse(survey[q['key']]?.toString() ?? '0') ?? 0;
+                        final int score = (num.tryParse(survey[q['key']]?.toString() ?? '0') ?? 0).toInt();
                         return pw.TableRow(
                           children: [
                             pw.Padding(
@@ -1259,17 +1255,9 @@ class PdfService {
               pw.Spacer(),
               
               pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: pw.MainAxisAlignment.end,
                 children: [
-                  pw.Text('Date: ${DateFormat('dd/MM/yyyy').format(DateTime.now())}'),
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    children: [
-                      pw.Text('Agency Representative Signature & Stamp', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      pw.SizedBox(height: 30),
-                      pw.Container(width: 250, height: 1, color: PdfColors.black),
-                    ],
-                  ),
+                  buildDigitalStamp(student.supervisor, 'Agency Representative', student.supervisorEmail ?? 'AGENCY-AUTH'),
                 ],
               ),
             ],
@@ -1465,7 +1453,7 @@ class PdfService {
                       pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('Date:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold))),
                       pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text(DateFormat('dd/MM/yyyy').format(DateTime.now()))),
                       pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('Signature:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold))),
-                      pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text('_________________')),
+                      pw.Padding(padding: const pw.EdgeInsets.all(8), child: buildDigitalStamp(student.supervisor, 'Supervisor', student.supervisorEmail ?? 'SUPERVISOR-AUTH', width: null)),
                     ],
                   ),
                 ],
@@ -1550,22 +1538,8 @@ class PdfService {
           pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.center,
-                children: [
-                  pw.Text('Student Signature', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                  pw.SizedBox(height: 40),
-                  pw.Container(width: 150, height: 1, color: PdfColors.black),
-                ],
-              ),
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.center,
-                children: [
-                  pw.Text('Supervisor Signature', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                  pw.SizedBox(height: 40),
-                  pw.Container(width: 150, height: 1, color: PdfColors.black),
-                ],
-              ),
+              buildDigitalStamp(student.name, 'Student', student.universityId),
+              buildDigitalStamp(student.supervisor, 'Supervisor', student.supervisorEmail ?? 'SUPERVISOR-AUTH'),
             ],
           ),
         ],
