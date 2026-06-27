@@ -163,7 +163,7 @@ class _SupervisorDashboardScreenState extends State<SupervisorDashboardScreen> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('Student linked successfully!'), backgroundColor: Colors.green),
                                 );
-                                _loadTrainees();
+                                _loadData();
                               }
                             } else {
                               if (mounted) {

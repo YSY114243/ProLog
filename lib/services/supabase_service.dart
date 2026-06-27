@@ -303,11 +303,9 @@ class SupabaseService {
     try {
       final response = await _client
           .from(_profilesTable)
-          .select('id, full_name, major, uni_name') // Assuming these columns or we fetch from auth?
-          // Note: If user_metadata isn't in user_profiles, we might only get ID. 
-          // Assuming user_profiles stores some basic info, or we rely on auth metadata if accessible.
-          // For now, let's fetch 'id'. 
-          .eq('supervisor_id', supervisorId);
+          .select('id, full_name, major, uni_name')
+          .eq('supervisor_id', supervisorId)
+          .eq('role', 'student');
           
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
