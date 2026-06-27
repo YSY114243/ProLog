@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:printing/printing.dart';
 import '../services/supabase_service.dart';
 import '../services/pdf_service.dart';
+import '../services/pdf_overlay_mapper.dart';
 
 class SupervisorFormScreen extends StatefulWidget {
   final String studentId;
@@ -44,7 +45,7 @@ class _SupervisorFormScreenState extends State<SupervisorFormScreen> {
     } else if (formId == 'TA-FORM 03') {
       return PdfService.instance.generateTaForm03Pdf(student: student, evaluation: data);
     } else if (formId == 'TA-FORM 04') {
-      return PdfService.instance.generateTaForm04Pdf(student: student, survey: data);
+      return PdfOverlayMapper.generateTaForm04(student: student, data: data);
     } else {
       return PdfService.instance.generateGenericFormPdf(
         student: student,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/supabase_service.dart';
 import '../services/pdf_service.dart';
+import '../services/pdf_overlay_mapper.dart';
 import 'package:printing/printing.dart';
 
 import 'student_forms/st_form_01.dart';
@@ -43,6 +44,12 @@ class _StudentFormsScreenState extends State<StudentFormsScreen> {
       supervisor: 'Unknown Supervisor',
     );
     
+    if (formId == 'ST-FORM 02') {
+      final pdfBytes = await PdfOverlayMapper.generateStForm02(student: student, data: data);
+      await Printing.sharePdf(bytes: pdfBytes, filename: '${formId.replaceAll(' ', '_')}.pdf');
+      return;
+    }
+
     final pdfBytes = await PdfService.instance.generateGenericFormPdf(
       student: student,
       formId: formId,
