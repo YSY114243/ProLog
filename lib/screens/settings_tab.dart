@@ -129,12 +129,13 @@ class _SettingsTabState extends State<SettingsTab> {
   }
 
   Future<void> _logout() async {
+    // Clear any settings state if needed before logout
     await Supabase.instance.client.auth.signOut();
     if (mounted) {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const LandingPage()),
-        (r) => false,
+        MaterialPageRoute(builder: (context) => const AuthScreen()),
+        (route) => false,
       );
     }
   }

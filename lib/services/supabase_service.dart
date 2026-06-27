@@ -216,7 +216,10 @@ class SupabaseService {
     final authRes = await _client.auth.signUp(
       email: email,
       password: password,
-      data: {'full_name': name},
+      data: {
+        'full_name': name,
+        'role': 'supervisor',
+      },
     );
 
     final user = authRes.user;
@@ -224,7 +227,7 @@ class SupabaseService {
       throw Exception('Failed to create supervisor account.');
     }
 
-    // 2. Upsert the new supervisor's profile to explicitly set their role
+    // 2. Strict Await: Upsert the new supervisor's profile to explicitly set their role
     await _client.from(_profilesTable).upsert({
       'id': user.id,
       'full_name': name,

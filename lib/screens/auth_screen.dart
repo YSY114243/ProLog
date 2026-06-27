@@ -126,14 +126,12 @@ class _AuthScreenState extends State<AuthScreen> {
     if (!mounted) return;
 
     if (role == 'supervisor') {
-      Navigator.of(context).pushAndRemoveUntil(
+      Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const SupervisorDashboardScreen()),
-        (route) => false,
       );
     } else {
-      Navigator.of(context).pushAndRemoveUntil(
+      Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const DashboardScreen()),
-        (route) => false,
       );
     }
   }

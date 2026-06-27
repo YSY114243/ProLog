@@ -91,6 +91,13 @@ class _SupervisorDashboardScreenState extends State<SupervisorDashboardScreen> {
   }
 
   Future<void> _logout() async {
+    setState(() {
+      _pendingLogs.clear();
+      _trainees.clear();
+      _evaluatedStudentIds.clear();
+      _loadingLogs = true;
+      _loadingTrainees = true;
+    });
     await Supabase.instance.client.auth.signOut();
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
