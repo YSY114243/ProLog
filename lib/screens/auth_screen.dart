@@ -93,9 +93,9 @@ class _AuthScreenState extends State<AuthScreen> {
       }
     } on AuthException catch (e) {
       if (mounted) setState(() => _errorMsg = e.message);
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
-        setState(() => _errorMsg = 'An unexpected error occurred. Try again.');
+        setState(() => _errorMsg = e.toString().replaceFirst('Exception: ', ''));
       }
     } finally {
       if (mounted) setState(() => _loading = false);

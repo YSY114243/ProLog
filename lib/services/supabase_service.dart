@@ -224,8 +224,6 @@ class SupabaseService {
       throw Exception('Invalid Student Invite Code. Please check the code and try again.');
     }
 
-    final studentId = studentRes['id'] as String;
-
     // 2. Register the supervisor via Supabase Auth
     final authRes = await _client.auth.signUp(
       email: email,
@@ -245,11 +243,22 @@ class SupabaseService {
       'role': 'supervisor',
     });
 
-    // 4. Link the student to this supervisor and consume the invite code
-    await _client.from(_profilesTable).update({
-      'supervisor_id': user.id,
-      'supervisor_invite_code': null, // Consume the code
-    }).eq('id', studentId);
+    // 4. Link the student to this supervisor and consume the invite code via RPC
+    final response = await _client.rpc(
+      'link_supervisor_to_student',
+      params: {
+        'p_invite_code': inviteCode,
+        'p_supervisor_id': user.id,
+      },
+    );
+
+    // The RPC should return a boolean
+    final bool success = response as bool? ?? false;
+
+    if (!success) {
+      // Note: Client cannot delete Auth users without service role. User remains unlinked.
+      throw Exception('Invalid Invite Code or linking failed.');
+    }
   }
 
   /// Fetches the user's role from `user_profiles`. Defaults to 'student'
