@@ -71,8 +71,7 @@ class _AuthScreenState extends State<AuthScreen> {
     try {
       if (_isSignUp) {
         if (_isSupervisorSignUp) {
-          final inviteCode = _inviteCodeCtrl.text.trim();
-          await SupabaseService.instance.registerSupervisor(email, pass, name, inviteCode);
+          await SupabaseService.instance.registerSupervisor(email, pass, name);
           if (mounted) _toDashboard();
         } else {
           final res = await client.auth.signUp(
@@ -483,22 +482,6 @@ class _FormPanel extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    if (isSupervisorSignUp) ...[
-                      _Field(
-                        controller: inviteCodeCtrl,
-                        label: 'Student Invite Code',
-                        hint: 'e.g. A8F3K9',
-                        icon: Icons.key_outlined,
-                        type: TextInputType.text,
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) {
-                            return 'Invite code is required for supervisors';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                    ],
                   ],
                   _Field(
                     controller: emailCtrl,

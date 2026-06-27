@@ -99,6 +99,94 @@ class _SupervisorDashboardScreenState extends State<SupervisorDashboardScreen> {
     );
   }
 
+  Future<void> _showLinkStudentDialog() async {
+    final ctrl = TextEditingController();
+    bool isLinking = false;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              title: const Text('Link Student'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Enter the 6-character invite code provided by your student.'),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: ctrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Invite Code',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.key),
+                    ),
+                    textCapitalization: TextCapitalization.characters,
+                    maxLength: 6,
+                    enabled: !isLinking,
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isLinking ? null : () => Navigator.pop(ctx),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: isLinking
+                      ? null
+                      : () async {
+                          final code = ctrl.text.trim().toUpperCase();
+                          if (code.length != 6) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Code must be 6 characters.')),
+                            );
+                            return;
+                          }
+
+                          setStateDialog(() => isLinking = true);
+
+                          try {
+                            final success = await SupabaseService.instance.linkStudent(code);
+                            if (success) {
+                              if (mounted) {
+                                Navigator.pop(ctx);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Student linked successfully!'), backgroundColor: Colors.green),
+                                );
+                                _loadTrainees();
+                              }
+                            } else {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Invalid Code or Student already linked.'), backgroundColor: Colors.red),
+                                );
+                                setStateDialog(() => isLinking = false);
+                              }
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+                              );
+                              setStateDialog(() => isLinking = false);
+                            }
+                          }
+                        },
+                  child: isLinking
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Text('Link'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -249,24 +337,57 @@ class _SupervisorDashboardScreenState extends State<SupervisorDashboardScreen> {
     }
 
     if (_trainees.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.people_outline, size: 64, color: Colors.grey.shade400),
-            const SizedBox(height: 16),
-            Text(
-              'No trainees assigned yet',
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 18),
+      return Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _showLinkStudentDialog,
+                icon: const Icon(Icons.add_link),
+                label: const Text('Link New Student'),
+                style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+              ),
             ),
-          ],
-        ),
+          ),
+          Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.people_outline, size: 64, color: Colors.grey.shade400),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No trainees assigned yet',
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 18),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _trainees.length,
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _showLinkStudentDialog,
+              icon: const Icon(Icons.add_link),
+              label: const Text('Link New Student'),
+              style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: _trainees.length,
       itemBuilder: (context, index) {
         final trainee = _trainees[index];
         final studentId = trainee['id'] as String;
@@ -314,6 +435,9 @@ class _SupervisorDashboardScreenState extends State<SupervisorDashboardScreen> {
           ),
         );
       },
+    ),
+    ),
+    ],
     );
   }
 

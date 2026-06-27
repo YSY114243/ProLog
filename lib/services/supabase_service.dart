@@ -206,24 +206,13 @@ class SupabaseService {
 
   // ── ROLE & SUPERVISOR ─────────────────────────────────────────────────────
 
-  /// Registers a new Company Supervisor using the student's invite code.
+  /// Registers a new Company Supervisor.
   Future<void> registerSupervisor(
     String email,
     String password,
     String name,
-    String inviteCode,
   ) async {
-    // 1. Securely verify the invite code via RPC (bypassing RLS for anonymous users)
-    final isValidCode = await _client.rpc(
-      'check_invite_code',
-      params: {'p_code': inviteCode},
-    ) as bool? ?? false;
-
-    if (!isValidCode) {
-      throw Exception('Invalid Student Invite Code. Please check the code and try again.');
-    }
-
-    // 2. Register the supervisor via Supabase Auth
+    // 1. Register the supervisor via Supabase Auth
     final authRes = await _client.auth.signUp(
       email: email,
       password: password,
@@ -235,29 +224,27 @@ class SupabaseService {
       throw Exception('Failed to create supervisor account.');
     }
 
-    // 3. Upsert the new supervisor's profile to explicitly set their role
+    // 2. Upsert the new supervisor's profile to explicitly set their role
     await _client.from(_profilesTable).upsert({
       'id': user.id,
       'full_name': name,
       'role': 'supervisor',
     });
+  }
 
-    // 4. Link the student to this supervisor and consume the invite code via RPC
+  /// Links a student to the current supervisor using the invite code.
+  Future<bool> linkStudent(String inviteCode) async {
+    final userId = currentUserId;
+    if (userId == null) return false;
+
     final response = await _client.rpc(
       'link_supervisor_to_student',
       params: {
         'p_invite_code': inviteCode,
-        'p_supervisor_id': user.id,
+        'p_supervisor_id': userId,
       },
     );
-
-    // The RPC should return a boolean
-    final bool success = response as bool? ?? false;
-
-    if (!success) {
-      // Note: Client cannot delete Auth users without service role. User remains unlinked.
-      throw Exception('Invalid Invite Code or linking failed.');
-    }
+    return response as bool? ?? false;
   }
 
   /// Fetches the user's role from `user_profiles`. Defaults to 'student'
