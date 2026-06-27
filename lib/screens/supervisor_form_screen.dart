@@ -1,7 +1,11 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:printing/printing.dart';
 import '../services/supabase_service.dart';
 import '../services/pdf_service.dart';
-import 'package:printing/printing.dart';
 
 class SupervisorFormScreen extends StatefulWidget {
   final String studentId;
@@ -34,6 +38,22 @@ class _SupervisorFormScreenState extends State<SupervisorFormScreen> {
     }
   }
 
+  Future<Uint8List> _generatePdfForForm(String formId, Map<String, dynamic> data, StudentInfo student) async {
+    if (formId == 'TA-FORM 01') {
+      return PdfService.instance.generateTaForm01Pdf(student: student, plan: data);
+    } else if (formId == 'TA-FORM 03') {
+      return PdfService.instance.generateTaForm03Pdf(student: student, evaluation: data);
+    } else if (formId == 'TA-FORM 04') {
+      return PdfService.instance.generateTaForm04Pdf(student: student, survey: data);
+    } else {
+      return PdfService.instance.generateGenericFormPdf(
+        student: student,
+        formId: formId,
+        formData: data,
+      );
+    }
+  }
+
   Future<void> _handleDownloadPdf(String formId, Map<String, dynamic> data) async {
     final profile = await SupabaseService.instance.getUserProfile();
     final student = StudentInfo(
@@ -45,13 +65,39 @@ class _SupervisorFormScreenState extends State<SupervisorFormScreen> {
       supervisor: profile?['full_name'] ?? 'Supervisor',
     );
     
-    final pdfBytes = await PdfService.instance.generateGenericFormPdf(
-      student: student,
-      formId: formId,
-      formData: data,
+    final pdfBytes = await _generatePdfForForm(formId, data, student);
+    await Printing.sharePdf(bytes: pdfBytes, filename: '${formId.replaceAll(' ', '_')}.pdf');
+  }
+
+  Future<void> _handleEmailToCoordinator(String formId, Map<String, dynamic> data) async {
+    final profile = await SupabaseService.instance.getUserProfile();
+    final student = StudentInfo(
+      name: 'Trainee',
+      universityId: '2190000000',
+      major: 'Civil Engineering',
+      universityName: 'Imam Abdulrahman bin Faisal University',
+      company: 'Company',
+      supervisor: profile?['full_name'] ?? 'Supervisor',
     );
     
-    await Printing.sharePdf(bytes: pdfBytes, filename: '$formId.pdf');
+    try {
+      final pdfBytes = await _generatePdfForForm(formId, data, student);
+      final tempDir = await getTemporaryDirectory();
+      final file = File('${tempDir.path}/${formId.replaceAll(' ', '_')}.pdf');
+      await file.writeAsBytes(pdfBytes);
+      
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        subject: 'Confidential Training Document - $formId',
+        text: 'Dear Academic Coordinator,\n\nPlease find attached the completed training document.\n\nSent via InternLog App.',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to share PDF: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 
   @override
@@ -78,6 +124,7 @@ class _SupervisorFormScreenState extends State<SupervisorFormScreen> {
                 initialData: data,
                 onSubmit: (d) => _submitForm('TA-FORM 01', d),
                 onDownload: (d) => _handleDownloadPdf('TA-FORM 01', d),
+                onEmail: (d) => _handleEmailToCoordinator('TA-FORM 01', d),
               ),
             ),
             FormTabWrapper(
@@ -87,6 +134,7 @@ class _SupervisorFormScreenState extends State<SupervisorFormScreen> {
                 initialData: data,
                 onSubmit: (d) => _submitForm('TA-FORM 03', d),
                 onDownload: (d) => _handleDownloadPdf('TA-FORM 03', d),
+                onEmail: (d) => _handleEmailToCoordinator('TA-FORM 03', d),
               ),
             ),
             FormTabWrapper(
@@ -96,6 +144,7 @@ class _SupervisorFormScreenState extends State<SupervisorFormScreen> {
                 initialData: data,
                 onSubmit: (d) => _submitForm('TA-FORM 04', d),
                 onDownload: (d) => _handleDownloadPdf('TA-FORM 04', d),
+                onEmail: (d) => _handleEmailToCoordinator('TA-FORM 04', d),
               ),
             ),
           ],
@@ -135,8 +184,9 @@ class _TaForm01Tab extends StatefulWidget {
   final Map<String, dynamic> initialData;
   final Function(Map<String, dynamic>) onSubmit;
   final Function(Map<String, dynamic>) onDownload;
+  final Function(Map<String, dynamic>) onEmail;
 
-  const _TaForm01Tab({required this.initialData, required this.onSubmit, required this.onDownload});
+  const _TaForm01Tab({required this.initialData, required this.onSubmit, required this.onDownload, required this.onEmail});
 
   @override
   State<_TaForm01Tab> createState() => _TaForm01TabState();
@@ -197,8 +247,9 @@ class _TaForm03Tab extends StatefulWidget {
   final Map<String, dynamic> initialData;
   final Function(Map<String, dynamic>) onSubmit;
   final Function(Map<String, dynamic>) onDownload;
+  final Function(Map<String, dynamic>) onEmail;
 
-  const _TaForm03Tab({required this.initialData, required this.onSubmit, required this.onDownload});
+  const _TaForm03Tab({required this.initialData, required this.onSubmit, required this.onDownload, required this.onEmail});
 
   @override
   State<_TaForm03Tab> createState() => _TaForm03TabState();
@@ -268,6 +319,10 @@ class _TaForm03TabState extends State<_TaForm03Tab> {
             final data = {..._ratings, 'additional_comments': _commentsCtrl.text};
             widget.onDownload(data);
           },
+          onEmail: () {
+            final data = {..._ratings, 'additional_comments': _commentsCtrl.text};
+            widget.onEmail(data);
+          },
           onSubmit: () {
             final data = {..._ratings, 'additional_comments': _commentsCtrl.text};
             widget.onSubmit(data);
@@ -282,8 +337,9 @@ class _TaForm04Tab extends StatefulWidget {
   final Map<String, dynamic> initialData;
   final Function(Map<String, dynamic>) onSubmit;
   final Function(Map<String, dynamic>) onDownload;
+  final Function(Map<String, dynamic>) onEmail;
 
-  const _TaForm04Tab({required this.initialData, required this.onSubmit, required this.onDownload});
+  const _TaForm04Tab({required this.initialData, required this.onSubmit, required this.onDownload, required this.onEmail});
 
   @override
   State<_TaForm04Tab> createState() => _TaForm04TabState();
@@ -495,6 +551,22 @@ class _TaForm04TabState extends State<_TaForm04Tab> {
             };
             widget.onDownload(data);
           },
+          onEmail: () {
+            final data = {
+              'students_gender': _genderCtrl.text,
+              'training_agency': _agencyCtrl.text,
+              'department': _deptCtrl.text,
+              'trained_past_2_years': _trainedPast2YearsCtrl.text,
+              'currently_training': _currentlyTrainingCtrl.text,
+              'communication_freq': _communicationFreq,
+              'provided_manual': _providedManual,
+              'provided_forms': _providedForms,
+              'best_quality': _bestQualityCtrl.text,
+              'suggestions': _suggestionsCtrl.text,
+              ..._ratings,
+            };
+            widget.onEmail(data);
+          },
           onSubmit: () {
             final data = {
               'students_gender': _genderCtrl.text,
@@ -519,28 +591,49 @@ class _TaForm04TabState extends State<_TaForm04Tab> {
 
 class _ActionButtons extends StatelessWidget {
   final VoidCallback onDownload;
+  final VoidCallback onEmail;
   final VoidCallback onSubmit;
 
-  const _ActionButtons({required this.onDownload, required this.onSubmit});
+  const _ActionButtons({required this.onDownload, required this.onEmail, required this.onSubmit});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
+    return Column(
       children: [
-        OutlinedButton.icon(
-          onPressed: onDownload,
-          icon: const Icon(Icons.picture_as_pdf),
-          label: const Text('Preview / Download PDF'),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            OutlinedButton.icon(
+              onPressed: onDownload,
+              icon: const Icon(Icons.picture_as_pdf),
+              label: const Text('Preview / Download PDF'),
+            ),
+            const SizedBox(width: 16),
+            ElevatedButton.icon(
+              onPressed: onSubmit,
+              icon: const Icon(Icons.save),
+              label: const Text('Save / Submit'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 16),
-        ElevatedButton.icon(
-          onPressed: onSubmit,
-          icon: const Icon(Icons.save),
-          label: const Text('Save / Submit'),
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            ElevatedButton.icon(
+              onPressed: onEmail,
+              icon: const Icon(Icons.email),
+              label: const Text('Generate & Email to Coordinator'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+            ),
+          ],
         ),
       ],
     );
