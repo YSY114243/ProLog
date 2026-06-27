@@ -4,8 +4,10 @@ import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import '../models/daily_log.dart';
 import '../models/challenge.dart';
+import 'pdf_form_delegates.dart';
 
 // ── Student metadata ──────────────────────────────────────────────────────────
 
@@ -1049,5 +1051,286 @@ class PdfService {
 
     return doc.save();
   }
-}
+  Future<pw.Widget> _buildAcademicHeader(String title) async {
+    pw.MemoryImage? logoImage;
+    try {
+      final logoData = await rootBundle.load('assets/images/app_icon.png');
+      logoImage = pw.MemoryImage(logoData.buffer.asUint8List());
+    } catch (_) {}
 
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.center,
+      children: [
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: pw.CrossAxisAlignment.center,
+          children: [
+            logoImage != null
+                ? pw.Image(logoImage, width: 60, height: 60)
+                : pw.SizedBox(width: 60, height: 60),
+            pw.Text(
+              'College of Engineering\nImam Abdulrahman bin Faisal University',
+              textAlign: pw.TextAlign.right,
+              style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12),
+            ),
+          ],
+        ),
+        pw.SizedBox(height: 20),
+        pw.Text(
+          title,
+          style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 18),
+          textAlign: pw.TextAlign.center,
+        ),
+        pw.SizedBox(height: 16),
+        pw.Divider(thickness: 2),
+        pw.SizedBox(height: 16),
+      ],
+    );
+  }
+
+  pw.Widget _buildAcademicFooter() {
+    return pw.Column(
+      children: [
+        pw.SizedBox(height: 30),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Text('Student Signature: _______________________'),
+            pw.Text('Supervisor Signature: _______________________'),
+          ],
+        ),
+        pw.SizedBox(height: 16),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.end,
+          children: [
+            pw.Text('Date: _______________________'),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Future<Uint8List> generateTaForm01Pdf({
+    required StudentInfo student,
+    required List<Map<String, dynamic>> plans,
+  }) async {
+    final doc = pw.Document();
+
+    pw.Font? formalFont;
+    try {
+      final fontData = await rootBundle.load('assets/fonts/times.ttf');
+      formalFont = pw.Font.ttf(fontData);
+    } catch (_) {
+      formalFont = pw.Font.times();
+    }
+
+    final theme = pw.ThemeData.withFont(
+      base: formalFont,
+      bold: pw.Font.timesBold(),
+      italic: pw.Font.timesItalic(),
+      boldItalic: pw.Font.timesBoldItalic(),
+    );
+
+    // Sort plans by week
+    plans.sort((a, b) => (a['week_number'] as int).compareTo(b['week_number'] as int));
+
+    final header = await _buildAcademicHeader('COOP TRAINING PLAN - TA-FORM 01');
+
+    doc.addPage(
+      pw.MultiPage(
+        pageTheme: pw.PageTheme(
+          theme: theme,
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(36),
+        ),
+        header: (ctx) => header,
+        footer: (ctx) => _buildAcademicFooter(),
+        build: (ctx) => [
+          _buildFormRow('Student Name:', student.name),
+          pw.SizedBox(height: 8),
+          _buildFormRow('University ID:', student.universityId),
+          pw.SizedBox(height: 8),
+          _buildFormRow('Major:', student.major),
+          pw.SizedBox(height: 8),
+          _buildFormRow('Supervisor Name:', student.supervisor),
+          pw.SizedBox(height: 24),
+          pw.Text('Weekly Training Plan', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 14)),
+          pw.SizedBox(height: 12),
+          pw.TableHelper.fromTextArray(
+            border: pw.TableBorder.all(width: 1),
+            headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
+            headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+            cellAlignment: pw.Alignment.centerLeft,
+            headers: ['Week', 'Planned Tasks', 'Supervisor Remarks'],
+            data: plans.map((p) => [
+              'Week ${p['week_number']}',
+              p['planned_tasks']?.toString() ?? '',
+              '', // Empty space for Supervisor Remarks
+            ]).toList(),
+            columnWidths: {
+              0: const pw.FixedColumnWidth(60),
+              1: const pw.FlexColumnWidth(3),
+              2: const pw.FlexColumnWidth(2),
+            },
+          ),
+        ],
+      ),
+    );
+
+    return doc.save();
+  }
+
+  Future<Uint8List> generateStudentReportPdf({
+    required StudentInfo student,
+    required String reportType,
+    required Map<String, dynamic> reportData,
+  }) async {
+    final doc = pw.Document();
+    final theme = pw.ThemeData.withFont(
+      base: pw.Font.times(),
+      bold: pw.Font.timesBold(),
+      italic: pw.Font.timesItalic(),
+      boldItalic: pw.Font.timesBoldItalic(),
+    );
+
+    final formId = reportType == 'Midterm' ? 'ST-FORM 03' : 'ST-FORM 07/08';
+
+    doc.addPage(
+      pw.MultiPage(
+        pageTheme: pw.PageTheme(
+          theme: theme,
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(36),
+        ),
+        header: (ctx) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.center,
+          children: [
+            pw.Text(formId, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 16)),
+            pw.Text('$reportType Progress Report', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 18)),
+            pw.SizedBox(height: 16),
+            pw.Divider(),
+            pw.SizedBox(height: 16),
+          ],
+        ),
+        build: (ctx) => [
+          _buildFormRow('Student Name:', student.name),
+          pw.SizedBox(height: 8),
+          _buildFormRow('University ID:', student.universityId),
+          pw.SizedBox(height: 8),
+          _buildFormRow('Company:', student.company),
+          pw.SizedBox(height: 24),
+          
+          pw.Text('Tasks Completed', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 14)),
+          pw.SizedBox(height: 8),
+          pw.Container(
+            padding: const pw.EdgeInsets.all(12),
+            decoration: pw.BoxDecoration(border: pw.Border.all(color: PdfColors.grey)),
+            child: pw.Text(reportData['tasks_completed']?.toString() ?? '', style: const pw.TextStyle(fontSize: 12)),
+          ),
+          
+          pw.SizedBox(height: 24),
+          pw.Text('Skills Acquired', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 14)),
+          pw.SizedBox(height: 8),
+          pw.Container(
+            padding: const pw.EdgeInsets.all(12),
+            decoration: pw.BoxDecoration(border: pw.Border.all(color: PdfColors.grey)),
+            child: pw.Text(reportData['skills_acquired']?.toString() ?? '', style: const pw.TextStyle(fontSize: 12)),
+          ),
+          
+          pw.SizedBox(height: 48),
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.center,
+                children: [
+                  pw.Text('Student Signature', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                  pw.SizedBox(height: 40),
+                  pw.Container(width: 150, height: 1, color: PdfColors.black),
+                ],
+              ),
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.center,
+                children: [
+                  pw.Text('Supervisor Signature', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                  pw.SizedBox(height: 40),
+                  pw.Container(width: 150, height: 1, color: PdfColors.black),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    return doc.save();
+  }
+
+  Future<Uint8List> generateGenericFormPdf({
+    required StudentInfo student,
+    required String formId,
+    required Map<String, dynamic> formData,
+  }) async {
+    if (formId.startsWith('ST-FORM 0')) {
+      return PdfFormDelegates.generateForm(student, formId, formData);
+    }
+
+    final doc = pw.Document();
+
+    pw.Font? formalFont;
+    try {
+      final fontData = await rootBundle.load('assets/fonts/times.ttf');
+      formalFont = pw.Font.ttf(fontData);
+    } catch (_) {
+      formalFont = pw.Font.times();
+    }
+
+    final theme = pw.ThemeData.withFont(
+      base: formalFont,
+      bold: pw.Font.timesBold(),
+      italic: pw.Font.timesItalic(),
+      boldItalic: pw.Font.timesBoldItalic(),
+    );
+
+    final header = await _buildAcademicHeader('COOP TRAINING - $formId');
+
+    doc.addPage(
+      pw.MultiPage(
+        pageTheme: pw.PageTheme(
+          theme: theme,
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(36),
+        ),
+        header: (ctx) => header,
+        footer: (ctx) => _buildAcademicFooter(),
+        build: (ctx) => [
+          _buildFormRow('Student Name:', student.name),
+          pw.SizedBox(height: 8),
+          _buildFormRow('University ID:', student.universityId),
+          pw.SizedBox(height: 8),
+          _buildFormRow('Major:', student.major),
+          pw.SizedBox(height: 24),
+          
+          ...formData.entries.map((e) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(e.key.replaceAll('_', ' ').toUpperCase(), style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 14)),
+                pw.SizedBox(height: 8),
+                pw.Container(
+                  width: double.infinity,
+                  padding: const pw.EdgeInsets.all(12),
+                  decoration: pw.BoxDecoration(border: pw.Border.all(color: PdfColors.grey)),
+                  child: pw.Text(e.value.toString(), style: const pw.TextStyle(fontSize: 12)),
+                ),
+                pw.SizedBox(height: 16),
+              ],
+            );
+          }),
+        ],
+      ),
+    );
+
+    return doc.save();
+  }
+}

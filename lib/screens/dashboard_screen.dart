@@ -8,6 +8,7 @@ import '../services/supabase_service.dart';
 import '../widgets/app_sidebar.dart';
 import '../widgets/intern_log_logo.dart';
 import '../services/pdf_service.dart';
+import 'student_forms_screen.dart';
 import 'add_log_screen.dart';
 import 'reports_tab.dart';
 import 'settings_tab.dart';
@@ -77,6 +78,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final docs = await DocumentService.instance.fetchSubmittedForms(userId);
       final fetchedSubmittedForms = docs.map((d) => d['form_type'] as String).toList();
       
+      final reports = await Supabase.instance.client
+          .from('student_reports')
+          .select('report_type')
+          .eq('student_id', userId);
+          
+      for (var r in reports) {
+        if (r['report_type'] == 'Midterm') {
+          fetchedSubmittedForms.add('ST-FORM-03');
+        } else if (r['report_type'] == 'Final') {
+          fetchedSubmittedForms.add('ST-FORM-07/08');
+        }
+      }
+
       if (mounted) {
         setState(() {
           _logs = remote;
@@ -406,6 +420,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   label: 'Challenges & Learnings',
                 ),
                 NavigationDestination(
+                  icon: FaIcon(FontAwesomeIcons.fileContract, size: 18),
+                  selectedIcon: FaIcon(FontAwesomeIcons.fileContract,
+                      size: 18, color: Theme.of(context).colorScheme.primary),
+                  label: 'Digital Forms',
+                ),
+                NavigationDestination(
                   icon: FaIcon(FontAwesomeIcons.gear, size: 18),
                   selectedIcon: FaIcon(FontAwesomeIcons.gear,
                       size: 18, color: Theme.of(context).colorScheme.primary),
@@ -455,7 +475,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   title: _navIndex == 0 ? 'Dashboard' :
                          _navIndex == 1 ? 'My Logs' :
                          _navIndex == 2 ? 'Reports' :
-                         _navIndex == 3 ? 'Challenges & Learnings' : 'Settings',
+                         _navIndex == 3 ? 'Challenges & Learnings' :
+                         _navIndex == 4 ? 'Digital Forms' : 'Settings',
                   onDownload: _downloadReport,
                   onInvite: _inviteSupervisor,
                   onProfile: _openProfile,

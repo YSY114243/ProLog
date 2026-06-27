@@ -385,6 +385,44 @@ class SupabaseService {
     return res;
   }
 
+  // ── DYNAMIC FORMS ─────────────────────────────────────────────────────────
+
+  static const String _formDataTable = 'form_data';
+
+  /// Fetches generic form data from `form_data` table
+  Future<Map<String, dynamic>?> fetchFormData(String studentId, String formId) async {
+    try {
+      final res = await _client
+          .from(_formDataTable)
+          .select('data_json')
+          .eq('student_id', studentId)
+          .eq('form_id', formId)
+          .maybeSingle();
+      
+      if (res != null && res['data_json'] != null) {
+        return res['data_json'] as Map<String, dynamic>;
+      }
+    } catch (e) {
+      debugPrint('Error fetching form data for $formId: $e');
+    }
+    return null;
+  }
+
+  /// Upserts generic form data into `form_data` table
+  Future<void> upsertFormData(String studentId, String formId, Map<String, dynamic> data) async {
+    try {
+      await _client.from(_formDataTable).upsert({
+        'student_id': studentId,
+        'form_id': formId,
+        'data_json': data,
+        'updated_at': DateTime.now().toIso8601String(),
+      });
+    } catch (e) {
+      debugPrint('Error upserting form data for $formId: $e');
+      rethrow;
+    }
+  }
+
   /// ImgBB free-tier API key.
   ///
   /// Get yours at https://api.imgbb.com/ (free account, no credit card).

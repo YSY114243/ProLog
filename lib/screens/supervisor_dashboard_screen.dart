@@ -6,7 +6,8 @@ import '../services/supabase_service.dart';
 import '../widgets/milestone_timeline.dart';
 import 'auth_screen.dart';
 import 'supervisor_evaluation_screen.dart';
-import '../services/document_service.dart';
+import 'training_plan_screen.dart';
+import 'supervisor_form_screen.dart';
 
 class SupervisorDashboardScreen extends StatefulWidget {
   const SupervisorDashboardScreen({super.key});
@@ -432,19 +433,17 @@ class _SupervisorDashboardScreenState extends State<SupervisorDashboardScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 OutlinedButton.icon(
-                  onPressed: () async {
-                    final success = await DocumentService.instance.uploadDocument(
-                      studentId: studentId,
-                      formType: 'TA-FORM-01',
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => SupervisorFormScreen(
+                          studentId: studentId,
+                        ),
+                      ),
                     );
-                    if (success && mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('TA-FORM 01 uploaded successfully!')),
-                      );
-                    }
                   },
-                  icon: const Icon(Icons.upload_file, size: 18),
-                  label: const Text('Upload TA-FORM 01'),
+                  icon: const Icon(Icons.file_copy, size: 18),
+                  label: const Text('Manage Forms'),
                 ),
                 const SizedBox(width: 8),
                 FilledButton.icon(

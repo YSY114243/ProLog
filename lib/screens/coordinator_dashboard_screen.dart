@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 import '../services/supabase_service.dart';
 import '../services/pdf_service.dart';
-import '../services/document_service.dart';
-import 'package:url_launcher/url_launcher.dart';
+import '../models/student_info.dart';
 
 class CoordinatorDashboardScreen extends StatefulWidget {
   const CoordinatorDashboardScreen({super.key});
@@ -63,7 +62,20 @@ class _CoordinatorDashboardScreenState extends State<CoordinatorDashboardScreen>
       supervisorEmail: 'N/A', // Replace with supervisor email if available in your schema
     );
 
-    final submittedForms = await DocumentService.instance.fetchSubmittedForms(studentId);
+    final plansRes = await Supabase.instance.client
+        .from('training_plans')
+        .select()
+        .eq('student_id', studentId);
+    final List<Map<String, dynamic>> trainingPlans = List<Map<String, dynamic>>.from(plansRes);
+
+    final reportsRes = await Supabase.instance.client
+        .from('student_reports')
+        .select()
+        .eq('student_id', studentId);
+    final List<Map<String, dynamic>> studentReports = List<Map<String, dynamic>>.from(reportsRes);
+
+    final midtermReport = studentReports.where((r) => r['report_type'] == 'Midterm').firstOrNull;
+    final finalReport = studentReports.where((r) => r['report_type'] == 'Final').firstOrNull;
 
     if (!mounted) return;
 
@@ -109,6 +121,30 @@ class _CoordinatorDashboardScreenState extends State<CoordinatorDashboardScreen>
               const SizedBox(height: 12),
               
               ElevatedButton.icon(
+                onPressed: trainingPlans.isEmpty
+                    ? null
+                    : () async {
+                        final pdfBytes = await PdfService.instance.generateTaForm01Pdf(
+                          student: studentInfo,
+                          plans: trainingPlans,
+                        );
+                        await Printing.sharePdf(bytes: pdfBytes, filename: 'TA-FORM_01_${studentInfo.name}.pdf');
+                      },
+                icon: const Icon(Icons.list_alt),
+                label: Text(trainingPlans.isEmpty
+                    ? 'TA-FORM 01 (No Training Plan)'
+                    : 'Download TA-FORM 01 (Training Plan)'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: Colors.blue.shade700,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.grey.shade300,
+                  disabledForegroundColor: Colors.grey.shade600,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              ElevatedButton.icon(
                 onPressed: evaluation == null
                     ? null
                     : () async {
@@ -130,38 +166,56 @@ class _CoordinatorDashboardScreenState extends State<CoordinatorDashboardScreen>
                   disabledForegroundColor: Colors.grey.shade600,
                 ),
               ),
-              
-              if (submittedForms.isNotEmpty) ...[
-                const SizedBox(height: 24),
-                const Text('Uploaded Documents', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                ...submittedForms.map((doc) {
-                  final formType = doc['form_type'];
-                  final fileUrl = doc['file_url'];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12.0),
-                    child: OutlinedButton.icon(
-                      onPressed: () async {
-                        final uri = Uri.parse(fileUrl);
-                        if (await canLaunchUrl(uri)) {
-                          await launchUrl(uri);
-                        } else {
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Could not open $formType')),
-                            );
-                          }
-                        }
+              const SizedBox(height: 12),
+
+              ElevatedButton.icon(
+                onPressed: midtermReport == null
+                    ? null
+                    : () async {
+                        final pdfBytes = await PdfService.instance.generateStudentReportPdf(
+                          student: studentInfo,
+                          reportType: 'Midterm',
+                          reportData: midtermReport,
+                        );
+                        await Printing.sharePdf(bytes: pdfBytes, filename: 'ST-FORM_03_${studentInfo.name}.pdf');
                       },
-                      icon: const Icon(Icons.download),
-                      label: Text('Download $formType'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                    ),
-                  );
-                }),
-              ],
+                icon: const Icon(Icons.description),
+                label: Text(midtermReport == null
+                    ? 'ST-FORM 03 (No Midterm Report)'
+                    : 'Download ST-FORM 03 (Midterm Report)'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: Colors.purple.shade700,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.grey.shade300,
+                  disabledForegroundColor: Colors.grey.shade600,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              ElevatedButton.icon(
+                onPressed: finalReport == null
+                    ? null
+                    : () async {
+                        final pdfBytes = await PdfService.instance.generateStudentReportPdf(
+                          student: studentInfo,
+                          reportType: 'Final',
+                          reportData: finalReport,
+                        );
+                        await Printing.sharePdf(bytes: pdfBytes, filename: 'ST-FORM_07_08_${studentInfo.name}.pdf');
+                      },
+                icon: const Icon(Icons.description),
+                label: Text(finalReport == null
+                    ? 'ST-FORM 07/08 (No Final Report)'
+                    : 'Download ST-FORM 07/08 (Final Report)'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: Colors.purple.shade700,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.grey.shade300,
+                  disabledForegroundColor: Colors.grey.shade600,
+                ),
+              ),
 
               const SizedBox(height: 24),
               TextButton(

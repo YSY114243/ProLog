@@ -7,6 +7,7 @@ import '../widgets/stat_card.dart';
 import '../widgets/milestone_timeline.dart';
 import '../services/document_service.dart';
 import 'paywall_screen.dart';
+import 'student_report_screen.dart';
 
 class DashboardOverviewTab extends StatelessWidget {
   final List<DailyLog> allLogs;
@@ -101,23 +102,19 @@ class DashboardOverviewTab extends StatelessWidget {
                 },
               ),
               MilestoneTask(
-                title: 'First Progress Report',
+                title: 'Midterm Progress Report',
                 formId: 'ST-FORM-03',
                 requiredWeek: 4,
                 isCompleted: submittedForms.contains('ST-FORM-03'),
                 onTap: () async {
                   if (user == null) return;
-                  final success = await DocumentService.instance.uploadDocument(
-                    studentId: user.id,
-                    formType: 'ST-FORM-03',
+                  final result = await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const StudentReportScreen(reportType: 'Midterm'),
+                    ),
                   );
-                  if (success && onRefresh != null) {
+                  if (result == true && onRefresh != null) {
                     onRefresh!();
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Document uploaded successfully!')),
-                      );
-                    }
                   }
                 },
               ),
@@ -128,17 +125,13 @@ class DashboardOverviewTab extends StatelessWidget {
                 isCompleted: submittedForms.contains('ST-FORM-07/08'),
                 onTap: () async {
                   if (user == null) return;
-                  final success = await DocumentService.instance.uploadDocument(
-                    studentId: user.id,
-                    formType: 'ST-FORM-07/08',
+                  final result = await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const StudentReportScreen(reportType: 'Final'),
+                    ),
                   );
-                  if (success && onRefresh != null) {
+                  if (result == true && onRefresh != null) {
                     onRefresh!();
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Document uploaded successfully!')),
-                      );
-                    }
                   }
                 },
               ),

@@ -32,6 +32,10 @@ class AppSidebar extends StatelessWidget {
       label: 'Challenges & Learnings',
     ),
     _FaDestination(
+      icon: FontAwesomeIcons.fileContract,
+      label: 'Digital Forms',
+    ),
+    _FaDestination(
       icon: FontAwesomeIcons.gear,
       label: 'Settings',
     ),
