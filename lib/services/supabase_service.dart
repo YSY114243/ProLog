@@ -121,6 +121,16 @@ class SupabaseService {
     return res;
   }
 
+  /// Updates the current user's profile.
+  Future<void> updateProfile(Map<String, dynamic> data) async {
+    final uid = currentUserId;
+    if (uid == null) return;
+    await _client
+        .from(_profilesTable)
+        .update(data)
+        .eq('id', uid);
+  }
+
   /// Updates an existing [log] row identified by [log.id].
   ///
   /// Only the mutable fields are sent (date, task_type, description,

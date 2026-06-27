@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/daily_log.dart';
+import '../models/task_type.dart';
 import '../services/supabase_service.dart';
 import '../widgets/app_sidebar.dart';
 import '../widgets/intern_log_logo.dart';
@@ -13,6 +14,7 @@ import 'settings_tab.dart';
 import 'my_logs_tab.dart';
 import 'dashboard_overview_tab.dart';
 import 'challenges_tab.dart';
+import 'profile_screen.dart';
 
 /// Breakpoints for responsive layout.
 class _Bp {
@@ -89,6 +91,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   // ── Navigation ────────────────────────────────────────────────────────────
+
+  Future<void> _openProfile() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ProfileScreen()),
+    );
+    _loadFromSupabase();
+  }
 
   void _openAddLog() {
     Navigator.push(
@@ -399,6 +409,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                          _navIndex == 3 ? 'Challenges & Learnings' : 'Settings',
                   onDownload: _downloadReport,
                   onInvite: _inviteSupervisor,
+                  onProfile: _openProfile,
                 ),
                 Expanded(
                   child: _navIndex == 0
@@ -450,6 +461,7 @@ class _AppHeader extends StatelessWidget {
   final String title;
   final VoidCallback onDownload;
   final VoidCallback onInvite;
+  final VoidCallback onProfile;
 
   const _AppHeader({
     required this.isDesktop,
@@ -457,6 +469,7 @@ class _AppHeader extends StatelessWidget {
     required this.title,
     required this.onDownload,
     required this.onInvite,
+    required this.onProfile,
   });
 
   @override
@@ -515,6 +528,15 @@ class _AppHeader extends StatelessWidget {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             ),
+          ),
+          const SizedBox(width: 12),
+          
+          // Profile Button
+          IconButton(
+            icon: const Icon(Icons.account_circle, size: 28),
+            color: Theme.of(context).colorScheme.primary,
+            onPressed: onProfile,
+            tooltip: 'My Profile',
           ),
         ],
       ),
