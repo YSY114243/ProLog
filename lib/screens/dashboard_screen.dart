@@ -515,6 +515,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ? ReportsTab(allLogs: _logs)
                       : _navIndex == 3
                           ? ChallengesTab(isMobile: isMobile, isDesktop: isDesktop)
+                      : _navIndex == 4
+                          ? const StudentFormsScreen()
                           : const SettingsTab(),
                 ),
               ],

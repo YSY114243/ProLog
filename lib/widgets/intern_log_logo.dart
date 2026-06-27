@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 /// Shared branded logo widget for InternLog.
 ///
@@ -68,11 +69,11 @@ class InternLogLogo extends StatelessWidget {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(borderRadius),
-            child: Image.asset(
-              'assets/images/app_icon.png',
+            child: SvgPicture.asset(
+              'assets/images/iau_logo.svg',
               width: iconBoxSize,
               height: iconBoxSize,
-              fit: BoxFit.cover,
+              fit: BoxFit.contain,
             ),
           ),
         ),

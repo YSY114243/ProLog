@@ -349,76 +349,135 @@ class _TaForm04TabState extends State<_TaForm04Tab> {
     super.dispose();
   }
 
+  Widget _buildSegmentedControl(String question, int value, ValueChanged<int> onChanged) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(question, style: const TextStyle(fontWeight: FontWeight.w500)),
+          const SizedBox(height: 8),
+          SegmentedButton<int>(
+            segments: const [
+              ButtonSegment<int>(value: 1, label: Text('1')),
+              ButtonSegment<int>(value: 2, label: Text('2')),
+              ButtonSegment<int>(value: 3, label: Text('3')),
+              ButtonSegment<int>(value: 4, label: Text('4')),
+              ButtonSegment<int>(value: 5, label: Text('5')),
+            ],
+            selected: {value},
+            onSelectionChanged: (Set<int> newSelection) {
+              onChanged(newSelection.first);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDropdown(String question, String value, List<String> items, ValueChanged<String?> onChanged) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(question, style: const TextStyle(fontWeight: FontWeight.w500)),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade400),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: value,
+                isExpanded: true,
+                dropdownColor: Colors.white,
+                items: items.map((val) => DropdownMenuItem(value: val, child: Text(val))).toList(),
+                onChanged: onChanged,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCard(String title, List<Widget> children) {
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor)),
+            const Divider(height: 24, thickness: 1),
+            ...children,
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
-        const Text('Section 1: General Information', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        const SizedBox(height: 16),
-        TextField(controller: _genderCtrl, decoration: const InputDecoration(labelText: 'Students Gender (Male/Female)', border: OutlineInputBorder())),
-        const SizedBox(height: 12),
-        TextField(controller: _agencyCtrl, decoration: const InputDecoration(labelText: 'Training Agency', border: OutlineInputBorder())),
-        const SizedBox(height: 12),
-        TextField(controller: _deptCtrl, decoration: const InputDecoration(labelText: 'Department', border: OutlineInputBorder())),
-        const SizedBox(height: 12),
-        TextField(controller: _trainedPast2YearsCtrl, decoration: const InputDecoration(labelText: 'Students trained over past 2 years (IAU)', border: OutlineInputBorder()), keyboardType: TextInputType.number),
-        const SizedBox(height: 12),
-        TextField(controller: _currentlyTrainingCtrl, decoration: const InputDecoration(labelText: 'Students currently training (IAU)', border: OutlineInputBorder()), keyboardType: TextInputType.number),
-        
-        const SizedBox(height: 32),
-        const Text('Section 2: Likert Scale Survey (1: Strongly Disagree - 5: Strongly Agree)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        const SizedBox(height: 16),
-        
-        for (var q in _likertQuestions) ...[
-          Text(q, style: const TextStyle(fontWeight: FontWeight.w600)),
-          Slider(
-            value: _ratings[q]!.toDouble(),
-            min: 1,
-            max: 5,
-            divisions: 4,
-            label: _ratings[q].toString(),
-            onChanged: (val) => setState(() => _ratings[q] = val.toInt()),
-          ),
+        _buildCard('Section 1: General Information', [
+          TextField(controller: _genderCtrl, decoration: const InputDecoration(labelText: 'Students Gender (Male/Female)', border: OutlineInputBorder())),
           const SizedBox(height: 16),
-        ],
+          TextField(controller: _agencyCtrl, decoration: const InputDecoration(labelText: 'Training Agency', border: OutlineInputBorder())),
+          const SizedBox(height: 16),
+          TextField(controller: _deptCtrl, decoration: const InputDecoration(labelText: 'Department', border: OutlineInputBorder())),
+          const SizedBox(height: 16),
+          TextField(controller: _trainedPast2YearsCtrl, decoration: const InputDecoration(labelText: 'Students trained over past 2 years (IAU)', border: OutlineInputBorder()), keyboardType: TextInputType.number),
+          const SizedBox(height: 16),
+          TextField(controller: _currentlyTrainingCtrl, decoration: const InputDecoration(labelText: 'Students currently training (IAU)', border: OutlineInputBorder()), keyboardType: TextInputType.number),
+        ]),
 
-        const Text('Communication frequency with college:', style: TextStyle(fontWeight: FontWeight.w600)),
-        DropdownButton<String>(
-          value: _communicationFreq,
-          isExpanded: true,
-          items: ['Daily', 'Weekly', 'Bi-weekly', 'Monthly', 'Never']
-              .map((val) => DropdownMenuItem(value: val, child: Text(val)))
-              .toList(),
-          onChanged: (val) => setState(() => _communicationFreq = val!),
-        ),
-        const SizedBox(height: 16),
-
-        const Text('Provided with a training manual?', style: TextStyle(fontWeight: FontWeight.w600)),
-        DropdownButton<String>(
-          value: _providedManual,
-          isExpanded: true,
-          items: ['Yes', 'No'].map((val) => DropdownMenuItem(value: val, child: Text(val))).toList(),
-          onChanged: (val) => setState(() => _providedManual = val!),
-        ),
-        const SizedBox(height: 16),
-
-        const Text('Assessment forms provided by college?', style: TextStyle(fontWeight: FontWeight.w600)),
-        DropdownButton<String>(
-          value: _providedForms,
-          isExpanded: true,
-          items: ['Yes', 'No'].map((val) => DropdownMenuItem(value: val, child: Text(val))).toList(),
-          onChanged: (val) => setState(() => _providedForms = val!),
+        const Padding(
+          padding: EdgeInsets.only(bottom: 16.0),
+          child: Text('Section 2: Likert Scale Survey (1: Strongly Disagree - 5: Strongly Agree)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         ),
 
-        const SizedBox(height: 32),
-        const Text('Section 3: Brief written comments', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        _buildCard('Domain 1: Training Application', [
+          _buildSegmentedControl('Application process was clear', _ratings['Application process was clear']!, (val) => setState(() => _ratings['Application process was clear'] = val)),
+          _buildSegmentedControl('Application process was efficient', _ratings['Application process was efficient']!, (val) => setState(() => _ratings['Application process was efficient'] = val)),
+        ]),
+
+        _buildCard('Domain 2: Communication with College', [
+          _buildDropdown('Communication frequency with college:', _communicationFreq, ['Daily', 'Weekly', 'Bi-weekly', 'Monthly', 'Never'], (val) => setState(() => _communicationFreq = val!)),
+          _buildSegmentedControl('Issues encountered relating to the trainee were resolved effectively', _ratings['Issues encountered relating to the trainee were resolved effectively']!, (val) => setState(() => _ratings['Issues encountered relating to the trainee were resolved effectively'] = val)),
+        ]),
+
+        _buildCard('Domain 3: Training Program', [
+          _buildDropdown('Provided with a training manual?', _providedManual, ['Yes', 'No'], (val) => setState(() => _providedManual = val!)),
+          _buildSegmentedControl('The training manual was clear', _ratings['The training manual was clear']!, (val) => setState(() => _ratings['The training manual was clear'] = val)),
+          _buildSegmentedControl('The training manual included relevant information needed for guiding the trainees', _ratings['The training manual included relevant information needed for guiding the trainees']!, (val) => setState(() => _ratings['The training manual included relevant information needed for guiding the trainees'] = val)),
+        ]),
+
+        _buildCard('Domain 4: Assessment', [
+          _buildDropdown('Assessment forms provided by college?', _providedForms, ['Yes', 'No'], (val) => setState(() => _providedForms = val!)),
+          _buildSegmentedControl('Trainee Assessment and Evaluation forms were clear', _ratings['Trainee Assessment and Evaluation forms were clear']!, (val) => setState(() => _ratings['Trainee Assessment and Evaluation forms were clear'] = val)),
+        ]),
+
+        _buildCard('Domain 5: Student Evaluation', [
+          _buildSegmentedControl('IAU students were ready for training', _ratings['IAU students were ready for training']!, (val) => setState(() => _ratings['IAU students were ready for training'] = val)),
+          _buildSegmentedControl('IAU students demonstrated professionalism while undertaking training', _ratings['IAU students demonstrated professionalism while undertaking training']!, (val) => setState(() => _ratings['IAU students demonstrated professionalism while undertaking training'] = val)),
+        ]),
+
+        _buildCard('Section 3: Brief written comments', [
+          TextField(controller: _bestQualityCtrl, maxLines: 3, decoration: const InputDecoration(labelText: 'Best quality observed in IAU trainees?', border: OutlineInputBorder())),
+          const SizedBox(height: 16),
+          TextField(controller: _suggestionsCtrl, maxLines: 3, decoration: const InputDecoration(labelText: 'Suggestions to improve the training program?', border: OutlineInputBorder())),
+        ]),
+
         const SizedBox(height: 16),
-        TextField(controller: _bestQualityCtrl, maxLines: 3, decoration: const InputDecoration(labelText: 'Best quality observed in IAU trainees?', border: OutlineInputBorder())),
-        const SizedBox(height: 16),
-        TextField(controller: _suggestionsCtrl, maxLines: 3, decoration: const InputDecoration(labelText: 'Suggestions to improve the training program?', border: OutlineInputBorder())),
-        
-        const SizedBox(height: 32),
         _ActionButtons(
           onDownload: () {
             final data = {

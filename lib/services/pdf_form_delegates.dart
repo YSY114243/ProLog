@@ -6,11 +6,13 @@ import 'pdf_service.dart';
 
 class PdfFormDelegates {
   static Future<pw.Widget> buildAcademicHeader(String title) async {
-    pw.MemoryImage? logoImage;
+    pw.Widget logoWidget;
     try {
-      final logoData = await rootBundle.load('assets/images/app_icon.png');
-      logoImage = pw.MemoryImage(logoData.buffer.asUint8List());
-    } catch (_) {}
+      final svgData = await rootBundle.loadString('assets/images/iau_logo.svg');
+      logoWidget = pw.SvgImage(svg: svgData, width: 80);
+    } catch (_) {
+      logoWidget = pw.SizedBox(width: 80, height: 80);
+    }
 
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.center,
@@ -19,7 +21,7 @@ class PdfFormDelegates {
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           crossAxisAlignment: pw.CrossAxisAlignment.center,
           children: [
-            logoImage != null ? pw.Image(logoImage, width: 60, height: 60) : pw.SizedBox(width: 60, height: 60),
+            logoWidget,
             pw.Text('College of Engineering\nImam Abdulrahman bin Faisal University', textAlign: pw.TextAlign.right, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
           ],
         ),
@@ -107,16 +109,18 @@ class PdfFormDelegates {
     return doc.save();
   }
 
-  static pw.Widget _buildRow(String label, String value) {
-    return pw.Padding(
-      padding: const pw.EdgeInsets.symmetric(vertical: 4),
-      child: pw.Row(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-          pw.SizedBox(width: 150, child: pw.Text(label, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12))),
-          pw.Expanded(child: pw.Text(value.isEmpty ? '—' : value, style: const pw.TextStyle(fontSize: 12))),
-        ],
-      ),
+  static pw.TableRow _buildTableRow(String label, String value) {
+    return pw.TableRow(
+      children: [
+        pw.Padding(
+          padding: const pw.EdgeInsets.all(6),
+          child: pw.Text(label, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.all(6),
+          child: pw.Text(value.isEmpty ? '—' : value, style: const pw.TextStyle(fontSize: 12)),
+        ),
+      ],
     );
   }
 
@@ -137,16 +141,67 @@ class PdfFormDelegates {
     );
   }
 
+  static pw.Widget _buildLikertTable(List<Map<String, String>> questions, Map<String, dynamic> data) {
+    return pw.Table(
+      border: pw.TableBorder.all(width: 1),
+      columnWidths: {
+        0: const pw.FlexColumnWidth(3),
+        1: const pw.FlexColumnWidth(1),
+        2: const pw.FlexColumnWidth(1),
+        3: const pw.FlexColumnWidth(1),
+        4: const pw.FlexColumnWidth(1),
+        5: const pw.FlexColumnWidth(1),
+      },
+      children: [
+        pw.TableRow(
+          decoration: const pw.BoxDecoration(color: PdfColors.grey300),
+          children: [
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(6),
+              child: pw.Text('Domain / Question', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            ),
+            pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('1', style: pw.TextStyle(fontWeight: pw.FontWeight.bold), textAlign: pw.TextAlign.center)),
+            pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('2', style: pw.TextStyle(fontWeight: pw.FontWeight.bold), textAlign: pw.TextAlign.center)),
+            pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('3', style: pw.TextStyle(fontWeight: pw.FontWeight.bold), textAlign: pw.TextAlign.center)),
+            pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('4', style: pw.TextStyle(fontWeight: pw.FontWeight.bold), textAlign: pw.TextAlign.center)),
+            pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('5', style: pw.TextStyle(fontWeight: pw.FontWeight.bold), textAlign: pw.TextAlign.center)),
+          ],
+        ),
+        ...questions.map((q) {
+          final int score = int.tryParse(data[q['key']]?.toString() ?? '0') ?? 0;
+          return pw.TableRow(
+            children: [
+              pw.Padding(
+                padding: const pw.EdgeInsets.all(6),
+                child: pw.Text(q['label'] as String, style: const pw.TextStyle(fontSize: 10)),
+              ),
+              pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(score == 1 ? 'X' : '', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontWeight: score == 1 ? pw.FontWeight.bold : pw.FontWeight.normal))),
+              pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(score == 2 ? 'X' : '', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontWeight: score == 2 ? pw.FontWeight.bold : pw.FontWeight.normal))),
+              pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(score == 3 ? 'X' : '', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontWeight: score == 3 ? pw.FontWeight.bold : pw.FontWeight.normal))),
+              pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(score == 4 ? 'X' : '', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontWeight: score == 4 ? pw.FontWeight.bold : pw.FontWeight.normal))),
+              pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(score == 5 ? 'X' : '', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontWeight: score == 5 ? pw.FontWeight.bold : pw.FontWeight.normal))),
+            ],
+          );
+        }),
+      ],
+    );
+  }
+
   static pw.Widget _buildStForm01(StudentInfo student, Map<String, dynamic> data) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         pw.Text("Student's Information", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 14)),
         pw.SizedBox(height: 8),
-        _buildRow('Name:', student.name),
-        _buildRow('ID:', student.universityId),
-        _buildRow('Assigned Company:', data['assigned_company']?.toString() ?? ''),
-        _buildRow('Company Location:', data['company_location']?.toString() ?? ''),
+        pw.Table(
+          border: pw.TableBorder.all(width: 1),
+          children: [
+            _buildTableRow('Name:', student.name),
+            _buildTableRow('ID:', student.universityId),
+            _buildTableRow('Assigned Company:', data['assigned_company']?.toString() ?? ''),
+            _buildTableRow('Company Location:', data['company_location']?.toString() ?? ''),
+          ],
+        ),
         pw.SizedBox(height: 24),
         pw.Text("Student's Undertaking", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 14)),
         pw.SizedBox(height: 8),
@@ -169,19 +224,29 @@ class PdfFormDelegates {
       children: [
         pw.Text("Student's Information", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 14)),
         pw.SizedBox(height: 8),
-        _buildRow('Name:', student.name),
-        _buildRow('ID:', student.universityId),
-        _buildRow('Major:', student.major),
+        pw.Table(
+          border: pw.TableBorder.all(width: 1),
+          children: [
+            _buildTableRow('Name:', student.name),
+            _buildTableRow('ID:', student.universityId),
+            _buildTableRow('Major:', student.major),
+          ],
+        ),
         pw.SizedBox(height: 16),
         pw.Text("Information to be provided by the supervisor", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 14)),
         pw.SizedBox(height: 8),
-        _buildRow('Company Name:', data['company_name']?.toString() ?? ''),
-        _buildRow('Supervisor Name:', data['supervisor_name']?.toString() ?? ''),
-        _buildRow('Supervisor Position:', data['supervisor_position']?.toString() ?? ''),
-        _buildRow('Training Start Date:', data['start_date']?.toString() ?? ''),
-        _buildRow('Mobile Phone:', data['supervisor_mobile']?.toString() ?? ''),
-        _buildRow('E-mail:', data['supervisor_email']?.toString() ?? ''),
-        _buildRow('Address:', data['address']?.toString() ?? ''),
+        pw.Table(
+          border: pw.TableBorder.all(width: 1),
+          children: [
+            _buildTableRow('Company Name:', data['company_name']?.toString() ?? ''),
+            _buildTableRow('Supervisor Name:', data['supervisor_name']?.toString() ?? ''),
+            _buildTableRow('Supervisor Position:', data['supervisor_position']?.toString() ?? ''),
+            _buildTableRow('Training Start Date:', data['start_date']?.toString() ?? ''),
+            _buildTableRow('Mobile Phone:', data['supervisor_mobile']?.toString() ?? ''),
+            _buildTableRow('E-mail:', data['supervisor_email']?.toString() ?? ''),
+            _buildTableRow('Address:', data['address']?.toString() ?? ''),
+          ],
+        ),
       ],
     );
   }
@@ -190,9 +255,14 @@ class PdfFormDelegates {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        _buildRow('Name:', student.name),
-        _buildRow('ID Number:', student.universityId),
-        _buildRow('Company Name:', student.company),
+        pw.Table(
+          border: pw.TableBorder.all(width: 1),
+          children: [
+            _buildTableRow('Name:', student.name),
+            _buildTableRow('ID Number:', student.universityId),
+            _buildTableRow('Company Name:', student.company),
+          ],
+        ),
         pw.SizedBox(height: 24),
         pw.TableHelper.fromTextArray(
           border: pw.TableBorder.all(width: 1),
@@ -223,9 +293,14 @@ class PdfFormDelegates {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        _buildRow('Name:', student.name),
-        _buildRow('ID Number:', student.universityId),
-        _buildRow('Company Name:', student.company),
+        pw.Table(
+          border: pw.TableBorder.all(width: 1),
+          children: [
+            _buildTableRow('Name:', student.name),
+            _buildTableRow('ID Number:', student.universityId),
+            _buildTableRow('Company Name:', student.company),
+          ],
+        ),
         pw.SizedBox(height: 24),
         pw.TableHelper.fromTextArray(
           border: pw.TableBorder.all(width: 1),
@@ -241,10 +316,15 @@ class PdfFormDelegates {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        _buildRow('Name:', student.name),
-        _buildRow('ID Number:', student.universityId),
-        if (formId == 'ST-FORM 06') _buildRow('Company Name:', student.company),
-        if (formId == 'ST-FORM 05') _buildRow('Department:', student.major),
+        pw.Table(
+          border: pw.TableBorder.all(width: 1),
+          children: [
+            _buildTableRow('Name:', student.name),
+            _buildTableRow('ID Number:', student.universityId),
+            if (formId == 'ST-FORM 06') _buildTableRow('Company Name:', student.company),
+            if (formId == 'ST-FORM 05') _buildTableRow('Department:', student.major),
+          ],
+        ),
         pw.SizedBox(height: 24),
         _buildBox('Reason(s)', data['reason']?.toString() ?? ''),
       ],
@@ -253,35 +333,35 @@ class PdfFormDelegates {
 
   static pw.Widget _buildStForm07(StudentInfo student, Map<String, dynamic> data) {
     final questions = [
-      'I was assigned meaningful tasks',
-      'Assignments were relevant to coursework',
-      'Assignments were relevant to interests',
-      'Regular supervision and guidance',
-      'Staff were available for questions',
-      'Learned new knowledge & skills',
-      'Facilities & resources were useful',
-      'Company is open to innovative ideas',
+      {'label': 'I was assigned meaningful tasks', 'key': 'q0'},
+      {'label': 'Assignments were relevant to coursework', 'key': 'q1'},
+      {'label': 'Assignments were relevant to interests', 'key': 'q2'},
+      {'label': 'Regular supervision and guidance', 'key': 'q3'},
+      {'label': 'Staff were available for questions', 'key': 'q4'},
+      {'label': 'Learned new knowledge & skills', 'key': 'q5'},
+      {'label': 'Facilities & resources were useful', 'key': 'q6'},
+      {'label': 'Company is open to innovative ideas', 'key': 'q7'},
     ];
-
-    List<List<String>> tableData = [];
-    for (int i = 0; i < questions.length; i++) {
-      tableData.add([questions[i], data['q$i']?.toString() ?? '3']);
-    }
 
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        _buildRow('Name:', student.name),
-        _buildRow('Company Name:', student.company),
-        pw.SizedBox(height: 24),
-        pw.TableHelper.fromTextArray(
+        pw.Table(
           border: pw.TableBorder.all(width: 1),
-          headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
-          headers: ['Domain / Question', 'Rating (1-5)'],
-          data: tableData,
+          children: [
+            _buildTableRow('Name:', student.name),
+            _buildTableRow('Company Name:', student.company),
+          ],
         ),
+        pw.SizedBox(height: 24),
+        _buildLikertTable(questions, data),
         pw.SizedBox(height: 16),
-        _buildRow('Recommend company?', data['recommend']?.toString() ?? ''),
+        pw.Table(
+          border: pw.TableBorder.all(width: 1),
+          children: [
+            _buildTableRow('Recommend company?', data['recommend']?.toString() ?? ''),
+          ],
+        ),
         pw.SizedBox(height: 8),
         _buildBox('Additional Comments', data['comments']?.toString() ?? ''),
       ],
@@ -289,42 +369,40 @@ class PdfFormDelegates {
   }
 
   static pw.Widget _buildStForm08(StudentInfo student, Map<String, dynamic> data) {
+    final evalQuestions = [
+      {'label': 'Application clear', 'key': 'app_clear'},
+      {'label': 'Application efficient', 'key': 'app_efficient'},
+      {'label': 'Orientation helpful', 'key': 'orientation_helpful'},
+      {'label': 'Training plan clear', 'key': 'training_plan_clear'},
+      {'label': 'Related to specialty', 'key': 'training_specialty'},
+      {'label': 'Manual clear', 'key': 'manual_clear'},
+      {'label': 'Manual relevant', 'key': 'manual_relevant'},
+      {'label': 'Follow up freq.', 'key': 'follow_up_freq'},
+      {'label': 'Supervisor effective', 'key': 'supervisor_effective'},
+      {'label': 'Assessment clear', 'key': 'assessment_clear'},
+      {'label': 'Assessment fair', 'key': 'assessment_fair'},
+    ];
+
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         pw.Text('Section 1: General Information', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
         pw.SizedBox(height: 8),
-        _buildRow('Gender:', data['gender']?.toString() ?? ''),
-        _buildRow('College:', data['college']?.toString() ?? ''),
-        _buildRow('Department:', data['department']?.toString() ?? ''),
-        _buildRow('Level:', data['level']?.toString() ?? ''),
-        _buildRow('Type of Field Training:', data['training_type']?.toString() ?? ''),
-        _buildRow('How was this provided:', data['provided_by']?.toString() ?? ''),
+        pw.Table(
+          border: pw.TableBorder.all(width: 1),
+          children: [
+            _buildTableRow('Gender:', data['gender']?.toString() ?? ''),
+            _buildTableRow('College:', data['college']?.toString() ?? ''),
+            _buildTableRow('Department:', data['department']?.toString() ?? ''),
+            _buildTableRow('Level:', data['level']?.toString() ?? ''),
+            _buildTableRow('Type of Field Training:', data['training_type']?.toString() ?? ''),
+            _buildTableRow('How was this provided:', data['provided_by']?.toString() ?? ''),
+          ],
+        ),
         pw.SizedBox(height: 16),
         pw.Text('Section 2: Evaluation (1-5)', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
         pw.SizedBox(height: 8),
-        pw.TableHelper.fromTextArray(
-          border: pw.TableBorder.all(width: 1),
-          headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
-          headers: ['Domain', 'Rating/Answer'],
-          data: [
-            ['Application clear', data['app_clear']?.toString() ?? ''],
-            ['Application efficient', data['app_efficient']?.toString() ?? ''],
-            ['Orientation conducted?', data['orientation_conducted']?.toString() ?? ''],
-            ['Orientation helpful', data['orientation_helpful']?.toString() ?? ''],
-            ['Training plan clear', data['training_plan_clear']?.toString() ?? ''],
-            ['Related to specialty', data['training_specialty']?.toString() ?? ''],
-            ['Manual provided?', data['manual_provided']?.toString() ?? ''],
-            ['Manual clear', data['manual_clear']?.toString() ?? ''],
-            ['Manual relevant', data['manual_relevant']?.toString() ?? ''],
-            ['Supervisor assigned?', data['supervisor_assigned']?.toString() ?? ''],
-            ['Follow up freq.', data['follow_up_freq']?.toString() ?? ''],
-            ['Supervisor effective', data['supervisor_effective']?.toString() ?? ''],
-            ['Assessment provided?', data['assessment_provided']?.toString() ?? ''],
-            ['Assessment clear', data['assessment_clear']?.toString() ?? ''],
-            ['Assessment fair', data['assessment_fair']?.toString() ?? ''],
-          ],
-        ),
+        _buildLikertTable(evalQuestions, data),
         pw.SizedBox(height: 16),
         pw.Text('Section 3: Comments', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
         pw.SizedBox(height: 8),
