@@ -213,14 +213,13 @@ class SupabaseService {
     String name,
     String inviteCode,
   ) async {
-    // 1. Verify the invite code belongs to a valid student
-    final studentRes = await _client
-        .from(_profilesTable)
-        .select('id')
-        .eq('supervisor_invite_code', inviteCode)
-        .maybeSingle();
+    // 1. Securely verify the invite code via RPC (bypassing RLS for anonymous users)
+    final isValidCode = await _client.rpc(
+      'check_invite_code',
+      params: {'p_code': inviteCode},
+    ) as bool? ?? false;
 
-    if (studentRes == null) {
+    if (!isValidCode) {
       throw Exception('Invalid Student Invite Code. Please check the code and try again.');
     }
 
