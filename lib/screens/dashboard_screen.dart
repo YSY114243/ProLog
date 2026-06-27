@@ -251,7 +251,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     const SizedBox(width: 8),
                     IconButton(
                       icon: const Icon(Icons.copy),
-                      color: Theme.of(context).colorScheme.primary,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
                       tooltip: 'Copy to Clipboard',
                       onPressed: () {
                         Clipboard.setData(ClipboardData(text: code));
