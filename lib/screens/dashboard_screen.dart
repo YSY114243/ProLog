@@ -3,7 +3,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/daily_log.dart';
-import '../models/task_type.dart';
 import '../services/supabase_service.dart';
 import '../widgets/app_sidebar.dart';
 import '../widgets/intern_log_logo.dart';
