@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/dashboard_screen.dart';
+import 'screens/supervisor_dashboard_screen.dart';
 import 'landing/landing_page.dart';
 import 'screens/paywall_screen.dart';
 import 'services/supabase_service.dart';
@@ -45,7 +46,7 @@ class InternLogApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => isSignedIn 
-            ? (showPaywall ? const PaywallScreen() : const DashboardScreen()) 
+            ? (showPaywall ? const PaywallScreen() : const AuthGate()) 
             : const LandingPage(),
         '/pricing': (context) => const PricingPage(),
         '/terms': (context) => const LegalPage(
@@ -61,6 +62,68 @@ class InternLogApp extends StatelessWidget {
           content: 'Our Refund Policy for Premium Subscriptions.\n\n1. Free Trial\nWe offer a 3-day free trial so you can test all features before purchasing.\n\n2. Refunds\nSince we offer a free trial, all sales are considered final after the trial period ends. We do not offer refunds for the one-time premium purchase unless there is a technical failure on our end that prevents you from accessing the service.\n\n3. Exceptions\nIf you experience a billing error, please contact support within 7 days for a full refund.',
         ),
       },
+    );
+  }
+}
+
+class AuthGate extends StatefulWidget {
+  const AuthGate({super.key});
+
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  @override
+  void initState() {
+    super.initState();
+    _checkRole();
+  }
+
+  Future<void> _checkRole() async {
+    final session = Supabase.instance.client.auth.currentSession;
+    if (session == null) {
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/');
+      }
+      return;
+    }
+
+    try {
+      final userData = await Supabase.instance.client
+          .from('user_profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+
+      final role = userData['role'];
+
+      if (!mounted) return;
+
+      if (role == 'supervisor') {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const SupervisorDashboardScreen()),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      // Default to DashboardScreen if there is an error
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
     );
   }
 }

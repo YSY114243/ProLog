@@ -47,14 +47,29 @@ class _SupervisorDashboardScreenState extends State<SupervisorDashboardScreen> {
 
   Future<void> _loadTrainees() async {
     setState(() => _loadingTrainees = true);
-    final trainees = await SupabaseService.instance.getTraineesForSupervisor();
-    final evaluatedIds = await SupabaseService.instance.getEvaluatedStudentIds();
-    if (mounted) {
-      setState(() {
-        _trainees = trainees;
-        _evaluatedStudentIds = evaluatedIds;
-        _loadingTrainees = false;
-      });
+    try {
+      final response = await Supabase.instance.client
+          .from('user_profiles')
+          .select('*')
+          .eq('supervisor_id', Supabase.instance.client.auth.currentUser!.id)
+          .eq('role', 'student');
+      
+      final evaluatedIds = await SupabaseService.instance.getEvaluatedStudentIds();
+      
+      if (mounted) {
+        setState(() {
+          _trainees = List<Map<String, dynamic>>.from(response);
+          _evaluatedStudentIds = evaluatedIds;
+          _loadingTrainees = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error: $e');
+      if (mounted) {
+        setState(() {
+          _loadingTrainees = false;
+        });
+      }
     }
   }
 
