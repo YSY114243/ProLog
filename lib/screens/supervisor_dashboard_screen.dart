@@ -6,6 +6,7 @@ import '../services/supabase_service.dart';
 import '../widgets/milestone_timeline.dart';
 import 'auth_screen.dart';
 import 'supervisor_evaluation_screen.dart';
+import '../services/document_service.dart';
 
 class SupervisorDashboardScreen extends StatefulWidget {
   const SupervisorDashboardScreen({super.key});
@@ -427,29 +428,50 @@ class _SupervisorDashboardScreenState extends State<SupervisorDashboardScreen> {
             ),
             title: Text(studentName, style: const TextStyle(fontWeight: FontWeight.w600)),
             subtitle: const Text('Construction Engineering • Imam Abdulrahman bin Faisal University'),
-            trailing: FilledButton.icon(
-              onPressed: isEvaluated
-                  ? null
-                  : () async {
-                      final result = await Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => SupervisorEvaluationScreen(
-                            studentId: studentId,
-                            studentName: studentName,
-                          ),
-                        ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    final success = await DocumentService.instance.uploadDocument(
+                      studentId: studentId,
+                      formType: 'TA-FORM-01',
+                    );
+                    if (success && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('TA-FORM 01 uploaded successfully!')),
                       );
-                      if (result == true) {
-                        _loadTrainees(); // Refresh the list
-                      }
-                    },
-              icon: Icon(isEvaluated ? Icons.check : Icons.assignment_turned_in, size: 18),
-              label: Text(isEvaluated ? 'Evaluated' : 'Evaluate'),
-              style: FilledButton.styleFrom(
-                backgroundColor: isEvaluated ? Colors.grey : Colors.blue.shade700,
-                disabledBackgroundColor: Colors.grey.shade300,
-                disabledForegroundColor: Colors.grey.shade600,
-              ),
+                    }
+                  },
+                  icon: const Icon(Icons.upload_file, size: 18),
+                  label: const Text('Upload TA-FORM 01'),
+                ),
+                const SizedBox(width: 8),
+                FilledButton.icon(
+                  onPressed: isEvaluated
+                      ? null
+                      : () async {
+                          final result = await Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => SupervisorEvaluationScreen(
+                                studentId: studentId,
+                                studentName: studentName,
+                              ),
+                            ),
+                          );
+                          if (result == true) {
+                            _loadTrainees(); // Refresh the list
+                          }
+                        },
+                  icon: Icon(isEvaluated ? Icons.check : Icons.assignment_turned_in, size: 18),
+                  label: Text(isEvaluated ? 'Evaluated' : 'Evaluate'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: isEvaluated ? Colors.grey : Colors.blue.shade700,
+                    disabledBackgroundColor: Colors.grey.shade300,
+                    disabledForegroundColor: Colors.grey.shade600,
+                  ),
+                ),
+              ],
             ),
             onTap: () {
               _showSupervisorTimeline(context, trainee, isEvaluated);

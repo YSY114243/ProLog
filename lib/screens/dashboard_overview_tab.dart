@@ -5,6 +5,7 @@ import '../models/daily_log.dart';
 import '../widgets/log_card.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/milestone_timeline.dart';
+import '../services/document_service.dart';
 import 'paywall_screen.dart';
 
 class DashboardOverviewTab extends StatelessWidget {
@@ -21,6 +22,7 @@ class DashboardOverviewTab extends StatelessWidget {
   final VoidCallback? onSetStartDate;
   final ValueChanged<DailyLog>? onEdit;
   final ValueChanged<DailyLog>? onDelete;
+  final VoidCallback? onRefresh;
 
   const DashboardOverviewTab({
     super.key,
@@ -37,6 +39,7 @@ class DashboardOverviewTab extends StatelessWidget {
     this.onSetStartDate,
     this.onEdit,
     this.onDelete,
+    this.onRefresh,
   });
 
   @override
@@ -99,20 +102,44 @@ class DashboardOverviewTab extends StatelessWidget {
               ),
               MilestoneTask(
                 title: 'First Progress Report',
-                formId: 'ST-FORM 03',
+                formId: 'ST-FORM-03',
                 requiredWeek: 4,
-                isCompleted: submittedForms.contains('ST-FORM 03'),
-                onTap: () {
-                  // TODO: Handle ST-FORM 03
+                isCompleted: submittedForms.contains('ST-FORM-03'),
+                onTap: () async {
+                  if (user == null) return;
+                  final success = await DocumentService.instance.uploadDocument(
+                    studentId: user.id,
+                    formType: 'ST-FORM-03',
+                  );
+                  if (success && onRefresh != null) {
+                    onRefresh!();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Document uploaded successfully!')),
+                      );
+                    }
+                  }
                 },
               ),
               MilestoneTask(
                 title: 'Final Progress Report & Evaluation',
-                formId: 'ST-FORM 07 & 08',
+                formId: 'ST-FORM-07/08',
                 requiredWeek: 8,
-                isCompleted: submittedForms.contains('ST-FORM 07 & 08'),
-                onTap: () {
-                  // TODO: Handle ST-FORM 07 & 08
+                isCompleted: submittedForms.contains('ST-FORM-07/08'),
+                onTap: () async {
+                  if (user == null) return;
+                  final success = await DocumentService.instance.uploadDocument(
+                    studentId: user.id,
+                    formType: 'ST-FORM-07/08',
+                  );
+                  if (success && onRefresh != null) {
+                    onRefresh!();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Document uploaded successfully!')),
+                      );
+                    }
+                  }
                 },
               ),
               MilestoneTask(

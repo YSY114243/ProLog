@@ -15,6 +15,7 @@ import 'my_logs_tab.dart';
 import 'dashboard_overview_tab.dart';
 import 'challenges_tab.dart';
 import 'profile_screen.dart';
+import '../services/document_service.dart';
 
 /// Breakpoints for responsive layout.
 class _Bp {
@@ -72,16 +73,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
     try {
       final remote = await SupabaseService.instance.fetchLogs();
       final profile = await SupabaseService.instance.getUserProfile();
+      final userId = Supabase.instance.client.auth.currentUser!.id;
+      final docs = await DocumentService.instance.fetchSubmittedForms(userId);
+      final fetchedSubmittedForms = docs.map((d) => d['form_type'] as String).toList();
       
       if (mounted) {
         setState(() {
           _logs = remote;
+          _submittedForms = fetchedSubmittedForms;
           if (profile != null) {
             if (profile['training_start_date'] != null) {
               _trainingStartDate = DateTime.tryParse(profile['training_start_date'].toString());
-            }
-            if (profile['submitted_forms'] != null) {
-              _submittedForms = List<String>.from(profile['submitted_forms']);
             }
             if (profile['is_evaluation_submitted'] != null) {
               _isEvaluationSubmitted = profile['is_evaluation_submitted'] == true;
@@ -474,6 +476,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           onSetStartDate: _setTrainingStartDate,
                           onEdit: _editLog,
                           onDelete: _deleteLog,
+                          onRefresh: _loadFromSupabase,
                         )
                       : _navIndex == 1
                           ? MyLogsTab(

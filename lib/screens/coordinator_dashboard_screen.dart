@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 import '../services/supabase_service.dart';
 import '../services/pdf_service.dart';
+import '../services/document_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CoordinatorDashboardScreen extends StatefulWidget {
   const CoordinatorDashboardScreen({super.key});
@@ -60,6 +62,10 @@ class _CoordinatorDashboardScreenState extends State<CoordinatorDashboardScreen>
       supervisor: supervisorInfo?['full_name'] ?? 'N/A',
       supervisorEmail: 'N/A', // Replace with supervisor email if available in your schema
     );
+
+    final submittedForms = await DocumentService.instance.fetchSubmittedForms(studentId);
+
+    if (!mounted) return;
 
     showModalBottomSheet(
       context: context,
@@ -124,6 +130,39 @@ class _CoordinatorDashboardScreenState extends State<CoordinatorDashboardScreen>
                   disabledForegroundColor: Colors.grey.shade600,
                 ),
               ),
+              
+              if (submittedForms.isNotEmpty) ...[
+                const SizedBox(height: 24),
+                const Text('Uploaded Documents', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                ...submittedForms.map((doc) {
+                  final formType = doc['form_type'];
+                  final fileUrl = doc['file_url'];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        final uri = Uri.parse(fileUrl);
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri);
+                        } else {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Could not open $formType')),
+                            );
+                          }
+                        }
+                      },
+                      icon: const Icon(Icons.download),
+                      label: Text('Download $formType'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                    ),
+                  );
+                }),
+              ],
+
               const SizedBox(height: 24),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),

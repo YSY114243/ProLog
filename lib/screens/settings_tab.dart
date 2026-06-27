@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
-import '../landing/landing_page.dart';
 import 'paywall_screen.dart';
 import 'auth_screen.dart';
 
