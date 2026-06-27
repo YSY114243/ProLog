@@ -24,12 +24,14 @@ class MilestoneTimeline extends StatelessWidget {
   final DateTime? trainingStartDate;
   final List<MilestoneTask> tasks;
   final bool isSupervisorView;
+  final VoidCallback? onSetStartDate;
 
   const MilestoneTimeline({
     super.key,
     required this.trainingStartDate,
     required this.tasks,
     this.isSupervisorView = false,
+    this.onSetStartDate,
   });
 
   int get currentWeek {
@@ -42,23 +44,31 @@ class MilestoneTimeline extends StatelessWidget {
   Widget build(BuildContext context) {
     if (trainingStartDate == null) {
       return Container(
-        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.amber.shade50,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.amber.shade200),
         ),
-        child: const Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.orange),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Training Start Date not set. Please update your profile to unlock the timeline.',
-                style: TextStyle(color: Colors.orange),
-              ),
+        child: InkWell(
+          onTap: onSetStartDate,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    'Training Start Date not set. Tap here to set it and unlock the timeline.',
+                    style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                if (onSetStartDate != null)
+                  const Icon(Icons.chevron_right, color: Colors.orange),
+              ],
             ),
-          ],
+          ),
         ),
       );
     }

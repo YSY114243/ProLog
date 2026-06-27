@@ -18,6 +18,7 @@ class DashboardOverviewTab extends StatelessWidget {
   final List<String> submittedForms;
   final bool isEvaluationSubmitted;
   final VoidCallback onAddLog;
+  final VoidCallback? onSetStartDate;
   final ValueChanged<DailyLog>? onEdit;
   final ValueChanged<DailyLog>? onDelete;
 
@@ -33,6 +34,7 @@ class DashboardOverviewTab extends StatelessWidget {
     this.submittedForms = const [],
     this.isEvaluationSubmitted = false,
     required this.onAddLog,
+    this.onSetStartDate,
     this.onEdit,
     this.onDelete,
   });
@@ -84,6 +86,7 @@ class DashboardOverviewTab extends StatelessWidget {
           // ── Milestone Timeline ──────────────────────────────────────────
           MilestoneTimeline(
             trainingStartDate: trainingStartDate,
+            onSetStartDate: onSetStartDate,
             tasks: [
               MilestoneTask(
                 title: 'Start Date Form',

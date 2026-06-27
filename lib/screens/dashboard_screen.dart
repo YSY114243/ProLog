@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -101,6 +102,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
       MaterialPageRoute(builder: (_) => const ProfileScreen()),
     );
     _loadFromSupabase();
+  }
+
+  Future<void> _setTrainingStartDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now().subtract(const Duration(days: 180)),
+      lastDate: DateTime.now().add(const Duration(days: 180)),
+    );
+    if (picked != null) {
+      try {
+        await Supabase.instance.client.from('user_profiles').update({
+          'training_start_date': picked.toIso8601String(),
+        }).eq('id', Supabase.instance.client.auth.currentUser!.id);
+        _loadFromSupabase();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to update date: $e')),
+          );
+        }
+      }
+    }
   }
 
   void _openAddLog() {
@@ -207,19 +231,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const Text('Share this code with your supervisor to link your accounts:'),
               const SizedBox(height: 16),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: SelectableText(
-                  code,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 4,
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SelectableText(
+                      code,
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 4,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: const Icon(Icons.copy),
+                      color: Theme.of(context).colorScheme.primary,
+                      tooltip: 'Copy to Clipboard',
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: code));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Invite Code Copied!'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -427,6 +471,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           submittedForms: _submittedForms,
                           isEvaluationSubmitted: _isEvaluationSubmitted,
                           onAddLog: _openAddLog,
+                          onSetStartDate: _setTrainingStartDate,
                           onEdit: _editLog,
                           onDelete: _deleteLog,
                         )
