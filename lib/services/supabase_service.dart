@@ -362,7 +362,17 @@ class SupabaseService {
 
   /// Submits the TA-FORM 03 supervisor evaluation.
   Future<void> submitSupervisorEvaluation(Map<String, dynamic> evaluationData) async {
+    // 1. Insert the evaluation record
     await _client.from(_evaluationsTable).insert(evaluationData);
+
+    // 2. Update the student's profile to reflect submission
+    final studentId = evaluationData['student_id'] as String?;
+    if (studentId != null) {
+      await _client
+          .from(_profilesTable)
+          .update({'is_evaluation_submitted': true})
+          .eq('id', studentId);
+    }
   }
 
   /// Returns a list of student IDs that the current supervisor has evaluated.

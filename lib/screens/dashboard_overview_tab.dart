@@ -16,6 +16,7 @@ class DashboardOverviewTab extends StatelessWidget {
   final bool isDesktop;
   final DateTime? trainingStartDate;
   final List<String> submittedForms;
+  final bool isEvaluationSubmitted;
   final VoidCallback onAddLog;
   final ValueChanged<DailyLog>? onEdit;
   final ValueChanged<DailyLog>? onDelete;
@@ -30,6 +31,7 @@ class DashboardOverviewTab extends StatelessWidget {
     required this.isDesktop,
     this.trainingStartDate,
     this.submittedForms = const [],
+    this.isEvaluationSubmitted = false,
     required this.onAddLog,
     this.onEdit,
     this.onDelete,
@@ -109,6 +111,15 @@ class DashboardOverviewTab extends StatelessWidget {
                 onTap: () {
                   // TODO: Handle ST-FORM 07 & 08
                 },
+              ),
+              MilestoneTask(
+                title: 'Supervisor Confidential Evaluation',
+                formId: 'TA-FORM 03',
+                requiredWeek: 8,
+                isCompleted: isEvaluationSubmitted,
+                isReadOnly: true,
+                customStatusText: isEvaluationSubmitted ? 'Submitted to University' : 'Waiting for Supervisor',
+                onTap: () {}, // Not clickable
               ),
             ],
           ),

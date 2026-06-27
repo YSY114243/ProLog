@@ -6,6 +6,8 @@ class MilestoneTask {
   final int requiredWeek;
   final bool isCompleted;
   final VoidCallback? onTap;
+  final String? customStatusText;
+  final bool isReadOnly;
 
   MilestoneTask({
     required this.title,
@@ -13,6 +15,8 @@ class MilestoneTask {
     required this.requiredWeek,
     required this.isCompleted,
     this.onTap,
+    this.customStatusText,
+    this.isReadOnly = false,
   });
 }
 
@@ -121,8 +125,8 @@ class MilestoneTimeline extends StatelessWidget {
       statusColor = Colors.green;
       statusIcon = Icons.check_circle;
     } else if (isActive) {
-      statusColor = Theme.of(context).colorScheme.primary;
-      statusIcon = Icons.radio_button_unchecked;
+      statusColor = task.isReadOnly ? Colors.orange : Theme.of(context).colorScheme.primary;
+      statusIcon = task.isReadOnly ? Icons.hourglass_empty : Icons.radio_button_unchecked;
     } else {
       statusColor = Colors.grey.shade400;
       statusIcon = Icons.lock;
@@ -161,7 +165,7 @@ class MilestoneTimeline extends StatelessWidget {
                   ),
                 ),
                 child: InkWell(
-                  onTap: isLocked ? null : task.onTap,
+                  onTap: (isLocked || task.isReadOnly) ? null : task.onTap,
                   borderRadius: BorderRadius.circular(12),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -211,16 +215,16 @@ class MilestoneTimeline extends StatelessWidget {
                             if (task.isCompleted) ...[
                               const Icon(Icons.done_all, size: 16, color: Colors.green),
                               const SizedBox(width: 4),
-                              const Text('Submitted to Supabase', style: TextStyle(color: Colors.green, fontSize: 12)),
+                              Text(task.customStatusText ?? 'Submitted to Supabase', style: const TextStyle(color: Colors.green, fontSize: 12)),
                             ] else if (isLocked) ...[
                               const Icon(Icons.lock_clock, size: 16, color: Colors.grey),
                               const SizedBox(width: 4),
                               Text('Unlocks in Week ${task.requiredWeek}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                             ] else ...[
-                              Icon(Icons.touch_app, size: 16, color: Theme.of(context).colorScheme.primary),
+                              Icon(task.isReadOnly ? Icons.hourglass_bottom : Icons.touch_app, size: 16, color: task.isReadOnly ? Colors.orange : Theme.of(context).colorScheme.primary),
                               const SizedBox(width: 4),
-                              Text(isSupervisorView ? 'Tap to Submit' : 'Tap to Fill Form', 
-                                style: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 12, fontWeight: FontWeight.bold)),
+                              Text(task.customStatusText ?? (isSupervisorView ? 'Tap to Submit' : 'Tap to Fill Form'), 
+                                style: TextStyle(color: task.isReadOnly ? Colors.orange : Theme.of(context).colorScheme.primary, fontSize: 12, fontWeight: FontWeight.bold)),
                             ],
                           ],
                         ),

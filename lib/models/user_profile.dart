@@ -7,6 +7,7 @@ class UserProfile {
   final String? major;
   final String? uniName;
   final String? company;
+  final bool isEvaluationSubmitted;
 
   const UserProfile({
     required this.id,
@@ -17,6 +18,7 @@ class UserProfile {
     this.major,
     this.uniName,
     this.company,
+    this.isEvaluationSubmitted = false,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,7 @@ class UserProfile {
       major: json['major'] as String?,
       uniName: json['uni_name'] as String?,
       company: json['company'] as String?,
+      isEvaluationSubmitted: json['is_evaluation_submitted'] as bool? ?? false,
     );
   }
 
@@ -42,6 +45,7 @@ class UserProfile {
       if (major != null) 'major': major,
       if (uniName != null) 'uni_name': uniName,
       if (company != null) 'company': company,
+      'is_evaluation_submitted': isEvaluationSubmitted,
     };
   }
 }

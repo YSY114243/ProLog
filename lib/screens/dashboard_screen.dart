@@ -59,6 +59,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   DateTime? _trainingStartDate;
   List<String> _submittedForms = [];
+  bool _isEvaluationSubmitted = false;
 
   @override
   void initState() {
@@ -80,6 +81,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             }
             if (profile['submitted_forms'] != null) {
               _submittedForms = List<String>.from(profile['submitted_forms']);
+            }
+            if (profile['is_evaluation_submitted'] != null) {
+              _isEvaluationSubmitted = profile['is_evaluation_submitted'] == true;
             }
           }
         });
@@ -421,6 +425,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           isDesktop: isDesktop,
                           trainingStartDate: _trainingStartDate,
                           submittedForms: _submittedForms,
+                          isEvaluationSubmitted: _isEvaluationSubmitted,
                           onAddLog: _openAddLog,
                           onEdit: _editLog,
                           onDelete: _deleteLog,
