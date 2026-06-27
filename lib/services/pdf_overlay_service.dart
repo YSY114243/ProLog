@@ -14,6 +14,55 @@ class OverlayField {
     required this.y,
     required this.child,
   });
+
+  /// Safely converts Strings, ints, or doubles into a text overlay.
+  static OverlayField? text(dynamic value, {required double x, required double y, double fontSize = 12, pw.FontWeight fontWeight = pw.FontWeight.normal}) {
+    if (value == null || value.toString().trim().isEmpty) return null;
+    return OverlayField(
+      x: x,
+      y: y,
+      child: pw.Text(
+        value.toString(),
+        style: pw.TextStyle(fontSize: fontSize, fontWeight: fontWeight),
+      ),
+    );
+  }
+
+  /// Evaluates boolean or boolean-like string. Prints 'X' if true, omits if false.
+  static OverlayField? checkbox(dynamic value, {required double x, required double y, double fontSize = 12}) {
+    bool isChecked = false;
+    if (value is bool) {
+      isChecked = value;
+    } else if (value is String) {
+      final v = value.toLowerCase().trim();
+      isChecked = (v == 'true' || v == 'yes' || v == '1');
+    } else if (value is num) {
+      isChecked = value == 1;
+    }
+
+    if (!isChecked) return null;
+    return OverlayField(
+      x: x,
+      y: y,
+      child: pw.Text('X', style: pw.TextStyle(fontSize: fontSize, fontWeight: pw.FontWeight.bold)),
+    );
+  }
+
+  /// Places an 'X' mark at the correct column coordinate for a 1-5 Likert scale.
+  static OverlayField? likert(dynamic value, {required List<double> xColumns, required double y, double fontSize = 12}) {
+    if (value == null) return null;
+    final int score = (num.tryParse(value.toString()) ?? 0).toInt();
+    
+    // Ensure score is within valid range and we have enough column coordinates provided
+    if (score < 1 || score > 5 || xColumns.length < 5) return null;
+
+    // xColumns should contain exactly 5 coordinates for scores 1, 2, 3, 4, 5 respectively.
+    return OverlayField(
+      x: xColumns[score - 1],
+      y: y,
+      child: pw.Text('X', style: pw.TextStyle(fontSize: fontSize, fontWeight: pw.FontWeight.bold)),
+    );
+  }
 }
 
 /// Represents the data needed for a single page in a multi-page PDF overlay.

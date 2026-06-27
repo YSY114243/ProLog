@@ -40,7 +40,7 @@ class _SupervisorFormScreenState extends State<SupervisorFormScreen> {
 
   Future<Uint8List> _generatePdfForForm(String formId, Map<String, dynamic> data, StudentInfo student) async {
     if (formId == 'TA-FORM 01') {
-      return PdfService.instance.generateTaForm01Pdf(student: student, plan: data);
+      return PdfService.instance.generateTaForm01Pdf(student: student, formData: data);
     } else if (formId == 'TA-FORM 03') {
       return PdfService.instance.generateTaForm03Pdf(student: student, evaluation: data);
     } else if (formId == 'TA-FORM 04') {
@@ -232,6 +232,10 @@ class _TaForm01TabState extends State<_TaForm01Tab> {
           onDownload: () {
             final data = {for (int i = 0; i < 8; i++) 'week_${i + 1}': _ctrls[i].text};
             widget.onDownload(data);
+          },
+          onEmail: () {
+            final data = {for (int i = 0; i < 8; i++) 'week_${i + 1}': _ctrls[i].text};
+            widget.onEmail(data);
           },
           onSubmit: () {
             final data = {for (int i = 0; i < 8; i++) 'week_${i + 1}': _ctrls[i].text};
