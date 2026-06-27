@@ -95,14 +95,16 @@ class PdfOverlayService {
 
       doc.addPage(
         pw.Page(
-          pageFormat: PdfPageFormat.a4,
-          margin: pw.EdgeInsets.zero, // No margins, let the image take full space
-          buildBackground: (pw.Context context) {
-            return pw.FullPage(
-              ignoreMargins: true,
-              child: pw.Image(bgImage, fit: pw.BoxFit.fill),
-            );
-          },
+          pageTheme: pw.PageTheme(
+            pageFormat: PdfPageFormat.a4,
+            margin: pw.EdgeInsets.zero,
+            buildBackground: (pw.Context context) {
+              return pw.FullPage(
+                ignoreMargins: true,
+                child: pw.Image(bgImage, fit: pw.BoxFit.fill),
+              );
+            },
+          ),
           build: (pw.Context context) {
             // Overlay the fields using absolute coordinates
             return pw.Stack(
