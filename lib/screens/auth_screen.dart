@@ -439,15 +439,48 @@ class _FormPanel extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: isSupervisorSignUp,
-                          onChanged: onToggleSupervisorMode,
-                          activeColor: Theme.of(context).colorScheme.primary,
+                    GestureDetector(
+                      onTap: () => onToggleSupervisorMode(!isSupervisorSignUp),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isSupervisorSignUp 
+                              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1) 
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isSupervisorSignUp 
+                                ? Theme.of(context).colorScheme.primary 
+                                : Colors.grey.shade300,
+                          ),
                         ),
-                        const Text('Register as Supervisor', style: TextStyle(fontWeight: FontWeight.w500)),
-                      ],
+                        child: Row(
+                          children: [
+                            Icon(Icons.business_center, 
+                                color: isSupervisorSignUp 
+                                    ? Theme.of(context).colorScheme.primary 
+                                    : Colors.grey.shade600),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Are you a Company Supervisor?', 
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold, 
+                                          color: isSupervisorSignUp 
+                                              ? Theme.of(context).colorScheme.primary 
+                                              : Colors.black87)),
+                                  Text(isSupervisorSignUp ? 'Supervisor mode enabled.' : 'Register here to evaluate trainees.', 
+                                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                                ],
+                              ),
+                            ),
+                            if (isSupervisorSignUp)
+                              Icon(Icons.check_circle, color: Theme.of(context).colorScheme.primary),
+                          ],
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 16),
                     if (isSupervisorSignUp) ...[

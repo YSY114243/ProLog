@@ -206,6 +206,52 @@ class SupabaseService {
 
   // ── ROLE & SUPERVISOR ─────────────────────────────────────────────────────
 
+  /// Registers a new Company Supervisor using the student's invite code.
+  Future<void> registerSupervisor(
+    String email,
+    String password,
+    String name,
+    String inviteCode,
+  ) async {
+    // 1. Verify the invite code belongs to a valid student
+    final studentRes = await _client
+        .from(_profilesTable)
+        .select('id')
+        .eq('supervisor_invite_code', inviteCode)
+        .maybeSingle();
+
+    if (studentRes == null) {
+      throw Exception('Invalid Student Invite Code. Please check the code and try again.');
+    }
+
+    final studentId = studentRes['id'] as String;
+
+    // 2. Register the supervisor via Supabase Auth
+    final authRes = await _client.auth.signUp(
+      email: email,
+      password: password,
+      data: {'full_name': name},
+    );
+
+    final user = authRes.user;
+    if (user == null) {
+      throw Exception('Failed to create supervisor account.');
+    }
+
+    // 3. Upsert the new supervisor's profile to explicitly set their role
+    await _client.from(_profilesTable).upsert({
+      'id': user.id,
+      'full_name': name,
+      'role': 'supervisor',
+    });
+
+    // 4. Link the student to this supervisor and consume the invite code
+    await _client.from(_profilesTable).update({
+      'supervisor_id': user.id,
+      'supervisor_invite_code': null, // Consume the code
+    }).eq('id', studentId);
+  }
+
   /// Fetches the user's role from `user_profiles`. Defaults to 'student'
   /// if the profile doesn't exist or an error occurs.
   Future<String> fetchUserRole() async {
@@ -300,49 +346,6 @@ class SupabaseService {
     return rand;
   }
 
-  /// Registers a new supervisor and links them to the student with the given invite code.
-  Future<void> registerSupervisor(String email, String password, String name, String inviteCode) async {
-    // 1. Verify the invite code exists FIRST (to avoid orphaned auth users if code is wrong)
-    // Actually, RLS might prevent reading without being logged in. We'll sign up first, 
-    // but standard practice is to rely on backend logic. Assuming the RLS allows reading via the invite code:
-    
-    // We sign up the user.
-    final authRes = await _client.auth.signUp(
-      email: email,
-      password: password,
-      data: {'full_name': name},
-    );
-    
-    final newUserId = authRes.user?.id;
-    if (newUserId == null) {
-      throw Exception('Failed to create account.');
-    }
-
-    // Now query for the student using the invite code
-    final studentRes = await _client
-        .from(_profilesTable)
-        .select()
-        .eq('supervisor_invite_code', inviteCode)
-        .maybeSingle();
-
-    if (studentRes == null) {
-      // If we could safely delete the auth user here, we would.
-      throw Exception('Invalid Invite Code');
-    }
-
-    // Insert the supervisor profile
-    await _client.from(_profilesTable).upsert({
-      'id': newUserId,
-      'full_name': name,
-      'role': 'supervisor',
-    });
-
-    // Link student to supervisor & clear invite code
-    await _client.from(_profilesTable).update({
-      'supervisor_id': newUserId,
-      'supervisor_invite_code': null,
-    }).eq('id', studentRes['id']);
-  }
 
   // ── EVALUATIONS ───────────────────────────────────────────────────────────
 
