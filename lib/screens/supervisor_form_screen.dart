@@ -41,7 +41,7 @@ class _SupervisorFormScreenState extends State<SupervisorFormScreen> {
 
   Future<Uint8List> _generatePdfForForm(String formId, Map<String, dynamic> data, StudentInfo student) async {
     if (formId == 'TA-FORM 01') {
-      return PdfService.instance.generateTaForm01Pdf(student: student, formData: data);
+      return PdfOverlayMapper.generateTaForm01(student: student, data: data);
     } else if (formId == 'TA-FORM 03') {
       return PdfService.instance.generateTaForm03Pdf(student: student, evaluation: data);
     } else if (formId == 'TA-FORM 04') {

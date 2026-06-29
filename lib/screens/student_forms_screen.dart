@@ -44,8 +44,32 @@ class _StudentFormsScreenState extends State<StudentFormsScreen> {
       supervisor: 'Unknown Supervisor',
     );
     
+    if (formId == 'ST-FORM 01') {
+      final pdfBytes = await PdfOverlayMapper.generateStForm01(student: student, data: data);
+      await Printing.sharePdf(bytes: pdfBytes, filename: '${formId.replaceAll(' ', '_')}.pdf');
+      return;
+    }
+    
     if (formId == 'ST-FORM 02') {
       final pdfBytes = await PdfOverlayMapper.generateStForm02(student: student, data: data);
+      await Printing.sharePdf(bytes: pdfBytes, filename: '${formId.replaceAll(' ', '_')}.pdf');
+      return;
+    }
+
+    if (formId == 'ST-FORM 03') {
+      final pdfBytes = await PdfOverlayMapper.generateStForm03(student: student, data: data);
+      await Printing.sharePdf(bytes: pdfBytes, filename: '${formId.replaceAll(' ', '_')}.pdf');
+      return;
+    }
+
+    if (formId == 'ST-FORM 04') {
+      final pdfBytes = await PdfOverlayMapper.generateStForm04(student: student, data: data);
+      await Printing.sharePdf(bytes: pdfBytes, filename: '${formId.replaceAll(' ', '_')}.pdf');
+      return;
+    }
+
+    if (formId == 'ST-FORM 07') {
+      final pdfBytes = await PdfOverlayMapper.generateStForm07(student: student, data: data);
       await Printing.sharePdf(bytes: pdfBytes, filename: '${formId.replaceAll(' ', '_')}.pdf');
       return;
     }

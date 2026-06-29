@@ -1,49 +1,264 @@
 import 'dart:typed_data';
 import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'pdf_overlay_service.dart';
 import 'pdf_service.dart';
 
 class PdfOverlayMapper {
+  /// Generates the ST-FORM 01 overlay by mapping the provided data to coordinates.
+  static Future<Uint8List> generateStForm01({
+    required StudentInfo student,
+    required Map<String, dynamic> data,
+  }) async {
+    final dateFormat = DateFormat('dd MMM yyyy');
+    
+    final page1 = PdfPageOverlayData(
+      backgroundAssetPath: 'assets/images/st_form_01_p1.png',
+      fields: [],
+    );
+
+    final page2 = PdfPageOverlayData(
+      backgroundAssetPath: 'assets/images/st_form_01_p2.png',
+      fields: [
+        OverlayField.text(student.name, x: 156, y: 193),
+        OverlayField.text(student.universityId, x: 466, y: 193),
+        OverlayField.text(data['department']?.toString() ?? student.major, x: 156, y: 223),
+        OverlayField.text(data['training_start_date']?.toString() ?? '', x: 466, y: 223),
+        OverlayField.text(data['assigned_company']?.toString() ?? '', x: 156, y: 255),
+        OverlayField.text(data['company_location']?.toString() ?? '', x: 466, y: 255),
+
+        // Signatures
+        OverlayField.text('Signed by: ${student.name}', x: 186, y: 740, fontSize: 10),
+        OverlayField.text(dateFormat.format(DateTime.now()), x: 440, y: 740, fontSize: 10),
+      ].whereType<OverlayField>().toList(),
+    );
+
+    return PdfOverlayService.generateOverlayPdf(pagesData: [page1, page2]);
+  }
+
   /// Generates the ST-FORM 02 overlay by mapping the provided data to coordinates.
   static Future<Uint8List> generateStForm02({
     required StudentInfo student,
     required Map<String, dynamic> data,
   }) async {
     final dateFormat = DateFormat('dd MMM yyyy');
-    DateTime? startDate;
-    if (data['start_date'] != null) {
-      startDate = DateTime.tryParse(data['start_date'].toString());
-    }
     
-    // WARNING: These coordinates (x, y) are placeholders. 
-    // They must be adjusted to align with the blanks on 'st_form_02_p1.png'.
     final page1 = PdfPageOverlayData(
       backgroundAssetPath: 'assets/images/st_form_02_p1.png',
       fields: [
         // Student Info
-        OverlayField.text(student.name, x: 150, y: 700),
-        OverlayField.text(student.universityId, x: 150, y: 670),
-        OverlayField.text(student.major, x: 150, y: 640),
+        OverlayField.text(student.name, x: 270, y: 187),
+        OverlayField.text(student.universityId, x: 270, y: 208),
+        OverlayField.text(data['major']?.toString() ?? student.major, x: 270, y: 234),
+        OverlayField.text(data['student_mobile']?.toString() ?? '', x: 270, y: 254),
+        OverlayField.text(data['student_email']?.toString() ?? '', x: 270, y: 280),
         
-        // Form Data
-        OverlayField.text(data['company_name'], x: 150, y: 610),
-        OverlayField.text(startDate != null ? dateFormat.format(startDate) : '', x: 150, y: 580),
-        OverlayField.text(data['supervisor_name'], x: 150, y: 550),
-        OverlayField.text(data['supervisor_position'], x: 150, y: 520),
-        OverlayField.text(data['supervisor_mobile'], x: 150, y: 490),
-        OverlayField.text(data['supervisor_email'], x: 150, y: 460),
-        OverlayField.text(data['address'], x: 150, y: 430),
+        // Company & Supervisor Info
+        OverlayField.text(data['company_name']?.toString() ?? '', x: 260, y: 340),
+        OverlayField.text(data['supervisor_name']?.toString() ?? '', x: 260, y: 373),
+        OverlayField.text(data['supervisor_position']?.toString() ?? '', x: 260, y: 400),
+        OverlayField.text(data['training_start_date']?.toString() ?? '', x: 260, y: 427),
+        OverlayField.text(data['supervisor_mobile']?.toString() ?? '', x: 260, y: 452),
+        OverlayField.text(data['supervisor_email']?.toString() ?? '', x: 260, y: 478),
+        OverlayField.text(data['address']?.toString() ?? '', x: 260, y: 515),
 
-        // Signatures (Placed over the designated stamp areas)
-        OverlayField.text(
-          'Digitally Signed by: ${student.name}\nID: ${student.universityId}\nDate: ${dateFormat.format(DateTime.now())}', 
-          x: 100, y: 200, fontSize: 10,
-        ),
-        OverlayField.text(
-          'Digitally Signed by: ${data['supervisor_name'] ?? student.supervisor}\nEmail: ${data['supervisor_email'] ?? 'System Auth'}\nDate: ${dateFormat.format(DateTime.now())}', 
-          x: 400, y: 200, fontSize: 10,
-        ),
+        // Signatures & Dates
+        OverlayField.text('Digital Stamp: ${data['supervisor_name'] ?? student.supervisor}', x: 180, y: 600, fontSize: 10),
+        OverlayField.text(dateFormat.format(DateTime.now()), x: 180, y: 644, fontSize: 10),
+        
+        OverlayField.text('Digital Stamp: ${student.name}', x: 460, y: 600, fontSize: 10),
+        OverlayField.text(dateFormat.format(DateTime.now()), x: 460, y: 644, fontSize: 10),
+
+        // Company Stamp
+        OverlayField.text('System Verified - InternLog', x: 180, y: 695, fontSize: 10, color: const PdfColor(0.5, 0.5, 0.5)),
       ].whereType<OverlayField>().toList(),
+    );
+
+    return PdfOverlayService.generateOverlayPdf(pagesData: [page1]);
+  }
+
+  /// Generates the ST-FORM 03 overlay by mapping the provided data to coordinates.
+  static Future<Uint8List> generateStForm03({
+    required StudentInfo student,
+    required Map<String, dynamic> data,
+  }) async {
+    final page1 = PdfPageOverlayData(
+      backgroundAssetPath: 'assets/images/st_form_03_p1.png',
+      fields: [
+        // Single-line Info
+        OverlayField.text(student.name, x: 140, y: 250),
+        OverlayField.text(student.universityId, x: 485, y: 250),
+        OverlayField.text(data['company_name']?.toString() ?? '', x: 140, y: 294),
+        
+        // Multi-line Paragraphs
+        OverlayField.text(data['tasks_done']?.toString() ?? '', x: 32, y: 415, width: 245, height: 191, fontSize: 10),
+        OverlayField.text(data['problems_faced']?.toString() ?? '', x: 305, y: 415, width: 155, height: 185, fontSize: 10),
+        OverlayField.text(data['resources_used']?.toString() ?? '', x: 490, y: 415, width: 115, height: 185, fontSize: 10),
+      ].whereType<OverlayField>().toList(),
+    );
+
+    return PdfOverlayService.generateOverlayPdf(pagesData: [page1]);
+  }
+
+  /// Generates the ST-FORM 04 overlay by mapping the provided data and attendance to coordinates.
+  static Future<Uint8List> generateStForm04({
+    required StudentInfo student,
+    required Map<String, dynamic> data,
+  }) async {
+    final List<dynamic> attendance = data['attendance'] as List<dynamic>? ?? [];
+    
+    final List<OverlayField?> fields = [
+      // Single-line Info
+      OverlayField.text(student.name, x: 164, y: 210),
+      OverlayField.text(student.universityId, x: 460, y: 210),
+      OverlayField.text(data['company_name']?.toString() ?? '', x: 250, y: 235),
+    ];
+
+    // Grid Logic (Nested Loops)
+    for (int i = 0; i < attendance.length && i < 40; i++) {
+      final record = attendance[i];
+      final String dateStr = record['date']?.toString() ?? '';
+      final String reasonStr = record['reason']?.toString() ?? '';
+      // We assume if they attended, they get a stamp. Otherwise left blank or reason filled.
+      final bool present = record['present'] == true || record['present'] == 'true';
+      final String signature = present ? '✔' : '';
+
+      if (i < 20) {
+        // Left Grid (Weeks 1-4)
+        double startY = 277 + (i * 24.6);
+        fields.add(OverlayField.text(dateStr, x: 117, y: startY, fontSize: 9));
+        fields.add(OverlayField.text(signature, x: 117 + 65, y: startY, fontSize: 9));
+        fields.add(OverlayField.text(reasonStr, x: 117 + 130, y: startY, fontSize: 9));
+      } else {
+        // Right Grid (Weeks 5-8)
+        int rightIndex = i - 20;
+        double startY = 276 + (rightIndex * 24.8);
+        fields.add(OverlayField.text(dateStr, x: 392, y: startY, fontSize: 9));
+        fields.add(OverlayField.text(signature, x: 392 + 66, y: startY, fontSize: 9));
+        fields.add(OverlayField.text(reasonStr, x: 392 + 132, y: startY, fontSize: 9));
+      }
+    }
+
+    final page1 = PdfPageOverlayData(
+      backgroundAssetPath: 'assets/images/st_form_04_p1.png',
+      fields: fields.whereType<OverlayField>().toList(),
+    );
+
+    return PdfOverlayService.generateOverlayPdf(pagesData: [page1]);
+  }
+
+  /// Generates the ST-FORM 07 overlay by mapping the provided data to coordinates.
+  static Future<Uint8List> generateStForm07({
+    required StudentInfo student,
+    required Map<String, dynamic> data,
+  }) async {
+    final dateFormat = DateFormat('dd MMM yyyy');
+    
+    final List<OverlayField?> fields = [
+      // Header Info
+      OverlayField.text(student.name, x: 280, y: 177),
+      OverlayField.text(student.universityId, x: 650, y: 177),
+      OverlayField.text(data['company_name']?.toString() ?? '', x: 280, y: 202),
+      OverlayField.text('Digital Signature: ${student.name}', x: 283, y: 232, fontSize: 10),
+      OverlayField.text(dateFormat.format(DateTime.now()), x: 680, y: 231),
+    ];
+
+    // 40-Square Grid Logic (Ratings)
+    // Assuming data['ratings'] is a List<int> of size 8
+    final List<int> ratings = (data['ratings'] as List<dynamic>?)?.map((e) => int.tryParse(e.toString()) ?? 0).toList() ?? [];
+    for (int i = 0; i < ratings.length && i < 8; i++) {
+      int ratingValue = ratings[i];
+      if (ratingValue >= 1 && ratingValue <= 5) {
+        double targetX = (582 + ((ratingValue - 1) * 60)) - 4;
+        double targetY = (293 + (i * 14)) - 6;
+        fields.add(OverlayField.text('✔', x: targetX, y: targetY, fontSize: 12, fontWeight: pw.FontWeight.bold));
+      }
+    }
+
+    // Boolean Checkboxes (Yes / No / Uncertain)
+    final String recommend = data['recommend_company']?.toString().toLowerCase() ?? '';
+    if (recommend == 'yes') {
+      fields.add(OverlayField.text('✔', x: 533 - 4, y: 432 - 6, fontSize: 12, fontWeight: pw.FontWeight.bold));
+    } else if (recommend == 'no') {
+      fields.add(OverlayField.text('✔', x: 666 - 4, y: 430 - 6, fontSize: 12, fontWeight: pw.FontWeight.bold));
+    } else if (recommend == 'uncertain') {
+      fields.add(OverlayField.text('✔', x: 793 - 4, y: 432 - 6, fontSize: 12, fontWeight: pw.FontWeight.bold));
+    }
+
+    // Comments Section (Multiline Bounding Box)
+    fields.add(OverlayField.text(
+      data['comments']?.toString() ?? '', 
+      x: 106, 
+      y: 463, 
+      width: 747, 
+      height: 51, 
+      fontSize: 11
+    ));
+
+    final page1 = PdfPageOverlayData(
+      backgroundAssetPath: 'assets/images/st_form_07_p1.png',
+      fields: fields.whereType<OverlayField>().toList(),
+    );
+
+    return PdfOverlayService.generateOverlayPdf(pagesData: [page1]);
+  }
+
+  /// Generates the TA-FORM 01 overlay by mapping the provided data to coordinates.
+  static Future<Uint8List> generateTaForm01({
+    required StudentInfo student,
+    required Map<String, dynamic> data,
+  }) async {
+    final dateFormat = DateFormat('dd MMM yyyy');
+    
+    final List<OverlayField?> fields = [
+      // Header Info
+      OverlayField.text(student.name, x: 167, y: 267),
+      OverlayField.text(student.universityId, x: 467, y: 270),
+      OverlayField.text(data['company_name']?.toString() ?? '', x: 228, y: 293),
+    ];
+
+    // Weekly Tasks Grid Logic
+    final List<dynamic> weeklyTasks = data['weekly_tasks'] as List<dynamic>? ?? [];
+    for (int i = 0; i < weeklyTasks.length && i < 8; i++) {
+      String taskText = weeklyTasks[i]?.toString() ?? '';
+      
+      if (i < 4) {
+        // Weeks 1-4
+        double startY = 337 + (i * 88.25);
+        fields.add(OverlayField.text(
+          taskText, 
+          x: 112, 
+          y: startY, 
+          width: 200, 
+          height: 88, 
+          fontSize: 10
+        ));
+      } else {
+        // Weeks 5-8
+        int rightIndex = i - 4;
+        double startY = 332 + (rightIndex * 89.75);
+        fields.add(OverlayField.text(
+          taskText, 
+          x: 384, 
+          y: startY, 
+          width: 201, 
+          height: 89, 
+          fontSize: 10
+        ));
+      }
+    }
+
+    // Footer & Signatures
+    String supervisorName = data['supervisor_name']?.toString() ?? student.supervisor;
+    fields.add(OverlayField.text(supervisorName, x: 162, y: 732));
+    fields.add(OverlayField.text('Digital Stamp: $supervisorName', x: 209, y: 713, fontSize: 10));
+    fields.add(OverlayField.text(data['supervisor_position']?.toString() ?? '', x: 436, y: 732));
+    fields.add(OverlayField.text(dateFormat.format(DateTime.now()), x: 442, y: 772));
+
+    final page1 = PdfPageOverlayData(
+      backgroundAssetPath: 'assets/images/ta_form_01_p1.png',
+      fields: fields.whereType<OverlayField>().toList(),
     );
 
     return PdfOverlayService.generateOverlayPdf(pagesData: [page1]);

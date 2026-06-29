@@ -1271,7 +1271,7 @@ class PdfService {
   Future<pw.Widget> _buildAcademicHeader(String title) async {
     pw.MemoryImage? logoImage;
     try {
-      final logoData = await rootBundle.load('assets/images/app_icon.png');
+      final logoData = await rootBundle.load('assets/images/iau_logo.png');
       logoImage = pw.MemoryImage(logoData.buffer.asUint8List());
     } catch (_) {}
 

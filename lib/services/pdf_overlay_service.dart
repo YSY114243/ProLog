@@ -7,24 +7,42 @@ import 'package:pdf/widgets.dart' as pw;
 class OverlayField {
   final double x;
   final double y;
+  final double? width;
+  final double? height;
   final pw.Widget child;
 
   const OverlayField({
     required this.x,
     required this.y,
+    this.width,
+    this.height,
     required this.child,
   });
 
   /// Safely converts Strings, ints, or doubles into a text overlay.
-  static OverlayField? text(dynamic value, {required double x, required double y, double fontSize = 12, pw.FontWeight fontWeight = pw.FontWeight.normal}) {
+  static OverlayField? text(dynamic value, {required double x, required double y, double? width, double? height, double fontSize = 12, pw.FontWeight fontWeight = pw.FontWeight.normal, PdfColor? color}) {
     if (value == null || value.toString().trim().isEmpty) return null;
+    
+    pw.Widget textWidget = pw.Text(
+      value.toString(),
+      softWrap: true,
+      style: pw.TextStyle(fontSize: fontSize, fontWeight: fontWeight, color: color),
+    );
+
+    if (width != null) {
+      textWidget = pw.SizedBox(
+        width: width,
+        height: height,
+        child: textWidget,
+      );
+    }
+
     return OverlayField(
       x: x,
       y: y,
-      child: pw.Text(
-        value.toString(),
-        style: pw.TextStyle(fontSize: fontSize, fontWeight: fontWeight),
-      ),
+      width: width,
+      height: height,
+      child: textWidget,
     );
   }
 

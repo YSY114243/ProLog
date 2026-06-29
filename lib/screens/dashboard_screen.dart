@@ -347,12 +347,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ? NavigationBar(
               selectedIndex: _navIndex,
               onDestinationSelected: (i) {
-                if (i == 4) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Digital Forms (Phase 2) will be available soon. Please use the app to track your daily logs for now.')),
-                  );
-                  return;
-                }
                 setState(() => _navIndex = i);
               },
               backgroundColor: Theme.of(context).colorScheme.surface,
@@ -383,8 +377,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   label: 'Challenges & Learnings',
                 ),
                 NavigationDestination(
-                  icon: const Row(mainAxisSize: MainAxisSize.min, children: [FaIcon(FontAwesomeIcons.fileContract, size: 18), SizedBox(width: 4), Icon(Icons.lock, size: 14)]),
-                  selectedIcon: Row(mainAxisSize: MainAxisSize.min, children: [FaIcon(FontAwesomeIcons.fileContract, size: 18, color: Theme.of(context).colorScheme.primary), const SizedBox(width: 4), Icon(Icons.lock, size: 14, color: Theme.of(context).colorScheme.primary)]),
+                  icon: FaIcon(FontAwesomeIcons.fileContract, size: 18),
+                  selectedIcon: FaIcon(FontAwesomeIcons.fileContract,
+                      size: 18, color: Theme.of(context).colorScheme.primary),
                   label: 'Digital Forms',
                 ),
                 NavigationDestination(
@@ -423,12 +418,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: AppSidebar(
                 selectedIndex: _navIndex,
                 onDestinationSelected: (i) {
-                  if (i == 4) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Digital Forms (Phase 2) will be available soon. Please use the app to track your daily logs for now.')),
-                    );
-                    return;
-                  }
                   setState(() => _navIndex = i);
                 },
               ),
