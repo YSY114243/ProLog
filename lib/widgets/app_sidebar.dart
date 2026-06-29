@@ -76,10 +76,20 @@ class AppSidebar extends StatelessWidget {
                 final dest = _destinations[i];
                 final selected = i == selectedIndex;
                 return _SidebarItem(
-                  icon: FaIcon(dest.icon, size: 16),
+                  icon: dest.label == 'Digital Forms'
+                      ? Row(mainAxisSize: MainAxisSize.min, children: [FaIcon(dest.icon, size: 16), const SizedBox(width: 6), const Icon(Icons.lock, size: 14)])
+                      : FaIcon(dest.icon, size: 16),
                   label: dest.label,
                   selected: selected,
-                  onTap: () => onDestinationSelected(i),
+                  onTap: () {
+                    if (dest.label == 'Digital Forms') {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Digital Forms (Phase 2) will be available soon. Please use the app to track your daily logs for now.')),
+                      );
+                      return;
+                    }
+                    onDestinationSelected(i);
+                  },
                 );
               },
             ),

@@ -234,70 +234,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _inviteSupervisor() async {
-    try {
-      final code = await SupabaseService.instance.generateSupervisorInviteCode();
-      if (!mounted) return;
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Invite Supervisor'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Share this code with your supervisor to link your accounts:'),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SelectableText(
-                      code,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 4,
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      icon: const Icon(Icons.copy),
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      tooltip: 'Copy to Clipboard',
-                      onPressed: () {
-                        Clipboard.setData(ClipboardData(text: code));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Invite Code Copied!'),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Done'),
-            ),
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.lock, color: Colors.amber),
+            SizedBox(width: 8),
+            Text('Feature Locked'),
           ],
         ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to generate invite code: $e')),
-      );
-    }
+        content: const Text('The Supervisor Portal is currently under final testing and will be unlocked in the upcoming update.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _downloadReport() async {
@@ -391,7 +346,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
       bottomNavigationBar: isMobile
           ? NavigationBar(
               selectedIndex: _navIndex,
-              onDestinationSelected: (i) => setState(() => _navIndex = i),
+              onDestinationSelected: (i) {
+                if (i == 4) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Digital Forms (Phase 2) will be available soon. Please use the app to track your daily logs for now.')),
+                  );
+                  return;
+                }
+                setState(() => _navIndex = i);
+              },
               backgroundColor: Theme.of(context).colorScheme.surface,
               indicatorColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
               destinations: [
@@ -420,9 +383,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   label: 'Challenges & Learnings',
                 ),
                 NavigationDestination(
-                  icon: FaIcon(FontAwesomeIcons.fileContract, size: 18),
-                  selectedIcon: FaIcon(FontAwesomeIcons.fileContract,
-                      size: 18, color: Theme.of(context).colorScheme.primary),
+                  icon: const Row(mainAxisSize: MainAxisSize.min, children: [FaIcon(FontAwesomeIcons.fileContract, size: 18), SizedBox(width: 4), Icon(Icons.lock, size: 14)]),
+                  selectedIcon: Row(mainAxisSize: MainAxisSize.min, children: [FaIcon(FontAwesomeIcons.fileContract, size: 18, color: Theme.of(context).colorScheme.primary), const SizedBox(width: 4), Icon(Icons.lock, size: 14, color: Theme.of(context).colorScheme.primary)]),
                   label: 'Digital Forms',
                 ),
                 NavigationDestination(
@@ -460,8 +422,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               child: AppSidebar(
                 selectedIndex: _navIndex,
-                onDestinationSelected: (i) =>
-                    setState(() => _navIndex = i),
+                onDestinationSelected: (i) {
+                  if (i == 4) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Digital Forms (Phase 2) will be available soon. Please use the app to track your daily logs for now.')),
+                    );
+                    return;
+                  }
+                  setState(() => _navIndex = i);
+                },
               ),
             ),
 

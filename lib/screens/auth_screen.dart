@@ -437,7 +437,27 @@ class _FormPanel extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     GestureDetector(
-                      onTap: () => onToggleSupervisorMode(!isSupervisorSignUp),
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Row(
+                              children: [
+                                Icon(Icons.lock, color: Colors.amber),
+                                SizedBox(width: 8),
+                                Text('Feature Locked'),
+                              ],
+                            ),
+                            content: const Text('The Supervisor Portal is currently under final testing and will be unlocked in the upcoming update.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
