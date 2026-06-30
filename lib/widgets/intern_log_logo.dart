@@ -72,10 +72,10 @@ class InternLogLogo extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(borderRadius),
-              child: SvgPicture.asset(
-                'assets/images/iau_logo.svg',
-                width: iconBoxSize,
-                height: iconBoxSize,
+              child: Image.asset(
+                'assets/images/app_icon.png',
+                width: 32,
+                height: 32,
                 fit: BoxFit.contain,
               ),
             ),
