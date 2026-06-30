@@ -6,6 +6,7 @@ import 'package:image/image.dart' as img;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/daily_log.dart';
+import '../models/challenge.dart';
 import '../services/supabase_service.dart';
 import '../services/speech_service.dart';
 import '../services/ai_service.dart';
@@ -65,6 +66,11 @@ class _AddLogScreenState extends State<AddLogScreen> {
   String?  _imageUrl;
   bool     _isUploadingImage = false;
   bool     _isSaving       = false;
+
+  bool _addChallenge = false;
+  final _chalProbCtrl = TextEditingController();
+  final _chalResCtrl = TextEditingController();
+  final _chalLesCtrl = TextEditingController();
 
   // ── Voice-to-text state ──────────────────────────────────────────────────
   bool _speechAvailable = false;
@@ -382,6 +388,19 @@ class _AddLogScreenState extends State<AddLogScreen> {
           _showSnackbar('Log updated ✓', isError: false);
         } else {
           await svc.insertLog(log);
+          
+          if (_addChallenge) {
+            final challenge = Challenge(
+              id: '',
+              userId: userId,
+              date: _date,
+              problem: _chalProbCtrl.text.trim(),
+              resolution: _chalResCtrl.text.trim(),
+              lessonsLearned: _chalLesCtrl.text.trim(),
+            );
+            await svc.insertChallenge(challenge);
+          }
+          
           _showSnackbar('Log saved to Supabase ✓', isError: false);
         }
       } else {
@@ -561,6 +580,46 @@ class _AddLogScreenState extends State<AddLogScreen> {
                         onAiPolish: () => _polishWithAi(_issuesCtrl),
                       ),
                       const SizedBox(height: 24),
+
+                      // ── Challenge / Learning ──────────────────────────
+                      SwitchListTile(
+                        title: const Text('Log a Challenge or Learning', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                        subtitle: const Text('Track deep technical challenges separately from daily logs.', style: TextStyle(fontSize: 12)),
+                        value: _addChallenge,
+                        onChanged: (val) => setState(() => _addChallenge = val),
+                        contentPadding: EdgeInsets.zero,
+                        activeColor: Theme.of(context).colorScheme.primary,
+                      ),
+                      if (_addChallenge) ...[
+                        const SizedBox(height: 12),
+                        const _SectionLabel(label: 'Problem'),
+                        const SizedBox(height: 8),
+                        _StyledTextArea(
+                          controller: _chalProbCtrl,
+                          hint: 'Describe the core problem...',
+                          minLines: 3,
+                          prefixIcon: Icons.help_outline,
+                        ),
+                        const SizedBox(height: 16),
+                        const _SectionLabel(label: 'Resolution'),
+                        const SizedBox(height: 8),
+                        _StyledTextArea(
+                          controller: _chalResCtrl,
+                          hint: 'How did you solve it?',
+                          minLines: 3,
+                          prefixIcon: Icons.check_circle_outline,
+                        ),
+                        const SizedBox(height: 16),
+                        const _SectionLabel(label: 'Lessons Learned'),
+                        const SizedBox(height: 8),
+                        _StyledTextArea(
+                          controller: _chalLesCtrl,
+                          hint: 'What did you learn?',
+                          minLines: 3,
+                          prefixIcon: Icons.lightbulb_outline,
+                        ),
+                        const SizedBox(height: 24),
+                      ],
 
                       // ── Image attachment ──────────────────────────────
                       _SectionLabel(label: 'Photo Attachment'),

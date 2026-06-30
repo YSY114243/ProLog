@@ -30,8 +30,73 @@ class MyLogsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final hPad = isDesktop ? 32.0 : 16.0;
 
+    final total = logs.length;
+    final field = logs.where((l) => l.taskType == TaskType.fieldWork).length;
+    final office = logs.where((l) => l.taskType == TaskType.officeWork).length;
+    final software = logs.where((l) => l.taskType == TaskType.software).length;
+
     return CustomScrollView(
       slivers: [
+        // ── Report Summary ───────────────────────────────────────────────
+        SliverPadding(
+          padding: EdgeInsets.fromLTRB(hPad, 24, hPad, 0),
+          sliver: SliverToBoxAdapter(
+            child: Container(
+              padding: const EdgeInsets.all(28),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Theme.of(context).dividerColor),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(Icons.analytics_rounded, color: Theme.of(context).colorScheme.primary),
+                      ),
+                      const SizedBox(width: 16),
+                      Text(
+                        'Report Summary',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 28),
+                  Row(
+                    children: [
+                      _StatBadge('$total', 'Total Logs', Theme.of(context).colorScheme.onSurface, Theme.of(context).dividerColor.withValues(alpha: 0.3)),
+                      const SizedBox(width: 16),
+                      _StatBadge('$field', 'Field', TaskType.fieldWork.color, TaskType.fieldWork.bgColor),
+                      const SizedBox(width: 16),
+                      _StatBadge('$office', 'Office', TaskType.officeWork.color, TaskType.officeWork.bgColor),
+                      const SizedBox(width: 16),
+                      _StatBadge('$software', 'Software', TaskType.software.color, TaskType.software.bgColor),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
         // ── Search + filter bar ──────────────────────────────────────────
         SliverPadding(
           padding: EdgeInsets.fromLTRB(hPad, 24, hPad, 16),
@@ -126,6 +191,7 @@ class _SearchFilterBar extends StatelessWidget {
     'Field Work',
     'Office Work',
     'Software',
+    'With Challenges',
   ];
 
   @override
@@ -257,6 +323,41 @@ class _EmptyState extends StatelessWidget {
           style: TextStyle(fontSize: 13, color: Theme.of(context).textTheme.labelSmall?.color ?? Colors.grey),
         ),
       ],
+    );
+  }
+}
+
+class _StatBadge extends StatelessWidget {
+  final String value;
+  final String label;
+  final Color textColor;
+  final Color bgColor;
+
+  const _StatBadge(this.value, this.label, this.textColor, this.bgColor);
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Column(
+          children: [
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: textColor)),
+            ),
+            const SizedBox(height: 4),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: textColor.withValues(alpha: 0.8))),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

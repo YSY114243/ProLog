@@ -11,16 +11,18 @@ import 'package:flutter_svg/flutter_svg.dart';
 class InternLogLogo extends StatelessWidget {
   final bool light;
   final LogoSize _size;
+  final bool showIcon;
 
   const InternLogLogo({
     super.key,
     this.light = false,
+    this.showIcon = true,
     LogoSize size = LogoSize.medium,
   }) : _size = size;
 
-  const InternLogLogo.small({super.key, this.light = false}) : _size = LogoSize.small;
-  const InternLogLogo.medium({super.key, this.light = false}) : _size = LogoSize.medium;
-  const InternLogLogo.large({super.key, this.light = false}) : _size = LogoSize.large;
+  const InternLogLogo.small({super.key, this.light = false, this.showIcon = true}) : _size = LogoSize.small;
+  const InternLogLogo.medium({super.key, this.light = false, this.showIcon = true}) : _size = LogoSize.medium;
+  const InternLogLogo.large({super.key, this.light = false, this.showIcon = true}) : _size = LogoSize.large;
 
   @override
   Widget build(BuildContext context) {
@@ -53,31 +55,33 @@ class InternLogLogo extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         // Icon badge
-        Container(
-          width: iconBoxSize,
-          height: iconBoxSize,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(borderRadius),
-            boxShadow: [
-              if (!light)
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(borderRadius),
-            child: SvgPicture.asset(
-              'assets/images/iau_logo.svg',
-              width: iconBoxSize,
-              height: iconBoxSize,
-              fit: BoxFit.contain,
+        if (showIcon) ...[
+          Container(
+            width: iconBoxSize,
+            height: iconBoxSize,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(borderRadius),
+              boxShadow: [
+                if (!light)
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(borderRadius),
+              child: SvgPicture.asset(
+                'assets/images/iau_logo.svg',
+                width: iconBoxSize,
+                height: iconBoxSize,
+                fit: BoxFit.contain,
+              ),
             ),
           ),
-        ),
-        SizedBox(width: spacing),
+          SizedBox(width: spacing),
+        ],
 
         // Word-mark
         Column(

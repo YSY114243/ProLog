@@ -40,6 +40,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // Starts empty; populated from Supabase.
   List<DailyLog> _logs = [];
+  List<dynamic> _challenges = [];
 
   // ── Derived data ──────────────────────────────────────────────────────────
 
@@ -50,8 +51,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
           log.description.toLowerCase().contains(q) ||
           log.issuesFound.toLowerCase().contains(q) ||
           log.taskType.label.toLowerCase().contains(q);
-      final matchesType =
-          _filterType == 'All' || log.taskType.label == _filterType;
+      
+      bool matchesType = false;
+      if (_filterType == 'All') {
+        matchesType = true;
+      } else if (_filterType == 'With Challenges') {
+        final logDateStr = DateFormat('yyyy-MM-dd').format(log.date);
+        matchesType = _challenges.any((c) {
+          final cDate = c is Map ? DateTime.tryParse(c['date'] as String) : c.date;
+          if (cDate == null) return false;
+          return DateFormat('yyyy-MM-dd').format(cDate) == logDateStr;
+        });
+      } else {
+        matchesType = log.taskType.label == _filterType;
+      }
+
       return matchesSearch && matchesType;
     }).toList();
   }
@@ -73,6 +87,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _loadFromSupabase() async {
     try {
       final remote = await SupabaseService.instance.fetchLogs();
+      final fetchedChallenges = await SupabaseService.instance.fetchChallenges();
       final profile = await SupabaseService.instance.getUserProfile();
       final userId = Supabase.instance.client.auth.currentUser!.id;
       final docs = await DocumentService.instance.fetchSubmittedForms(userId);
@@ -94,6 +109,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (mounted) {
         setState(() {
           _logs = remote;
+          _challenges = fetchedChallenges;
           _submittedForms = fetchedSubmittedForms;
           if (profile != null) {
             if (profile['training_start_date'] != null) {
@@ -365,24 +381,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   label: 'My Logs',
                 ),
                 NavigationDestination(
-                  icon: FaIcon(FontAwesomeIcons.chartLine, size: 18),
-                  selectedIcon: FaIcon(FontAwesomeIcons.chartLine,
-                      size: 18, color: Theme.of(context).colorScheme.primary),
-                  label: 'Reports',
-                ),
-                NavigationDestination(
-                  icon: FaIcon(FontAwesomeIcons.shield, size: 18),
-                  selectedIcon: FaIcon(FontAwesomeIcons.shield,
-                      size: 18, color: Theme.of(context).colorScheme.primary),
-                  label: 'Challenges & Learnings',
-                ),
-                NavigationDestination(
-                  icon: FaIcon(FontAwesomeIcons.fileContract, size: 18),
-                  selectedIcon: FaIcon(FontAwesomeIcons.fileContract,
-                      size: 18, color: Theme.of(context).colorScheme.primary),
-                  label: 'Digital Forms',
-                ),
-                NavigationDestination(
                   icon: FaIcon(FontAwesomeIcons.gear, size: 18),
                   selectedIcon: FaIcon(FontAwesomeIcons.gear,
                       size: 18, color: Theme.of(context).colorScheme.primary),
@@ -431,10 +429,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   isDesktop: isDesktop,
                   isMobile: isMobile,
                   title: _navIndex == 0 ? 'Dashboard' :
-                         _navIndex == 1 ? 'My Logs' :
-                         _navIndex == 2 ? 'Reports' :
-                         _navIndex == 3 ? 'Challenges & Learnings' :
-                         _navIndex == 4 ? 'Digital Forms' : 'Settings',
+                         _navIndex == 1 ? 'My Logs' : 'Settings',
                   onDownload: _downloadReport,
                   onInvite: _inviteSupervisor,
                   onProfile: _openProfile,
@@ -469,12 +464,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               onEdit: _editLog,
                               onDelete: _deleteLog,
                             )
-                      : _navIndex == 2
-                          ? ReportsTab(allLogs: _logs)
-                      : _navIndex == 3
-                          ? ChallengesTab(isMobile: isMobile, isDesktop: isDesktop)
-                      : _navIndex == 4
-                          ? const StudentFormsScreen()
                           : const SettingsTab(),
                 ),
               ],
@@ -519,7 +508,7 @@ class _AppHeader extends StatelessWidget {
       child: Row(
         children: [
           if (!isDesktop) ...[
-            const InternLogLogo.small(),
+            const InternLogLogo.small(showIcon: false),
             const Spacer(),
           ] else ...[
             Column(
@@ -536,40 +525,52 @@ class _AppHeader extends StatelessWidget {
             const Spacer(),
           ],
 
-          // Invite Supervisor Button
-          OutlinedButton.icon(
-            onPressed: onInvite,
-            icon: const FaIcon(FontAwesomeIcons.userPlus, size: 15),
-            label: const Text('Invite Supervisor', style: TextStyle(fontWeight: FontWeight.w600)),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.secondary,
-              side: BorderSide(color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.3)),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          // Actions wrapped to prevent overflow
+          Expanded(
+            flex: isDesktop ? 0 : 1,
+            child: Wrap(
+              alignment: WrapAlignment.end,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                // Invite Supervisor Button
+                OutlinedButton.icon(
+                  onPressed: onInvite,
+                  icon: const FaIcon(FontAwesomeIcons.userPlus, size: 14),
+                  label: const Text('Invite', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Theme.of(context).colorScheme.secondary,
+                    side: BorderSide(color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.3)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                ),
+                
+                // Download Report Button
+                OutlinedButton.icon(
+                  onPressed: onDownload,
+                  icon: const FaIcon(FontAwesomeIcons.filePdf, size: 14),
+                  label: const Text('Download', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Theme.of(context).colorScheme.primary,
+                    side: const BorderSide(color: Color(0xFFD0ECF0)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                ),
+                
+                // Profile Button
+                IconButton(
+                  icon: const Icon(Icons.account_circle, size: 26),
+                  color: Theme.of(context).colorScheme.primary,
+                  onPressed: onProfile,
+                  tooltip: 'My Profile',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(width: 12),
-          
-          // Download Report Button
-          OutlinedButton.icon(
-            onPressed: onDownload,
-            icon: const FaIcon(FontAwesomeIcons.filePdf, size: 15),
-            label: const Text('Download Report', style: TextStyle(fontWeight: FontWeight.w600)),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.primary,
-              side: const BorderSide(color: Color(0xFFD0ECF0)),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            ),
-          ),
-          const SizedBox(width: 12),
-          
-          // Profile Button
-          IconButton(
-            icon: const Icon(Icons.account_circle, size: 28),
-            color: Theme.of(context).colorScheme.primary,
-            onPressed: onProfile,
-            tooltip: 'My Profile',
           ),
         ],
       ),

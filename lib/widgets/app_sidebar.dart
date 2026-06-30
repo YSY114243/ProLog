@@ -24,18 +24,6 @@ class AppSidebar extends StatelessWidget {
       label: 'My Logs',
     ),
     _FaDestination(
-      icon: FontAwesomeIcons.chartLine,
-      label: 'Reports',
-    ),
-    _FaDestination(
-      icon: FontAwesomeIcons.shield,
-      label: 'Challenges & Learnings',
-    ),
-    _FaDestination(
-      icon: FontAwesomeIcons.fileContract,
-      label: 'Digital Forms',
-    ),
-    _FaDestination(
       icon: FontAwesomeIcons.gear,
       label: 'Settings',
     ),

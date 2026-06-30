@@ -76,20 +76,26 @@ class _StatCardState extends State<StatCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      widget.value,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                        color: Theme.of(context).colorScheme.onSurface,
-                        height: 1.1,
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        widget.value,
+                        style: TextStyle(
+                          fontSize: 22, // reduced from 24
+                          fontWeight: FontWeight.w800,
+                          color: Theme.of(context).colorScheme.onSurface,
+                          height: 1.1,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       widget.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 11, // reduced from 12
                         fontWeight: FontWeight.w500,
                         color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                       ),
