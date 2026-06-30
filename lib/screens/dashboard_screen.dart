@@ -496,81 +496,72 @@ class _AppHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Container(
+      height: kToolbarHeight,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         border:
             Border(bottom: BorderSide(color: Theme.of(context).dividerColor, width: 1)),
       ),
       padding: EdgeInsets.symmetric(
-          horizontal: isDesktop ? 32 : 16, vertical: 16),
+          horizontal: isDesktop ? 32 : 16),
       child: Row(
         children: [
           if (!isDesktop) ...[
-            const InternLogLogo.small(showIcon: false),
+            const InternLogLogo.small(showIcon: true),
             const Spacer(),
           ] else ...[
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Row(
               children: [
-                Text(title,
-                    style: Theme.of(context).textTheme.headlineMedium),
-                Text(
-                  DateFormat('EEEE, MMMM d yyyy').format(DateTime.now()),
-                  style: Theme.of(context).textTheme.bodyMedium,
+                const InternLogLogo.small(showIcon: true),
+                const SizedBox(width: 12),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Text(
+                      DateFormat('EEEE, MMMM d yyyy').format(DateTime.now()),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
                 ),
               ],
             ),
             const Spacer(),
           ],
 
-          // Actions wrapped to prevent overflow
-          Expanded(
-            flex: isDesktop ? 0 : 1,
-            child: Wrap(
-              alignment: WrapAlignment.end,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                // Invite Supervisor Button
-                OutlinedButton.icon(
-                  onPressed: onInvite,
-                  icon: const FaIcon(FontAwesomeIcons.userPlus, size: 14),
-                  label: const Text('Invite', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Theme.of(context).colorScheme.secondary,
-                    side: BorderSide(color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.3)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                ),
-                
-                // Download Report Button
-                OutlinedButton.icon(
-                  onPressed: onDownload,
-                  icon: const FaIcon(FontAwesomeIcons.filePdf, size: 14),
-                  label: const Text('Download', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Theme.of(context).colorScheme.primary,
-                    side: const BorderSide(color: Color(0xFFD0ECF0)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                ),
-                
-                // Profile Button
-                IconButton(
-                  icon: const Icon(Icons.account_circle, size: 26),
-                  color: Theme.of(context).colorScheme.primary,
-                  onPressed: onProfile,
-                  tooltip: 'My Profile',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ],
-            ),
+          // Actions
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Invite Supervisor Button
+              IconButton(
+                onPressed: onInvite,
+                icon: const FaIcon(FontAwesomeIcons.userPlus, size: 18),
+                color: Theme.of(context).colorScheme.secondary,
+                tooltip: 'Invite Supervisor',
+              ),
+              const SizedBox(width: 8),
+              
+              // Download Report Button
+              IconButton(
+                onPressed: onDownload,
+                icon: const FaIcon(FontAwesomeIcons.filePdf, size: 18),
+                color: Theme.of(context).colorScheme.primary,
+                tooltip: 'Download PDF',
+              ),
+              const SizedBox(width: 8),
+              
+              // Profile Button
+              IconButton(
+                icon: const Icon(Icons.account_circle, size: 26),
+                color: Theme.of(context).colorScheme.primary,
+                onPressed: onProfile,
+                tooltip: 'My Profile',
+              ),
+            ],
           ),
         ],
       ),

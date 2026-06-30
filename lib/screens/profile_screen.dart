@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -22,9 +23,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadProfile() async {
     setState(() => _isLoading = true);
     final profile = await SupabaseService.instance.getUserProfile();
+    final user = Supabase.instance.client.auth.currentUser;
+    final meta = user?.userMetadata ?? {};
+
     if (mounted) {
       setState(() {
-        _profile = profile;
+        _profile = profile != null ? Map<String, dynamic>.from(profile) : {};
+        _profile!['uni_name'] = meta['uni_name'] ?? _profile!['uni_name'];
+        _profile!['major'] = meta['major'] ?? _profile!['major'];
+        _profile!['company'] = meta['company'] ?? _profile!['company'];
+        _profile!['full_name'] = meta['full_name'] ?? meta['name'] ?? _profile!['full_name'];
         _isLoading = false;
       });
     }
