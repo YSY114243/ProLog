@@ -10,6 +10,11 @@ import '../models/challenge.dart';
 import '../services/supabase_service.dart';
 import '../services/speech_service.dart';
 import '../services/ai_service.dart';
+import 'dart:io';
+import 'package:uuid/uuid.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
+import '../services/local_db_service.dart';
 import 'paywall_screen.dart';
 
 Future<Uint8List?> _compressImage(Uint8List bytes) async {
@@ -64,6 +69,7 @@ class _AddLogScreenState extends State<AddLogScreen> {
   DateTime _date           = DateTime.now();
   TaskType _taskType       = TaskType.fieldWork;
   String?  _imageUrl;
+  String?  _localImagePath;
   bool     _isUploadingImage = false;
   bool     _isSaving       = false;
 
@@ -91,7 +97,8 @@ class _AddLogScreenState extends State<AddLogScreen> {
       _taskType       = log.taskType;
       _descCtrl.text  = log.description;
       _issuesCtrl.text = log.issuesFound;
-      _imageUrl = log.imageUrl;
+      _imageUrl   = widget.initialLog!.imageUrl;
+      _localImagePath = widget.initialLog!.localImagePath;
     } else {
       _loadDrafts();
     }
@@ -348,14 +355,15 @@ class _AddLogScreenState extends State<AddLogScreen> {
         return;
       }
 
-      // Upload to ImgBB (serverless-safe: no local FS access)
-      final url = await SupabaseService.instance.uploadImageToImgBB(compressedBytes);
-      
-      if (url != null) {
-        setState(() => _imageUrl = url);
-      } else {
-        _showSnackbar('Failed to upload image.', isError: true);
-      }
+      // Save locally to Application Documents Directory
+      final directory = await getApplicationDocumentsDirectory();
+      final fileName = 'log_image_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final savedImage = File(p.join(directory.path, fileName));
+      await savedImage.writeAsBytes(compressedBytes);
+
+      setState(() => _localImagePath = savedImage.path);
+
+      _showSnackbar('Image attached locally.', isError: false);
     } catch (e) {
       _showSnackbar('Error processing image: $e', isError: true);
     } finally {
@@ -370,43 +378,70 @@ class _AddLogScreenState extends State<AddLogScreen> {
     final svc    = SupabaseService.instance;
     final userId = svc.currentUserId ?? '';
     final init   = widget.initialLog;
+    
+    final isNewLog = init == null || init.id.isEmpty;
+    final String logId = isNewLog ? const Uuid().v4() : init.id;
 
-    final log = DailyLog(
-      id:          init?.id ?? '',   // preserved for updates; empty for inserts
+    DailyLog log = DailyLog(
+      id:          logId,
       userId:      init?.userId ?? userId,
       date:        _date,
       taskType:    _taskType,
       description: _descCtrl.text.trim(),
       issuesFound: _issuesCtrl.text.trim(),
       imageUrl:    _imageUrl,
+      localImagePath: _localImagePath,
+      isSynced:    false,
     );
 
     try {
+      // 1. Immediately save to Local DB
+      if (_isEditing) {
+        await LocalDbService.instance.updateLog(log);
+      } else {
+        await LocalDbService.instance.insertLog(log);
+      }
+      
+      // 2. Attempt Cloud Sync
       if (userId.isNotEmpty) {
-        if (_isEditing) {
-          await svc.updateLog(log);
-          _showSnackbar('Log updated ✓', isError: false);
-        } else {
-          await svc.insertLog(log);
-          
-          if (_addChallenge) {
-            final challenge = Challenge(
-              id: '',
-              userId: userId,
-              date: _date,
-              problem: _chalProbCtrl.text.trim(),
-              resolution: _chalResCtrl.text.trim(),
-              lessonsLearned: _chalLesCtrl.text.trim(),
-            );
-            await svc.insertChallenge(challenge);
+        try {
+          // Upload image if we have a local path but no remote URL yet
+          if (log.localImagePath != null && log.imageUrl == null) {
+            final fileBytes = await File(log.localImagePath!).readAsBytes();
+            final url = await svc.uploadImageToImgBB(fileBytes);
+            if (url != null) {
+              log = log.copyWith(imageUrl: url);
+              await LocalDbService.instance.updateLog(log);
+            }
+          }
+
+          if (_isEditing) {
+            await svc.updateLog(log);
+          } else {
+            await svc.insertLog(log);
+            if (_addChallenge) {
+              final challenge = Challenge(
+                id: '',
+                userId: userId,
+                date: _date,
+                problem: _chalProbCtrl.text.trim(),
+                resolution: _chalResCtrl.text.trim(),
+                lessonsLearned: _chalLesCtrl.text.trim(),
+              );
+              await svc.insertChallenge(challenge);
+            }
           }
           
-          _showSnackbar('Log saved to Supabase ✓', isError: false);
+          // Mark as synced locally
+          log = log.copyWith(isSynced: true);
+          await LocalDbService.instance.updateLog(log);
+          _showSnackbar('Log saved and synced to cloud ✓', isError: false);
+        } catch (e) {
+          // Silent catch for upload failures
+          _showSnackbar('Log saved locally. Will sync when online.', isError: false);
         }
       } else {
-        // Not signed in → local-only mode
-        _showSnackbar('Saved locally — sign in to sync to the cloud.',
-            isError: false);
+        _showSnackbar('Saved locally — sign in to sync to the cloud.', isError: false);
       }
 
       await _clearDraft();
@@ -414,7 +449,7 @@ class _AddLogScreenState extends State<AddLogScreen> {
       widget.onSaved?.call(log);
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      _showSnackbar('Error saving log: $e', isError: true);
+      _showSnackbar('Error saving log locally: $e', isError: true);
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }

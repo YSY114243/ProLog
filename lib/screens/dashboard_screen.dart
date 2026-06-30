@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -8,6 +9,8 @@ import '../services/supabase_service.dart';
 import '../widgets/app_sidebar.dart';
 import '../widgets/intern_log_logo.dart';
 import '../services/pdf_service.dart';
+import '../services/local_db_service.dart';
+import '../widgets/stat_card.dart';
 import 'student_forms_screen.dart';
 import 'add_log_screen.dart';
 import 'reports_tab.dart';
@@ -86,10 +89,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _loadFromSupabase() async {
     try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) return;
+      final userId = user.id;
+
+      // 1. Instantly load from local DB for offline-first speed
+      final localLogs = await LocalDbService.instance.fetchLogs(userId);
+      if (mounted) {
+        setState(() => _logs = localLogs);
+      }
+
+      // 2. Fetch from cloud and sync down
       final remote = await SupabaseService.instance.fetchLogs();
+      await LocalDbService.instance.syncLogsWithSupabase(remote, userId);
+
+      // 3. Reload local DB after sync to reflect any cloud updates
+      final syncedLogs = await LocalDbService.instance.fetchLogs(userId);
+
       final fetchedChallenges = await SupabaseService.instance.fetchChallenges();
       final profile = await SupabaseService.instance.getUserProfile();
-      final userId = Supabase.instance.client.auth.currentUser!.id;
       final docs = await DocumentService.instance.fetchSubmittedForms(userId);
       final fetchedSubmittedForms = docs.map((d) => d['form_type'] as String).toList();
       
@@ -108,7 +126,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       if (mounted) {
         setState(() {
-          _logs = remote;
+          _logs = syncedLogs;
           _challenges = fetchedChallenges;
           _submittedForms = fetchedSubmittedForms;
           if (profile != null) {
@@ -226,6 +244,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       // Only call Supabase delete for real UUID IDs (not placeholders)
       if (log.id.isNotEmpty && !log.id.startsWith('placeholder')) {
         await SupabaseService.instance.deleteLog(log.id);
+        await LocalDbService.instance.deleteLog(log.id);
       }
       if (mounted) {
         setState(() => _logs.removeWhere((l) => l.id == log.id));

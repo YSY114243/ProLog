@@ -88,6 +88,8 @@ class DailyLog {
   final String description;
   final String issuesFound;
   final String? imageUrl;
+  final String? localImagePath; // Offline-first local image path
+  final bool isSynced;          // Offline-first sync flag
   final String approvalStatus;
 
   const DailyLog({
@@ -98,6 +100,8 @@ class DailyLog {
     required this.description,
     required this.issuesFound,
     this.imageUrl,
+    this.localImagePath,
+    this.isSynced = true,
     this.approvalStatus = 'pending',
   });
 
@@ -113,8 +117,42 @@ class DailyLog {
       description: json['description']  as String,
       issuesFound: json['issues_found'] as String? ?? '',
       imageUrl:    json['image_url']    as String?,
+      localImagePath: json['local_image_path'] as String?,
+      isSynced:    json['is_synced'] == null ? true : (json['is_synced'] == 1 || json['is_synced'] == true),
       approvalStatus: json['approval_status'] as String? ?? 'pending',
     );
+  }
+
+  /// Creates a [DailyLog] from a SQLite map.
+  factory DailyLog.fromMap(Map<String, dynamic> map) {
+    return DailyLog(
+      id:          map['id'] as String,
+      userId:      map['user_id'] as String,
+      date:        DateTime.parse(map['date'] as String),
+      taskType:    TaskType.fromString(map['task_type'] as String),
+      description: map['description'] as String,
+      issuesFound: map['issues_found'] as String? ?? '',
+      imageUrl:    map['image_url'] as String?,
+      localImagePath: map['local_image_path'] as String?,
+      isSynced:    map['is_synced'] == 1,
+      approvalStatus: map['approval_status'] as String? ?? 'pending',
+    );
+  }
+
+  /// Serialises this log for local SQLite INSERT/UPDATE.
+  Map<String, dynamic> toMap() {
+    return {
+      'id':           id,
+      'user_id':      userId,
+      'date':         DateFormat('yyyy-MM-dd').format(date),
+      'task_type':    taskType.label,
+      'description':  description,
+      'issues_found': issuesFound,
+      'image_url':    imageUrl,
+      'local_image_path': localImagePath,
+      'is_synced':    isSynced ? 1 : 0,
+      'approval_status': approvalStatus,
+    };
   }
 
   /// Serialises this log for a Supabase INSERT.
@@ -142,6 +180,8 @@ class DailyLog {
     String? description,
     String? issuesFound,
     String? imageUrl,
+    String? localImagePath,
+    bool? isSynced,
     String? approvalStatus,
   }) {
     return DailyLog(
@@ -152,6 +192,8 @@ class DailyLog {
       description: description ?? this.description,
       issuesFound: issuesFound ?? this.issuesFound,
       imageUrl:    imageUrl    ?? this.imageUrl,
+      localImagePath: localImagePath ?? this.localImagePath,
+      isSynced:    isSynced    ?? this.isSynced,
       approvalStatus: approvalStatus ?? this.approvalStatus,
     );
   }

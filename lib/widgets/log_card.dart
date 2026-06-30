@@ -69,10 +69,16 @@ class _LogCardState extends State<LogCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Row 1: Date chip + Task type badge + menu ─────────────
                 Row(
                   children: [
                     _DateChip(date: log.date),
+                    if (!log.isSynced) ...[
+                      const SizedBox(width: 8),
+                      Tooltip(
+                        message: 'Saved locally. Will sync when online.',
+                        child: Icon(Icons.cloud_off_rounded, size: 16, color: Colors.orange.shade700),
+                      ),
+                    ],
                     const Spacer(),
                     _TaskTypeBadge(taskType: log.taskType),
                     const SizedBox(width: 4),
@@ -153,7 +159,7 @@ class _LogCardState extends State<LogCard> {
                       ),
                     ),
                     const Spacer(),
-                    if (log.imageUrl != null) ...[
+                    if (log.imageUrl != null || log.localImagePath != null) ...[
                       Icon(Icons.image_outlined,
                           size: 14, color: Theme.of(context).colorScheme.primary),
                       const SizedBox(width: 4),
