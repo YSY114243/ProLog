@@ -1,115 +1,93 @@
-import 'dart:async';
-import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/daily_log.dart';
 
 class LocalDbService {
   LocalDbService._();
   static final LocalDbService instance = LocalDbService._();
 
-  static Database? _database;
-  static const String _tableName = 'daily_logs';
+  String _getLogsKey(String userId) => 'offline_logs_$userId';
 
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDB('internlog.db');
-    return _database!;
+  Future<List<DailyLog>> fetchLogs(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString(_getLogsKey(userId));
+    if (jsonString == null) return [];
+
+    try {
+      final List<dynamic> jsonList = jsonDecode(jsonString);
+      return jsonList.map((json) => DailyLog.fromJson(json as Map<String, dynamic>)).toList()
+        ..sort((a, b) => b.date.compareTo(a.date));
+    } catch (e) {
+      return [];
+    }
   }
 
-  Future<Database> _initDB(String fileName) async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, fileName);
-
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _createDB,
-    );
-  }
-
-  Future<void> _createDB(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE $_tableName (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL,
-        date TEXT NOT NULL,
-        task_type TEXT NOT NULL,
-        description TEXT NOT NULL,
-        issues_found TEXT,
-        image_url TEXT,
-        local_image_path TEXT,
-        is_synced INTEGER NOT NULL DEFAULT 1,
-        approval_status TEXT NOT NULL
-      )
-    ''');
+  Future<void> _saveLogsList(String userId, List<DailyLog> logs) async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonList = logs.map((l) => l.toJson()).toList();
+    await prefs.setString(_getLogsKey(userId), jsonEncode(jsonList));
   }
 
   Future<void> insertLog(DailyLog log) async {
-    final db = await instance.database;
-    await db.insert(
-      _tableName,
-      log.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    final logs = await fetchLogs(log.userId);
+    // Overwrite if same ID exists to avoid duplicates
+    logs.removeWhere((l) => l.id == log.id);
+    logs.add(log);
+    await _saveLogsList(log.userId, logs);
   }
 
   Future<void> updateLog(DailyLog log) async {
-    final db = await instance.database;
-    await db.update(
-      _tableName,
-      log.toMap(),
-      where: 'id = ?',
-      whereArgs: [log.id],
-    );
+    final logs = await fetchLogs(log.userId);
+    final index = logs.indexWhere((l) => l.id == log.id);
+    if (index >= 0) {
+      logs[index] = log;
+      await _saveLogsList(log.userId, logs);
+    }
   }
 
   Future<void> deleteLog(String id) async {
-    final db = await instance.database;
-    await db.delete(
-      _tableName,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future<List<DailyLog>> fetchLogs(String userId) async {
-    final db = await instance.database;
-    final result = await db.query(
-      _tableName,
-      where: 'user_id = ?',
-      whereArgs: [userId],
-      orderBy: 'date DESC',
-    );
-    return result.map((json) => DailyLog.fromMap(json)).toList();
+    // We need userId to find it. Since we only delete from current user's feed,
+    // we can search through all keys or require userId.
+    // For simplicity, we iterate over all keys starting with offline_logs_
+    final prefs = await SharedPreferences.getInstance();
+    final keys = prefs.getKeys().where((k) => k.startsWith('offline_logs_'));
+    
+    for (final key in keys) {
+      final jsonString = prefs.getString(key);
+      if (jsonString != null) {
+        final List<dynamic> jsonList = jsonDecode(jsonString);
+        final logs = jsonList.map((json) => DailyLog.fromJson(json as Map<String, dynamic>)).toList();
+        final initialLength = logs.length;
+        logs.removeWhere((l) => l.id == id);
+        
+        if (logs.length != initialLength) {
+          await prefs.setString(key, jsonEncode(logs.map((l) => l.toJson()).toList()));
+          break;
+        }
+      }
+    }
   }
 
   Future<List<DailyLog>> fetchUnsyncedLogs(String userId) async {
-    final db = await instance.database;
-    final result = await db.query(
-      _tableName,
-      where: 'user_id = ? AND is_synced = 0',
-      whereArgs: [userId],
-      orderBy: 'date DESC',
-    );
-    return result.map((json) => DailyLog.fromMap(json)).toList();
+    final logs = await fetchLogs(userId);
+    return logs.where((l) => l.isSynced == false).toList();
   }
 
   Future<void> syncLogsWithSupabase(List<DailyLog> supabaseLogs, String userId) async {
-    final db = await instance.database;
-    final batch = db.batch();
+    final localLogs = await fetchLogs(userId);
+    
+    // Map existing local logs by ID
+    final Map<String, DailyLog> localMap = {for (var l in localLogs) l.id: l};
 
-    // Do not overwrite unsynced local logs. 
-    // Insert/update logs from Supabase that are fully synced.
     for (final sLog in supabaseLogs) {
-      final existing = await db.query(_tableName, where: 'id = ?', whereArgs: [sLog.id]);
-      if (existing.isEmpty || existing.first['is_synced'] == 1) {
-        batch.insert(
-          _tableName,
-          sLog.toMap(),
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
+      final existing = localMap[sLog.id];
+      // Only overwrite if it doesn't exist locally, or if the local version is fully synced.
+      // Do not overwrite an unsynced local log (which might have offline edits/images).
+      if (existing == null || existing.isSynced) {
+        localMap[sLog.id] = sLog;
       }
     }
-    await batch.commit(noResult: true);
+
+    await _saveLogsList(userId, localMap.values.toList());
   }
 }

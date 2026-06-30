@@ -88,7 +88,8 @@ class DailyLog {
   final String description;
   final String issuesFound;
   final String? imageUrl;
-  final String? localImagePath; // Offline-first local image path
+  final String? localImagePath; // Offline-first local image path (Mobile/Desktop)
+  final String? localImageBase64; // Offline-first Base64 image (Web)
   final bool isSynced;          // Offline-first sync flag
   final String approvalStatus;
 
@@ -101,6 +102,7 @@ class DailyLog {
     required this.issuesFound,
     this.imageUrl,
     this.localImagePath,
+    this.localImageBase64,
     this.isSynced = true,
     this.approvalStatus = 'pending',
   });
@@ -118,29 +120,14 @@ class DailyLog {
       issuesFound: json['issues_found'] as String? ?? '',
       imageUrl:    json['image_url']    as String?,
       localImagePath: json['local_image_path'] as String?,
+      localImageBase64: json['local_image_base64'] as String?,
       isSynced:    json['is_synced'] == null ? true : (json['is_synced'] == 1 || json['is_synced'] == true),
       approvalStatus: json['approval_status'] as String? ?? 'pending',
     );
   }
 
-  /// Creates a [DailyLog] from a SQLite map.
-  factory DailyLog.fromMap(Map<String, dynamic> map) {
-    return DailyLog(
-      id:          map['id'] as String,
-      userId:      map['user_id'] as String,
-      date:        DateTime.parse(map['date'] as String),
-      taskType:    TaskType.fromString(map['task_type'] as String),
-      description: map['description'] as String,
-      issuesFound: map['issues_found'] as String? ?? '',
-      imageUrl:    map['image_url'] as String?,
-      localImagePath: map['local_image_path'] as String?,
-      isSynced:    map['is_synced'] == 1,
-      approvalStatus: map['approval_status'] as String? ?? 'pending',
-    );
-  }
-
-  /// Serialises this log for local SQLite INSERT/UPDATE.
-  Map<String, dynamic> toMap() {
+  /// Serialises this log for local SharedPreferences (JSON) or Supabase.
+  Map<String, dynamic> toJson() {
     return {
       'id':           id,
       'user_id':      userId,
@@ -148,28 +135,15 @@ class DailyLog {
       'task_type':    taskType.label,
       'description':  description,
       'issues_found': issuesFound,
-      'image_url':    imageUrl,
-      'local_image_path': localImagePath,
-      'is_synced':    isSynced ? 1 : 0,
       'approval_status': approvalStatus,
+      'is_synced':    isSynced,
+      if (imageUrl != null) 'image_url': imageUrl,
+      if (localImagePath != null) 'local_image_path': localImagePath,
+      if (localImageBase64 != null) 'local_image_base64': localImageBase64,
     };
   }
 
-  /// Serialises this log for a Supabase INSERT.
-  ///
-  /// The `id` column is intentionally omitted — Supabase generates it via
-  /// `gen_random_uuid()`. The `created_at` column uses a DB default.
-  Map<String, dynamic> toJson() {
-    return {
-      'user_id':      userId,
-      'date':         DateFormat('yyyy-MM-dd').format(date),
-      'task_type':    taskType.label,
-      'description':  description,
-      'issues_found': issuesFound,
-      'approval_status': approvalStatus,
-      if (imageUrl != null) 'image_url': imageUrl,
-    };
-  }
+  // Replaced by unified toJson() above.
 
   /// Returns a copy of this log with the given fields replaced.
   DailyLog copyWith({
@@ -181,6 +155,7 @@ class DailyLog {
     String? issuesFound,
     String? imageUrl,
     String? localImagePath,
+    String? localImageBase64,
     bool? isSynced,
     String? approvalStatus,
   }) {
@@ -193,6 +168,7 @@ class DailyLog {
       issuesFound: issuesFound ?? this.issuesFound,
       imageUrl:    imageUrl    ?? this.imageUrl,
       localImagePath: localImagePath ?? this.localImagePath,
+      localImageBase64: localImageBase64 ?? this.localImageBase64,
       isSynced:    isSynced    ?? this.isSynced,
       approvalStatus: approvalStatus ?? this.approvalStatus,
     );

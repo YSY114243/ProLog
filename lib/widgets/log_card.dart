@@ -159,7 +159,7 @@ class _LogCardState extends State<LogCard> {
                       ),
                     ),
                     const Spacer(),
-                    if (log.imageUrl != null || log.localImagePath != null) ...[
+                    if (log.imageUrl != null || log.localImagePath != null || log.localImageBase64 != null) ...[
                       Icon(Icons.image_outlined,
                           size: 14, color: Theme.of(context).colorScheme.primary),
                       const SizedBox(width: 4),

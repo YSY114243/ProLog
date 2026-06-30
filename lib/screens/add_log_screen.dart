@@ -11,6 +11,7 @@ import '../services/supabase_service.dart';
 import '../services/speech_service.dart';
 import '../services/ai_service.dart';
 import 'dart:io';
+import 'dart:convert';
 import 'package:uuid/uuid.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
@@ -70,6 +71,7 @@ class _AddLogScreenState extends State<AddLogScreen> {
   TaskType _taskType       = TaskType.fieldWork;
   String?  _imageUrl;
   String?  _localImagePath;
+  String?  _localImageBase64;
   bool     _isUploadingImage = false;
   bool     _isSaving       = false;
 
@@ -99,6 +101,7 @@ class _AddLogScreenState extends State<AddLogScreen> {
       _issuesCtrl.text = log.issuesFound;
       _imageUrl   = widget.initialLog!.imageUrl;
       _localImagePath = widget.initialLog!.localImagePath;
+      _localImageBase64 = widget.initialLog!.localImageBase64;
     } else {
       _loadDrafts();
     }
@@ -355,13 +358,20 @@ class _AddLogScreenState extends State<AddLogScreen> {
         return;
       }
 
-      // Save locally to Application Documents Directory
-      final directory = await getApplicationDocumentsDirectory();
-      final fileName = 'log_image_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final savedImage = File(p.join(directory.path, fileName));
-      await savedImage.writeAsBytes(compressedBytes);
-
-      setState(() => _localImagePath = savedImage.path);
+      if (kIsWeb) {
+        // Web: Convert to Base64 in memory
+        final base64String = base64Encode(compressedBytes);
+        setState(() {
+          _localImageBase64 = base64String;
+        });
+      } else {
+        // Mobile/Desktop: Save locally to Application Documents Directory
+        final directory = await getApplicationDocumentsDirectory();
+        final fileName = 'log_image_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final savedImage = File(p.join(directory.path, fileName));
+        await savedImage.writeAsBytes(compressedBytes);
+        setState(() => _localImagePath = savedImage.path);
+      }
 
       _showSnackbar('Image attached locally.', isError: false);
     } catch (e) {
@@ -391,6 +401,7 @@ class _AddLogScreenState extends State<AddLogScreen> {
       issuesFound: _issuesCtrl.text.trim(),
       imageUrl:    _imageUrl,
       localImagePath: _localImagePath,
+      localImageBase64: _localImageBase64,
       isSynced:    false,
     );
 
@@ -405,13 +416,22 @@ class _AddLogScreenState extends State<AddLogScreen> {
       // 2. Attempt Cloud Sync
       if (userId.isNotEmpty) {
         try {
-          // Upload image if we have a local path but no remote URL yet
-          if (log.localImagePath != null && log.imageUrl == null) {
-            final fileBytes = await File(log.localImagePath!).readAsBytes();
-            final url = await svc.uploadImageToImgBB(fileBytes);
-            if (url != null) {
-              log = log.copyWith(imageUrl: url);
-              await LocalDbService.instance.updateLog(log);
+          // Upload image if we have a local path/base64 but no remote URL yet
+          if (log.imageUrl == null) {
+            Uint8List? fileBytes;
+            if (kIsWeb && log.localImageBase64 != null) {
+              fileBytes = base64Decode(log.localImageBase64!);
+            } else if (!kIsWeb && log.localImagePath != null) {
+              fileBytes = await File(log.localImagePath!).readAsBytes();
+            }
+
+            if (fileBytes != null) {
+              final url = await svc.uploadImageToImgBB(fileBytes);
+              if (url != null) {
+                // Once uploaded, we could optionally clear the local bytes to save DB space
+                log = log.copyWith(imageUrl: url, localImageBase64: null);
+                await LocalDbService.instance.updateLog(log);
+              }
             }
           }
 
